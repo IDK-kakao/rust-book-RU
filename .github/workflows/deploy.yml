@@ -12,9 +12,41 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
-      - uses: peaceiris/actions-mdbook@v2
-      - run: mdbook build
+      
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install pnpm
+        run: npm install -g pnpm
+      
+      - name: Setup mdBook
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: 'latest'
+      
+      - name: Install mdbook preprocessors
+        run: |
+          cargo install mdbook-quiz --locked
+          cargo install mdbook-aquascope --locked
+          cargo install --locked --path packages/mdbook-trpl-listing
+          cargo install --locked --path packages/mdbook-trpl-note
+      
+      - name: Build JS extensions
+        run: |
+          cd js-extensions
+          pnpm init-repo
+          cd ..
+      
+      - name: Build book
+        run: mdbook build
+      
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./book
+      
       - uses: actions/deploy-pages@v4
