@@ -1,65 +1,64 @@
-# Experiment Introduction
- 
-Welcome to the Rust Book experiment, and thank you for your participation! This book is an experimental fork of [*The Rust Programming Language*](http://doc.rust-lang.org/book/) which introduces several mechanics to make learning Rust more interactive. We'll briefly walk through each mechanic:
+# Введение в эксперимент
 
-## 1. Quizzes
+Добро пожаловать в экспериментальную версию книги по Rust, и спасибо за ваше участие! Эта книга является экспериментальной ветвью [*Язык программирования Rust*](http://doc.rust-lang.org/book/), которая добавляет несколько механик для более интерактивного изучения Rust. Кратко рассмотрим каждую механику:
 
-The main mechanic is **quizzes**: each page has a few quizzes about the page's content. We have two rules about quizzes for this experiment:
+## 1. Викторины
 
-1. **Take a quiz as soon as you get to it.**
-2. **Do not skip a quiz.**
+Основная механика — **викторины**: на каждой странице есть несколько вопросов по её содержанию. У нас есть два правила относительно викторин в этом эксперименте:
 
-(We don't enforce these rules, but please follow them!)
+1. **Проходите викторину сразу, как до неё доберётесь.**
+2. **Не пропускайте викторины.**
 
-Every quiz looks like the one below. Try it out by clicking "Start".
+(Мы не контролируем выполнение этих правил, но просим вас следовать им!)
+
+Каждая викторина выглядит так, как показано ниже. Попробуйте, нажав «Start».
 
 {{#quiz ../quizzes/example-quiz.toml}}
 
-If you get a question incorrect, you can choose to either retry the quiz, or see the correct answers. We encourage you to retry the quiz until you get 100% &mdash; feel free to review the content before retrying the quiz. Note that once you see the correct answers, you cannot retry the quiz.
+Если вы ответили на вопрос неправильно, вы можете либо повторить попытку, либо увидеть правильные ответы. Мы рекомендуем повторять викторину, пока не получите 100% — не стесняйтесь перечитать материал перед повторной попыткой. Обратите внимание, что как только вы увидите правильные ответы, повторную попытку пройти нельзя.
 
-If you spot an issue in a quiz or other part of the book, you can file an issue on our Github repository: <https://github.com/cognitive-engineering-lab/rust-book>
+Если вы обнаружили проблему в викторине или в другой части книги, вы можете сообщить о ней в нашем репозитории на GitHub: <https://github.com/cognitive-engineering-lab/rust-book>
 
-## 2. Highlighting
+## 2. Выделение текста
 
-Another mechanic is **highlighting**: you can select any piece of text, and either highlight it or leave a comment about it. Once you select some text, click the ✏️ button, and leave an optional comment.
+Другая механика — **выделение текста**: вы можете выделить любой фрагмент текста и либо выделить его цветом, либо оставить комментарий. После выделения текста нажмите кнопку ✏️ и оставьте необязательный комментарий.
 
-👉 Try highlighting this text! 👈
+👉 Попробуйте выделить этот текст! 👈
 
-You can use highlights to save information for yourself. You can also use highlights to give us feedback &mdash; for example, if you think a section of content is confusing, you can let us know.
+Вы можете использовать выделения, чтобы сохранять информацию для себя. Вы также можете использовать выделения, чтобы дать нам обратную связь — например, если вы считаете какой-то раздел запутанным, вы можете сообщить нам об этом.
 
-> **Note:** your highlights will disappear if we change the content that you've highlighted. Also, your highlights are stored as a cookie. If you block cookies or change browsers, then you won't see your previous highlights.
+> **Примечание:** ваши выделения исчезнут, если мы изменим выделенный вами контент. Также ваши выделения хранятся в файле cookie. Если вы блокируете файлы cookie или меняете браузер, вы не увидите предыдущие выделения.
 
-## 3. ...and more!
+## 3. ...и не только!
 
-The book's content may change as you go through the experiment. We will update this page as we add new features. Here's the changelog:
+Содержание книги может меняться по мере прохождения эксперимента. Мы будем обновлять эту страницу по мере добавления новых функций. Вот история изменений:
 
-* September 26, 2024
-  * Chris Krycho's chapter on async Rust has been added, along with new quiz questions.
-* February 16, 2023
-  * A new chapter on ownership has replaced the previous Chapter 4.
-* January 18, 2023
-  * Questions have been added for the remaining chapters of the book.    
-* December 15, 2022
-  * New sections called "Ownership Inventory" have been added throughout the book
-    with challenging ownership-related questions.    
-* November 7, 2022
-  * Only questions with incorrect answers will be shown on a retry.
-  * Most multiple-choice questions will have their choices randomized.
-  * Some questions will now prompt for your reasoning.
-  * Many questions have been updated based on your feedback. Keep it coming!
+* 26 сентября 2024 г.
+  * Добавлена глава Криса Кричо об асинхронном Rust, а также новые вопросы для викторин.
+* 16 февраля 2023 г.
+  * Новая глава о владении заменила предыдущую главу 4.
+* 18 января 2023 г.
+  * Вопросы добавлены для оставшихся глав книги.
+* 15 декабря 2022 г.
+  * В книге добавлены новые разделы под названием «Инвентаризация владения» со сложными вопросами, связанными с владением.
+* 7 ноября 2022 г.
+  * При повторной попытке будут показаны только вопросы с неправильными ответами.
+  * В большинстве вопросов с множественным выбором варианты будут случайным образом перемешаны.
+  * Некоторые вопросы теперь будут запрашивать ваше обоснование.
+  * Многие вопросы обновлены на основе ваших отзывов. Продолжайте в том же духе!
 
-_Interested in participating in other experiments about making Rust easier to learn? Please sign up here:_ <https://forms.gle/U3jEUkb2fGXykp1DA>
+_Заинтересованы в участии в других экспериментах по упрощению изучения Rust? Пожалуйста, зарегистрируйтесь здесь:_ <https://forms.gle/U3jEUkb2fGXykp1DA>
 
-## 4. Publications
+## 4. Публикации
 
-Thus far, this experiment has led to two open-access publications. Check them out if you're interested to see the academic research behind this book:
+На данный момент этот эксперимент привёл к двум публикациям с открытым доступом. Ознакомьтесь с ними, если хотите увидеть академические исследования, лежащие в основе этой книги:
 
 * [Profiling Programming Language Learning](https://dl.acm.org/doi/10.1145/3649812) <br />
-  Will Crichton and Shriram Krishnamurthi. OOPSLA 2024. (Distinguished Paper.)
+  Уилл Кричтон и Шрирам Кришнамурти. OOPSLA 2024. (Отличительная статья.)
 
 * [A Grounded Conceptual Model for Ownership Types in Rust](https://dl.acm.org/doi/10.1145/3622841) <br />
-  Will Crichton, Gavin Gray, and Shriram Krishnamurthi. OOPSLA 2023. (SIGPLAN Research Highlight and Communications of the ACM Research Highlight.)
+  Уилл Кричтон, Гэвин Грей и Шрирам Кришнамурти. OOPSLA 2023. (Награда SIGPLAN Research Highlight и Communications of the ACM Research Highlight.)
 
-## 5. Acknowledgments
+## 5. Благодарности
 
-This work was partially supported by the DARPA under Agreement No.\@ HR00112420354, partially supported by the NSF under Award No.\@ CCF-2227863, and partially supported by Amazon Web Services. Any opinions, findings, and conclusions or recommendations expressed in this material are those of the authors and do not reflect the views of our funders. Carol Nichols and the Rust Foundation helped publicize the experiment. TRPL is the product of many people's hard work before we started this experiment.
+Эта работа частично поддержана DARPA по соглашению № HR00112420354, частично поддержана NSF по гранту № CCF-2227863 и частично поддержана Amazon Web Services. Любые мнения, выводы и рекомендации, выраженные в этом материале, принадлежат авторам и не отражают взгляды наших спонсоров. Кэрол Николс и Rust Foundation помогли с публикацией эксперимента. TRPL — это результат усердной работы многих людей до начала нашего эксперимента.

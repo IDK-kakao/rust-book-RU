@@ -2,7 +2,7 @@
 id = "0b8dbb4f-7c56-4b6e-8358-95c7b46f90c3"
 type = "ShortAnswer"
 prompt.prompt = """
-Consider the following program, showing the state of memory after the last line:
+Рассмотрим следующую программу, показывающую состояние памяти после последней строки:
 ```aquascope,interpreter
 #fn main() {
 let x = Box::new(0);
@@ -10,20 +10,20 @@ let y = Box::new(&x);`[]`
 #}
 ```
 
-If you wanted to copy out the number `0` through `y`, how many dereferences would you need to use? 
-Write your answer as a digit. For example, if the correct expression is `*y`, then the answer is 1. 
+Если вы хотите скопировать число `0` через `y`, сколько раз вам нужно использовать разыменование? 
+Запишите ответ в виде цифры. Например, если правильное выражение — `*y`, то ответ — 1.
 """
 answer.answer = "3"
 context = """
-`***y` is the correct expression. `y` has the type `Box<&Box<i32>>`. It is a heap pointer to a stack reference 
-to a heap pointer. Therefore `y` must be dereferenced three times, once for each layer of indirection.
+`***y` — правильное выражение. `y` имеет тип `Box<&Box<i32>>`. Это указатель на кучу на ссылку на стек на указатель на кучу. 
+Следовательно, `y` нужно разыменовать три раза, по одному для каждого уровня косвенности.
 """
 
 [[questions]]
 id = "7cf19153-3647-4afc-953a-f9392ddb96fb"
 type = "MultipleChoice"
 prompt.prompt = """
-Consider the following program, showing the state of memory after the last line:
+Рассмотрим следующую программу, показывающую состояние памяти после последней строки:
  
 ```aquascope,interpreter
 fn get_first(vr: &Vec<i32>) -> i32 {
@@ -37,15 +37,15 @@ fn main() {
 }
 ```
 
-Which of the following best explains why `v` is not deallocated after calling `get_first`?
+Какой из следующих вариантов лучше всего объясняет, почему `v` не освобождается после вызова `get_first`?
 """
-answer.answer = "`vr` is a reference which does not own the vector it points to"
+answer.answer = "`vr` является ссылкой, которая не владеет вектором, на который указывает"
 prompt.distractors = [
-  "`vr` is not mutated within `get_first`",
-  "`get_first` returns a value of type `i32`, not the vector itself",
-  "`v` is used after calling `get_first` in the `println`"
+  "`vr` не изменяется внутри `get_first`",
+  "`get_first` возвращает значение типа `i32`, а не сам вектор",
+  "`v` используется после вызова `get_first` в `println`"
 ]
 context = """
-References are non-owning pointers. Therefore passing `&v` to `get_first` does not move ownership of `v` into `get_first`,
-and subsequently `v` is not deallocated after `get_first` ends.
+Ссылки — это невладеющие указатели. Поэтому передача `&v` в `get_first` не передает владение `v` в `get_first`,
+и впоследствии `v` не освобождается после завершения `get_first`.
 """

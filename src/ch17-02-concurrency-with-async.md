@@ -1,34 +1,35 @@
-## Applying Concurrency with Async
+## Применение конкурентности с async
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="concurrency-with-async"></a>
 
-In this section, we’ll apply async to some of the same concurrency challenges
-we tackled with threads in chapter 16. Because we already talked about a lot of
-the key ideas there, in this section we’ll focus on what’s different between
-threads and futures.
+В этом разделе мы применим async к некоторым тем же задачам конкурентности,
+которые решали с помощью потоков в главе 16. Поскольку мы уже обсудили там
+многие ключевые идеи, в этом разделе мы сосредоточимся на различиях между
+потоками и futures.
 
-In many cases, the APIs for working with concurrency using async are very
-similar to those for using threads. In other cases, they end up being quite
-different. Even when the APIs _look_ similar between threads and async, they
-often have different behavior—and they nearly always have different performance
-characteristics.
+Во многих случаях API для работы с конкурентностью через async очень похожи на
+те, что используются с потоками. В других случаях они оказываются довольно
+разными. Даже когда API *выглядят* похожими между потоками и async, они часто
+имеют разное поведение — и почти всегда имеют разные характеристики
+производительности.
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="counting"></a>
 
-### Creating a New Task with `spawn_task`
+### Создание новой задачи с `spawn_task`
 
-The first operation we tackled in [Creating a New Thread with
-Spawn][thread-spawn]<!-- ignore --> was counting up on two separate threads.
-Let’s do the same using async. The `trpl` crate supplies a `spawn_task` function
-that looks very similar to the `thread::spawn` API, and a `sleep` function
-that is an async version of the `thread::sleep` API. We can use these together
-to implement the counting example, as shown in Listing 17-6.
+Первая операция, которую мы рассмотрели в [Создание нового потока с
+Spawn][thread-spawn]<!-- ignore -->, — это подсчёт в двух отдельных потоках.
+Давайте сделаем то же самое, используя async. Крейт `trpl` предоставляет
+функцию `spawn_task`, которая очень похожа на API `thread::spawn`, и функцию
+`sleep`, которая является асинхронной версией API `thread::sleep`. Мы можем
+использовать их вместе для реализации примера с подсчётом, как показано в
+Листинге 17-6.
 
-<Listing number="17-6" caption="Creating a new task to print one thing while the main task prints something else" file-name="src/main.rs">
+<Listing number="17-6" caption="Создание новой задачи для вывода одного сообщения, пока основная задача выводит что-то ещё" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-06/src/main.rs:all}}
@@ -36,21 +37,21 @@ to implement the counting example, as shown in Listing 17-6.
 
 </Listing>
 
-As our starting point, we set up our `main` function with `trpl::run` so that
-our top-level function can be async.
+В качестве отправной точки мы настраиваем функцию `main` с помощью `trpl::run`,
+чтобы наша верхнеуровневая функция могла быть async.
 
-> Note: From this point forward in the chapter, every example will include this
-> exact same wrapping code with `trpl::run` in `main`, so we’ll often skip it
-> just as we do with `main`. Don’t forget to include it in your code!
+> Примечание: Начиная с этого момента в главе каждый пример будет включать этот
+> точно такой же обёрточный код с `trpl::run` в `main`, поэтому мы часто будем
+> его пропускать, как и делаем с `main`. Не забывайте включать его в свой код!
 
-Then we write two loops within that block, each containing a `trpl::sleep` call,
-which waits for half a second (500 milliseconds) before sending the next
-message. We put one loop in the body of a `trpl::spawn_task` and the other in a
-top-level `for` loop. We also add an `await` after the `sleep` calls.
+Затем мы пишем два цикла внутри этого блока, каждый из которых содержит вызов
+`trpl::sleep`, который ждёт полсекунды (500 миллисекунд) перед отправкой
+следующего сообщения. Мы помещаем один цикл в тело `trpl::spawn_task`, а другой
+в верхнеуровневый цикл `for`. Мы также добавляем `await` после вызовов `sleep`.
 
-This code behaves similarly to the thread-based implementation—including the
-fact that you may see the messages appear in a different order in your own
-terminal when you run it:
+Этот код ведёт себя аналогично реализации на основе потоков — включая тот факт,
+что вы можете видеть, как сообщения появляются в вашем терминале в другом
+порядке при запуске:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -68,16 +69,17 @@ hi number 4 from the second task!
 hi number 5 from the first task!
 ```
 
-This version stops as soon as the `for` loop in the body of the main async block
-finishes, because the task spawned by `spawn_task` is shut down when the `main`
-function ends. If you want it to run all the way to the task’s completion, you
-will need to use a join handle to wait for the first task to complete. With
-threads, we used the `join` method to “block” until the thread was done running.
-In Listing 17-7, we can use `await` to do the same thing, because the task
-handle itself is a future. Its `Output` type is a `Result`, so we also unwrap it
-after awaiting it.
+Эта версия останавливается, как только цикл `for` в теле основного async-блока
+завершается, потому что задача, созданная `spawn_task`, завершается, когда
+функция `main` заканчивается. Если вы хотите, чтобы она работала до завершения
+задачи, вам нужно использовать handle соединения (join handle), чтобы дождаться
+завершения первой задачи. С потоками мы использовали метод `join`, чтобы
+"заблокироваться" до завершения потока. В Листинге 17-7 мы можем использовать
+`await` для того же самого, потому что handle задачи сам является future. Его
+тип `Output` — это `Result`, поэтому мы также разворачиваем (unwrap) его после
+ожидания (await).
 
-<Listing number="17-7" caption="Using `await` with a join handle to run a task to completion" file-name="src/main.rs">
+<Listing number="17-7" caption="Использование `await` с join handle для выполнения задачи до завершения" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-07/src/main.rs:handle}}
@@ -85,7 +87,7 @@ after awaiting it.
 
 </Listing>
 
-This updated version runs until _both_ loops finish.
+Эта обновлённая версия работает до завершения *обоих* циклов.
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -107,27 +109,28 @@ hi number 8 from the first task!
 hi number 9 from the first task!
 ```
 
-So far, it looks like async and threads give us the same basic outcomes, just
-with different syntax: using `await` instead of calling `join` on the join
-handle, and awaiting the `sleep` calls.
+Пока что кажется, что async и потоки дают нам те же основные результаты, просто
+с разным синтаксисом: использование `await` вместо вызова `join` на join handle
+и ожидание (await) вызовов `sleep`.
 
-The bigger difference is that we didn’t need to spawn another operating system
-thread to do this. In fact, we don’t even need to spawn a task here. Because
-async blocks compile to anonymous futures, we can put each loop in an async
-block and have the runtime run them both to completion using the `trpl::join`
-function.
+Более существенное различие в том, что нам не нужно было создавать ещё один
+операционный системный поток для этого. Фактически, нам даже не нужно создавать
+задачу здесь. Поскольку async-блоки компилируются в анонимные futures, мы можем
+поместить каждый цикл в async-блок и позволить рантайму выполнить оба до
+завершения, используя функцию `trpl::join`.
 
-In the section [Waiting for All Threads to Finishing Using `join`
-Handles][join-handles]<!-- ignore -->, we showed how to use the `join` method on
-the `JoinHandle` type returned when you call `std::thread::spawn`. The
-`trpl::join` function is similar, but for futures. When you give it two futures,
-it produces a single new future whose output is a tuple containing the output of
-each future you passed in once they _both_ complete. Thus, in Listing 17-8, we
-use `trpl::join` to wait for both `fut1` and `fut2` to finish. We do _not_ await
-`fut1` and `fut2` but instead the new future produced by `trpl::join`. We ignore
-the output, because it’s just a tuple containing two unit values.
+В разделе [Ожидание завершения всех потоков с помощью join
+handles][join-handles]<!-- ignore --> мы показали, как использовать метод
+`join` на типе `JoinHandle`, возвращаемом при вызове `std::thread::spawn`.
+Функция `trpl::join` похожа, но для futures. Когда вы передаёте ей два future,
+она производит один новый future, вывод (output) которого — это кортеж,
+содержащий вывод каждого переданного future после того, как они *оба*
+завершатся. Таким образом, в Листинге 17-8 мы используем `trpl::join`, чтобы
+дождаться завершения как `fut1`, так и `fut2`. Мы *не* ожидаем (await) `fut1` и
+`fut2`, а ожидаем новый future, произведённый `trpl::join`. Мы игнорируем вывод,
+потому что это просто кортеж, содержащий два значения типа unit.
 
-<Listing number="17-8" caption="Using `trpl::join` to await two anonymous futures" file-name="src/main.rs">
+<Listing number="17-8" caption="Использование `trpl::join` для ожидания двух анонимных futures" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-08/src/main.rs:join}}
@@ -135,7 +138,7 @@ the output, because it’s just a tuple containing two unit values.
 
 </Listing>
 
-When we run this, we see both futures run to completion:
+При запуске мы видим, что оба future выполняются до завершения:
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -157,43 +160,45 @@ hi number 8 from the first task!
 hi number 9 from the first task!
 ```
 
-Now, you’ll see the exact same order every time, which is very different from
-what we saw with threads. That is because the `trpl::join` function is _fair_,
-meaning it checks each future equally often, alternating between them, and never
-lets one race ahead if the other is ready. With threads, the operating system
-decides which thread to check and how long to let it run. With async Rust, the
-runtime decides which task to check. (In practice, the details get complicated
-because an async runtime might use operating system threads under the hood as
-part of how it manages concurrency, so guaranteeing fairness can be more work
-for a runtime—but it’s still possible!) Runtimes don’t have to guarantee
-fairness for any given operation, and they often offer different APIs to let you
-choose whether or not you want fairness.
+Теперь вы увидите *точно такой же* порядок каждый раз, что очень отличается от
+того, что мы видели с потоками. Это потому, что функция `trpl::join` является
+*справедливой* (fair), что означает, что она проверяет каждый future одинаково
+часто, чередуя их, и никогда не позволяет одному обогнать другой, если другой
+готов. С потоками операционная система решает, какой поток проверять и как долго
+ему позволять работать. С async Rust рантайм решает, какую задачу проверять.
+(На практике детали усложняются, потому что асинхронный рантайм может
+использовать операционные системные потоки под капотом как часть управления
+конкурентностью, поэтому гарантировать справедливость может быть более сложной
+задачей для рантайма — но это всё же возможно!) Рантаймы не обязаны гарантировать
+справедливость для любой данной операции, и они часто предлагают разные API,
+позволяющие выбрать, хотите ли вы справедливость или нет.
 
-Try some of these variations on awaiting the futures and see what they do:
+Попробуйте некоторые из этих вариаций ожидания futures и посмотрите, что они
+делают:
 
-- Remove the async block from around either or both of the loops.
-- Await each async block immediately after defining it.
-- Wrap only the first loop in an async block, and await the resulting future
-  after the body of second loop.
+- Удалите async-блок вокруг одного или обоих циклов.
+- Ожидайте (await) каждый async-блок сразу после его определения.
+- Оберните только первый цикл в async-блок и ожидайте (await) полученный future
+  после тела второго цикла.
 
-For an extra challenge, see if you can figure out what the output will be in
-each case _before_ running the code!
+Для дополнительного вызова попробуйте понять, каким будет вывод в каждом случае
+*до* запуска кода!
 
 <!-- Old headings. Do not remove or links may break. -->
 
 <a id="message-passing"></a>
 
-### Counting Up on Two Tasks Using Message Passing
+### Подсчёт в двух задачах с использованием передачи сообщений
 
-Sharing data between futures will also be familiar: we’ll use message passing
-again, but this time with async versions of the types and functions. We’ll take
-a slightly different path than we did in [Using Message Passing to Transfer Data
-Between Threads][message-passing-threads]<!-- ignore --> to illustrate some of
-the key differences between thread-based and futures-based concurrency. In
-Listing 17-9, we’ll begin with just a single async block—_not_ spawning a
-separate task as we spawned a separate thread.
+Обмен данными между futures тоже будет знаком: мы снова будем использовать
+передачу сообщений, но на этот раз с асинхронными версиями типов и функций.
+Мы возьмём немного другой путь, чем в [Использование передачи сообщений для
+передачи данных между потоками][message-passing-threads]<!-- ignore -->, чтобы
+проиллюстрировать некоторые ключевые различия между конкурентностью на основе
+потоков и на основе futures. В Листинге 17-9 мы начнём с одного async-блока —
+*не* создавая отдельную задачу, как мы создавали отдельный поток.
 
-<Listing number="17-9" caption="Creating an async channel and assigning the two halves to `tx` and `rx`" file-name="src/main.rs">
+<Listing number="17-9" caption="Создание асинхронного канала и присвоение двух половин `tx` и `rx`" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-09/src/main.rs:channel}}
@@ -201,40 +206,42 @@ separate task as we spawned a separate thread.
 
 </Listing>
 
-Here, we use `trpl::channel`, an async version of the multiple-producer,
-single-consumer channel API we used with threads back in Chapter 16. The async
-version of the API is only a little different from the thread-based version: it
-uses a mutable rather than an immutable receiver `rx`, and its `recv` method
-produces a future we need to await rather than producing the value directly. Now
-we can send messages from the sender to the receiver. Notice that we don’t have
-to spawn a separate thread or even a task; we merely need to await the `rx.recv`
-call.
+Здесь мы используем `trpl::channel`, асинхронную версию API канала
+многопроизводитель-однопотребитель, который мы использовали с потоками в главе
+16. Асинхронная версия API отличается от версии на основе потоков лишь немного:
+она использует изменяемого (mutable), а не неизменяемого (immutable) приёмника
+`rx`, и её метод `recv` производит future, который нам нужно ожидать (await),
+вместо того чтобы производить значение напрямую. Теперь мы можем отправлять
+сообщения от отправителя к получателю. Обратите внимание, что нам не нужно
+создавать отдельный поток или даже задачу; нам merely нужно ожидать (await) вызов
+`rx.recv`.
 
-The synchronous `Receiver::recv` method in `std::mpsc::channel` blocks until
-it receives a message. The `trpl::Receiver::recv` method does not, because it
-is async. Instead of blocking, it hands control back to the runtime until either
-a message is received or the send side of the channel closes. By contrast, we
-don’t await the `send` call, because it doesn’t block. It doesn’t need to,
-because the channel we’re sending it into is unbounded.
+Синхронный метод `Receiver::recv` в `std::mpsc::channel` блокируется до получения
+сообщения. Метод `trpl::Receiver::recv` не блокируется, потому что он async.
+Вместо блокировки он возвращает управление рантайму до тех пор, либо пока не
+будет получено сообщение, либо пока отправительская сторона канала не закроется.
+В отличие от этого, мы не ожидаем (await) вызов `send`, потому что он не
+блокируется. Ему не нужно блокироваться, потому что канал, в который мы его
+отправляем, неограниченный (unbounded).
 
-> Note: Because all of this async code runs in an async block in a `trpl::run`
-> call, everything within it can avoid blocking. However, the code _outside_ it
-> will block on the `run` function returning. That’s the whole point of the
-> `trpl::run` function: it lets you _choose_ where to block on some set of async
-> code, and thus where to transition between sync and async code. In most async
-> runtimes, `run` is actually named `block_on` for exactly this reason.
+> Примечание: Поскольку весь этот async-код выполняется в async-блоке в вызове
+> `trpl::run`, всё внутри него может избегать блокировок. Однако код *вне* его
+> будет блокироваться на возврате функции `run`. В этом и есть вся суть функции
+> `trpl::run`: она позволяет вам *выбрать*, где блокироваться на некотором наборе
+> async-кода, и, следовательно, где выполнять переход между sync и async кодом.
+> В большинстве async-рантаймов `run` на самом деле называется `block_on` именно
+> по этой причине.
 
-Notice two things about this example. First, the message will arrive right away.
-Second, although we use a future here, there’s no concurrency yet. Everything
-in the listing happens in sequence, just as it would if there were no futures
-involved.
+Обратите внимание на две вещи в этом примере. Во-первых, сообщение приходит
+сразу. Во-вторых, хотя мы используем future здесь, конкуренции (concurrency) ещё
+нет. Всё в листинге происходит последовательно, как если бы futures не было.
 
-Let’s address the first part by sending a series of messages and sleeping in
-between them, as shown in Listing 17-10.
+Давайте рассмотрим первую часть, отправив серию сообщений и поставив задержку
+(sleep) между ними, как показано в Листинге 17-10.
 
 <!-- We cannot test this one because it never stops! -->
 
-<Listing number="17-10" caption="Sending and receiving multiple messages over the async channel and sleeping with an `await` between each message" file-name="src/main.rs">
+<Listing number="17-10" caption="Отправка и получение нескольких сообщений через асинхронный канал и засыпание с `await` между каждым сообщением" file-name="src/main.rs">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-10/src/main.rs:many-messages}}
@@ -242,62 +249,62 @@ between them, as shown in Listing 17-10.
 
 </Listing>
 
-In addition to sending the messages, we need to receive them. In this case,
-because we know how many messages are coming in, we could do that manually by
-calling `rx.recv().await` four times. In the real world, though, we’ll generally
-be waiting on some _unknown_ number of messages, so we need to keep waiting
-until we determine that there are no more messages.
+Помимо отправки сообщений, нам нужно их получать. В этом случае, поскольку мы
+знаем, сколько сообщений ожидается, мы могли бы сделать это вручную, вызвав
+`rx.recv().await` четыре раза. Однако в реальном мире мы обычно будем ждать
+*неизвестное* количество сообщений, поэтому нам нужно продолжать ждать, пока не
+определим, что больше сообщений нет.
 
-In Listing 16-10, we used a `for` loop to process all the items received from a
-synchronous channel. Rust doesn’t yet have a way to write a `for` loop over an
-_asynchronous_ series of items, however, so we need to use a loop we haven’t
-seen before: the `while let` conditional loop. This is the loop version of the
-`if let` construct we saw back in the section [Concise Control Flow with `if
-let` and `let else`][if-let]<!-- ignore -->. The loop will continue executing as
-long as the pattern it specifies continues to match the value.
+В Листинге 16-10 мы использовали цикл `for` для обработки всех элементов,
+полученных из синхронного канала. Однако у Rust пока нет способа написать цикл
+`for` по *асинхронной* серии элементов, поэтому нам нужно использовать цикл,
+который мы раньше не видели: условный цикл `while let`. Это версия цикла для
+конструкции `if let`, которую мы видели в разделе [Лаконичный поток управления с
+`if let` и `let else`][if-let]<!-- ignore -->. Цикл будет продолжаться выполнения,
+пока шаблон (pattern), который он указывает, продолжает соответствовать значению.
 
-The `rx.recv` call produces a future, which we await. The runtime will pause the
-future until it is ready. Once a message arrives, the future will resolve to
-`Some(message)` as many times as a message arrives. When the channel closes,
-regardless of whether _any_ messages have arrived, the future will instead
-resolve to `None` to indicate that there are no more values and thus we should
-stop polling—that is, stop awaiting.
+Вызов `rx.recv` производит future, который мы ожидаем (await). Рантайм приостановит
+future, пока он не будет готов. Как только сообщение arrives, future разрешится
+(resolve) в `Some(message)` столько раз, сколько arrives сообщений. Когда канал
+закрывается, независимо от того, *прибыло* ли хоть одно сообщение, future вместо
+этого разрешится в `None`, чтобы указать, что больше нет значений и, следовательно,
+нам следует прекратить опрос (polling) — то есть прекратить ожидание (await).
 
-The `while let` loop pulls all of this together. If the result of calling
-`rx.recv().await` is `Some(message)`, we get access to the message and we can
-use it in the loop body, just as we could with `if let`. If the result is
-`None`, the loop ends. Every time the loop completes, it hits the await point
-again, so the runtime pauses it again until another message arrives.
+Цикл `while let` объединяет всё это. Если результат вызова `rx.recv().await` —
+`Some(message)`, мы получаем доступ к сообщению и можем использовать его в теле
+цикла, как и с `if let`. Если результат — `None`, цикл завершается. Каждый раз,
+когда цикл завершается, он снова достигает точки ожидания (await point), поэтому
+рантайм снова приостанавливает его до прибытия следующего сообщения.
 
-The code now successfully sends and receives all of the messages. Unfortunately,
-there are still a couple of problems. For one thing, the messages do not arrive
-at half-second intervals. They arrive all at once, 2 seconds (2,000
-milliseconds) after we start the program. For another, this program never exits!
-Instead, it waits forever for new messages. You will need to shut it down using
+Теперь код успешно отправляет и получает все сообщения. К сожалению, есть ещё
+несколько проблем. Во-первых, сообщения не прибывают с интервалом в полсекунды.
+Они прибывают все сразу, через 2 секунды (2000 миллисекунд) после запуска
+программы. Во-вторых, эта программа никогда не завершается! Вместо этого она
+ждет вечно новых сообщений. Вам нужно будет завершить её, используя клавиши
 <span class="keystroke">ctrl-c</span>.
 
-Let’s start by examining why the messages come in all at once after the full
-delay, rather than coming in with delays between each one. Within a given async
-block, the order in which `await` keywords appear in the code is also the order
-in which they’re executed when the program runs.
+Давайте начнём с изучения того, почему сообщения приходят все сразу после полной
+задержки, а не с задержкой между каждым. В пределах данного async-блока порядок,
+в котором ключевые слова `await` появляются в коде, — это также порядок, в котором
+они выполняются при запуске программы.
 
-There’s only one async block in Listing 17-10, so everything in it runs
-linearly. There’s still no concurrency. All the `tx.send` calls happen,
-interspersed with all of the `trpl::sleep` calls and their associated await
-points. Only then does the `while let` loop get to go through any of the `await`
-points on the `recv` calls.
+В Листинге 17-10 есть только один async-блок, поэтому всё в нём выполняется
+линейно. Конкуренции (concurrency) всё ещё нет. Все вызовы `tx.send` происходят,
+вперемешку со всеми вызовами `trpl::sleep` и связанными с ними точками ожидания
+(await points). Только тогда цикл `while let` получает пройти через какие-либо из
+точек ожидания (await points) на вызовах `recv`.
 
-To get the behavior we want, where the sleep delay happens between each message,
-we need to put the `tx` and `rx` operations in their own async blocks, as shown
-in Listing 17-11. Then the runtime can execute each of them separately using
-`trpl::join`, just as in the counting example. Once again, we await the result
-of calling `trpl::join`, not the individual futures. If we awaited the
-individual futures in sequence, we would just end up back in a sequential
-flow—exactly what we’re trying _not_ to do.
+Чтобы получить желаемое поведение, когда задержка сна происходит между каждым
+сообщением, нам нужно поместить операции `tx` и `rx` в их собственные async-блоки,
+как показано в Листинге 17-11. Затем рантайм может выполнить каждый из них
+отдельно, используя `trpl::join`, как в примере с подсчётом. Опять же, мы ожидаем
+(await) результат вызова `trpl::join`, а не отдельные futures. Если бы мы
+ожидали (await) отдельные futures последовательно, мы просто вернулись бы к
+последовательному потоку — именно того, чего мы *не* хотим.
 
 <!-- We cannot test this one because it never stops! -->
 
-<Listing number="17-11" caption="Separating `send` and `recv` into their own `async` blocks and awaiting the futures for those blocks" file-name="src/main.rs">
+<Listing number="17-11" caption="Разделение `send` и `recv` в их собственные блоки `async` и ожидание (await) futures для этих блоков" file-name="src/main.rs">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-11/src/main.rs:futures}}
@@ -305,47 +312,42 @@ flow—exactly what we’re trying _not_ to do.
 
 </Listing>
 
-With the updated code in Listing 17-11, the messages get printed at
-500-millisecond intervals, rather than all in a rush after 2 seconds.
+С обновлённым кодом в Листинге 17-11 сообщения выводятся с интервалом в
+500 миллисекунд, а не все сразу через 2 секунды.
 
-The program still never exits, though, because of the way the `while let` loop
-interacts with `trpl::join`:
+Программа всё ещё никогда не завершается, однако, из-за того, как цикл `while let`
+взаимодействует с `trpl::join`:
 
-- The future returned from `trpl::join` completes only once _both_ futures
-  passed to it have completed.
-- The `tx` future completes once it finishes sleeping after sending the last
-  message in `vals`.
-- The `rx` future won’t complete until the `while let` loop ends.
-- The `while let` loop won’t end until awaiting `rx.recv` produces `None`.
-- Awaiting `rx.recv` will return `None` only once the other end of the channel
-  is closed.
-- The channel will close only if we call `rx.close` or when the sender side,
-  `tx`, is dropped.
-- We don’t call `rx.close` anywhere, and `tx` won’t be dropped until the
-  outermost async block passed to `trpl::run` ends.
-- The block can’t end because it is blocked on `trpl::join` completing, which
-  takes us back to the top of this list.
+- Future, возвращаемый из `trpl::join`, завершается только после того, как *оба*
+  future, переданные ему, завершатся.
+- Future `tx` завершается после того, как он заканчивает спать после отправки
+  последнего сообщения в `vals`.
+- Future `rx` не завершится, пока не завершится цикл `while let`.
+- Цикл `while let` не закончится, пока ожидание (await) `rx.recv` не вернёт `None`.
+- Ожидание (await) `rx.recv` вернёт `None` только после того, как другой конец
+  канала будет закрыт.
+- Канал закроется только если мы вызовем `rx.close` или когда отправительская
+  сторона, `tx`, будет удалена (dropped).
+- Мы нигде не вызываем `rx.close`, и `tx` не будет удалён до конца внешнего
+  async-блока, переданного в `trpl::run`.
+- Блок не может закончиться, потому что он заблокирован на завершении `trpl::join`,
+  что возвращает нас в начало этого списка.
 
-We could manually close `rx` by calling `rx.close` somewhere, but that doesn’t
-make much sense. Stopping after handling some arbitrary number of messages would
-make the program shut down, but we could miss messages. We need some other way
-to make sure that `tx` gets dropped _before_ the end of the function.
+Мы могли бы вручную закрыть `rx`, вызвав `rx.close` где-то, но это не имеет
+большого смысла. Остановка после обработки некоторого произвольного количества
+сообщений заставила бы программу завершиться, но мы могли бы пропустить сообщения.
+Нам нужен другой способ убедиться, что `tx` удаляется *до* конца функции.
 
-Right now, the async block where we send the messages only borrows `tx` because
-sending a message doesn’t require ownership, but if we could move `tx` into that
-async block, it would be dropped once that block ends. In the Chapter 13 section
-[Capturing References or Moving Ownership][capture-or-move]<!-- ignore -->, you
-learned how to use the `move` keyword with closures, and, as discussed in the
-Chapter 16 section [Using `move` Closures with Threads][move-threads]<!-- ignore
--->, we often need to move data into closures when working with threads. The
-same basic dynamics apply to async blocks, so the `move` keyword works with
-async blocks just as it does with closures.
+Сейчас async-блок, где мы отправляем сообщения, только заимствует (borrows) `tx`,
+потому что отправка сообщения не требует владения (ownership), но если бы мы
+могли переместить (move) `tx` в этот async-блок, он был бы удалён после завершения
+этого блока. В разделе главы 13 [Захват ссылок или перемещение владения][capture-or-move]<!-- ignore --> вы узнали, как использовать ключевое слово `move` с замыканиями, и, как обсуждалось в разделе главы 16 [Использование замыканий `move` с потоками][move-threads]<!-- ignore -->, нам часто нужно перемещать данные в замыкания при работе с потоками. Те же самые основные динамики применимы к async-блокам, поэтому ключевое слово `move` работает с async-блоками так же, как и с замыканиями.
 
-In Listing 17-12, we change the block used to send messages from `async` to
-`async move`. When we run _this_ version of the code, it shuts down gracefully
-after the last message is sent and received.
+В Листинге 17-12 мы меняем блок, используемый для отправки сообщений, с `async` на
+`async move`. Когда мы запускаем *эту* версию кода, она завершается корректно
+после отправки и получения последнего сообщения.
 
-<Listing number="17-12" caption="A  revision of the code from Listing 17-11 that correctly shuts down when complete" file-name="src/main.rs">
+<Listing number="17-12" caption="Пересмотр кода из Листинга 17-11, который корректно завершается по окончании" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-12/src/main.rs:with-move}}
@@ -353,11 +355,11 @@ after the last message is sent and received.
 
 </Listing>
 
-This async channel is also a multiple-producer channel, so we can call `clone`
-on `tx` if we want to send messages from multiple futures, as shown in Listing
-17-13.
+Этот асинхронный канал также является каналом с несколькими производителями, так
+что мы можем вызвать `clone` на `tx`, если хотим отправлять сообщения из нескольких
+futures, как показано в Листинге 17-13.
 
-<Listing number="17-13" caption="Using multiple producers with async blocks" file-name="src/main.rs">
+<Listing number="17-13" caption="Использование нескольких производителей с async-блоками" file-name="src/main.rs">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-13/src/main.rs:here}}
@@ -365,21 +367,21 @@ on `tx` if we want to send messages from multiple futures, as shown in Listing
 
 </Listing>
 
-First, we clone `tx`, creating `tx1` outside the first async block. We move
-`tx1` into that block just as we did before with `tx`. Then, later, we move the
-original `tx` into a _new_ async block, where we send more messages on a
-slightly slower delay. We happen to put this new async block after the async
-block for receiving messages, but it could go before it just as well. The key is
-the order in which the futures are awaited, not in which they’re created.
+Сначала мы клонируем `tx`, создавая `tx1` вне первого async-блока. Мы перемещаем
+(move) `tx1` в этот блок, как и делали раньше с `tx`. Затем, позже, мы перемещаем
+оригинальный `tx` в *новый* async-блок, где отправляем больше сообщений с немного
+более медленной задержкой. Мы помещаем этот новый async-блок после async-блока для
+получения сообщений, но он мог бы быть и перед ним. Ключевым является порядок, в
+котором futures ожидаются (awaited), а не порядок, в котором они создаются.
 
-Both of the async blocks for sending messages need to be `async move` blocks so
-that both `tx` and `tx1` get dropped when those blocks finish. Otherwise, we’ll
-end up back in the same infinite loop we started out in. Finally, we switch from
-`trpl::join` to `trpl::join3` to handle the additional future.
+Оба async-блока для отправки сообщений должны быть блоками `async move`, чтобы и
+`tx`, и `tx1` удалялись при завершении этих блоков. В противном случае мы вернёмся
+к тому же бесконечному циклу, с которого начинали. Наконец, мы переходим с
+`trpl::join` на `trpl::join3` для обработки дополнительного future.
 
-Now we see all the messages from both sending futures, and because the sending
-futures use slightly different delays after sending, the messages are also
-received at those different intervals.
+Теперь мы видим все сообщения из обоих futures отправки, и поскольку futures
+отправки используют немного разные задержки после отправки, сообщения также
+получаются с этими разными интервалами.
 
 <!-- Not extracting output because changes to this output aren't significant;
 the changes are likely to be due to the threads running differently rather than
@@ -396,8 +398,9 @@ received 'for'
 received 'you'
 ```
 
-This is a good start, but it limits us to just a handful of futures: two with
-`join`, or three with `join3`. Let’s see how we might work with more futures.
+Это хорошее начало, но оно ограничивает нас лишь небольшим количеством futures:
+двумя с `join` или тремя с `join3`. Давайте посмотрим, как мы можем работать с
+большим количеством futures.
 
 {{#quiz ../quizzes/async-02-concurrency-with-async.toml}}
 

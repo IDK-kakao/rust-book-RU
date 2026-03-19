@@ -1,20 +1,19 @@
-## Ownership Inventory #1
+## Инвентаризация владения #1
 
-The Ownership Inventory is a series of quizzes that check your understanding of ownership in real-world scenarios. These scenarios are inspired by common StackOverflow questions about Rust. You can use these questions to test how well you understand ownership so far.
+«Инвентаризация владения» — это серия вопросов, проверяющих ваше понимание владения в реальных сценариях. Эти сценарии вдохновлены распространёнными вопросами о Rust на StackOverflow. Вы можете использовать эти вопросы, чтобы проверить, насколько хорошо вы понимаете владение на данный момент.
 
-### A new technology: the in-browser IDE
+### Новая технология: веб-среда разработки
 
-These questions will involve Rust programs which use functions you haven't seen before. Therefore we will use an experimental technology that supports IDE features in the browser. The IDE lets you get information about unfamiliar functions and types. For example, try doing the following actions in the program below:
+Эти вопросы будут касаться программ на Rust, которые используют функции, которые вы ещё не видели. Поэтому мы используем экспериментальную технологию, поддерживающую функции IDE в браузере. Среда разработки позволяет получать информацию о незнакомых функциях и типах. Например, попробуйте выполнить следующие действия в программе ниже:
 
-* Hover your mouse over `replace` to see its type and description.
-* Hover your mouse over `s2` to see its inferred type.
+* Наведите курсор мыши на `replace`, чтобы увидеть его тип и описание.
+* Наведите курсор мыши на `s2`, чтобы увидеть его выведенный тип.
 
 ---------
 
-
 <pre>
 <code class="ide">
-/// Turns a string into a far more exciting string
+/// Превращает строку в гораздо более захватывающую строку
 fn make_exciting(s: &str) -> String {
   let s2 = s.replace(".", "!");
   let s3 = s2.replace("?", "‽");
@@ -25,16 +24,16 @@ fn make_exciting(s: &str) -> String {
 
 ---------
 
-A few important caveats about this experimental technology:
+Несколько важных оговорок об этой экспериментальной технологии:
 
-**PLATFORM COMPATIBILITY:** the in-browser IDE does not work on touch-screens. The in-browser IDE has only been tested to work on Google Chrome 109 and Firefox 107. It might not work in older versions of Safari.
+**СОВМЕСТИМОСТЬ С ПЛАТФОРМАМИ:** веб-среда разработки не работает на сенсорных экранах. Она была протестирована только в Google Chrome 109 и Firefox 107. Она может не работать в более старых версиях Safari.
 
-**MEMORY USAGE:** the in-browser IDE uses a [WebAssembly](https://rustwasm.github.io/book/) build of [rust-analyzer](https://github.com/rust-lang/rust-analyzer), which can take up a fair amount of memory. Each instance of the IDE appears to take around ~300 MB. (Note: we have also received some reports of >10GB memory usage.)
+**ИСПОЛЬЗОВАНИЕ ПАМЯТИ:** веб-среда разработки использует сборку [WebAssembly](https://rustwasm.github.io/book/) [rust-analyzer](https://github.com/rust-lang/rust-analyzer), которая может занимать значительный объём памяти. Каждый экземпляр среды, по-видимому, занимает около ~300 МБ. (Примечание: мы также получили некоторые сообщения об использовании >10 ГБ памяти.)
 
-**SCROLLING:** the in-browser IDE will "eat" your cursor if your cursor intersects with the editor while scrolling. If you're having trouble scrolling the page, try moving your cursor onto the rightmost scrollbar.
+**ПРОКРУТКА:** веб-среда разработки «съест» ваш курсор, если он пересекается с редактором при прокрутке. Если у вас возникают проблемы с прокруткой страницы, попробуйте переместить курсор на самую правую полосу прокрутки.
 
-**LOAD TIMES:** the IDE may take up to 15 seconds to initialize for a new program. It will say "Loading..." as you interact with code in the editor.
+**ВРЕМЯ ЗАГРУЗКИ:** среда может занимать до 15 секунд для инициализации новой программы. Она будет отображать «Загрузка...», пока вы взаимодействуете с кодом в редакторе.
 
-### The Quiz
+### Вопросы
 
 {{#quiz ../quizzes/ch06-04-inventory.toml}}

@@ -2,15 +2,15 @@
 id = "a4680619-9533-4cbb-a785-7b73570168af"
 type = "MultipleChoice"
 prompt.prompt = """
-Which of the following aspects of object-oriented programming does Rust implement?
+Какие из перечисленных аспектов объектно-ориентированного программирования реализует Rust?
 """
 answer.answer = [
-    "Objects with methods",
-    "Encapsulation of private data",
+    "Объекты (структуры) с методами",
+    "Инкапсуляция приватных данных",
 ]
 prompt.distractors = [
-    "Inheritance of superclass methods"
+    "Наследование методов суперкласса"
 ]
 context = """
-Rust contains objects (i.e. structs) and encapsulation (via the `pub` keyword), but not inheritance.
+Rust содержит объекты (т.е. структуры) и инкапсуляцию (через ключевое слово `pub`), но не поддерживает наследование.
 """

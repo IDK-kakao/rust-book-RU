@@ -2,9 +2,9 @@
 id = "d19f9e83-d4c2-41d5-9fc7-81db5135eb1e"
 type = "MultipleChoice"
 prompt.prompt = """
-In the running example from this section, a blog post could have one of three states: `Draft`, `PendingReview`, and `Published`. In the example, each state was represented as a struct, and state transitions was represented as trait methods returning trait objects.
+В примере из этого раздела у записи в блоге могло быть одно из трёх состояний: `Draft`, `PendingReview` и `Published`. В примере каждое состояние было представлено как структура, а переходы между состояниями — как методы типажа, возвращающие объекты типажа.
 
-An alternative implementation could represent the states as an enum, like this:
+Альтернативная реализация могла бы представить состояния как перечисление, например:
 
 ```
 enum BlogState {
@@ -25,29 +25,22 @@ impl Post {
 }
 ```
 
-Which of the following are good reasons to prefer the struct/trait representation over the enum representation?
+Какие из перечисленных причин являются вескими для предпочтения представления на основе структур/типажей перед представлением на основе перечисления?
 """
 answer.answer = [
-    "An API client could add a new state to the system",
-    "Adding a new state does not require modifying methods on every other state"
+    "Клиент API может добавить новое состояние в систему",
+    "Добавление нового состояния не требует изменения методов для каждого другого состояния"
 ]
 prompt.distractors = [
-    "The use of `match` is slower at runtime than dynamic dispatch",
-    "An API client could add a new method for all states in the system"
+    "Использование `match` работает медленнее, чем динамическая диспетчеризация",
+    "Клиент API может добавить новый метод для всех состояний в системе"
 ]
 context = """
-The struct/trait approach is extensible in the sense that an API client could potentially
-create a new state (such as `Retracted`) without changing the core API functionality. When
-adding this state, the methods for other states do not need to be changed. Whereas with enums,
-a client cannot add a new branch to the enum. Moreover, all `match` expressions must be updated
-when a state is added.
+Подход на основе структур/типажей является расширяемым в том смысле, что клиент API потенциально может создать новое состояние (например, `Retracted`), не изменяя базовую функциональность API. При добавлении этого состояния методы для других состояний менять не нужно. В то время как с перечислениями клиент не может добавить новую ветвь в перечисление. Более того, все выражения `match` должны быть обновлены при добавлении состояния.
 
-A `match` is not likely to be slower than dynamic dispatch. A match is a simple branch based on
-an enum's tag, while dynamic dispatch requires a layer of indirection through a trait
-object's virtual table with non-inlined function calls.
+`match` вряд ли будет работать медленнее, чем динамическая диспетчеризация. `match` — это простая ветвление на основе тега перечисления, в то время как динамическая диспетчеризация требует слоя косвенности через виртуальную таблицу объекта типажа с неинлайнированными вызовами функций.
 
-An API client cannot add a new *method* for existing states in the struct/trait approach, they 
-can only add new states. The methods are fixed by the API author's trait definition. Note that you could add a new method which only builds on existing methods via extension traits, such as:
+Клиент API не может добавить новый *метод* для существующих состояний в подходе на основе структур/типажей, он может только добавлять новые состояния. Методы фиксированы определением типажа автора API. Обратите внимание, что вы могли бы добавить новый метод, который строится только на существующих методах, через расширяющие типажи, например:
 
 ```
 trait StateExt {
@@ -61,5 +54,5 @@ impl<S: State> StateExt for S {
 }
 ```
 
-But these extensions cannot read the private data of the states.
+Но такие расширения не могут читать приватные данные состояний.
 """

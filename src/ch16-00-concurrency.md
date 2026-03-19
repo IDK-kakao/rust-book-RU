@@ -1,49 +1,16 @@
-# Fearless Concurrency
+# Безопасная конкурентность
 
-Handling concurrent programming safely and efficiently is another of Rust’s
-major goals. _Concurrent programming_, in which different parts of a program
-execute independently, and _parallel programming_, in which different parts of
-a program execute at the same time, are becoming increasingly important as more
-computers take advantage of their multiple processors. Historically,
-programming in these contexts has been difficult and error prone. Rust hopes to
-change that.
+Обеспечение безопасной и эффективной работы с конкурентным программированием — ещё одна из главных целей Rust. _Конкурентное программирование_, при котором разные части программы выполняются независимо, и _параллельное программирование_, при котором разные части программы выполняются одновременно, становятся всё более важными по мере того, как компьютеры всё чаще используют несколько процессоров. Исторически программирование в таких контекстах было сложным и подверженным ошибкам. Rust надеется изменить это.
 
-Initially, the Rust team thought that ensuring memory safety and preventing
-concurrency problems were two separate challenges to be solved with different
-methods. Over time, the team discovered that the ownership and type systems are
-a powerful set of tools to help manage memory safety _and_ concurrency
-problems! By leveraging ownership and type checking, many concurrency errors
-are compile-time errors in Rust rather than runtime errors. Therefore, rather
-than making you spend lots of time trying to reproduce the exact circumstances
-under which a runtime concurrency bug occurs, incorrect code will refuse to
-compile and present an error explaining the problem. As a result, you can fix
-your code while you’re working on it rather than potentially after it has been
-shipped to production. We’ve nicknamed this aspect of Rust _fearless_
-_concurrency_. Fearless concurrency allows you to write code that is free of
-subtle bugs and is easy to refactor without introducing new bugs.
+Изначально команда Rust считала, что обеспечение безопасности памяти и предотвращение проблем с конкурентностью — это две отдельные задачи, требующие разных методов. Со временем команда обнаружила, что система владения и система типов представляют собой мощный набор инструментов для управления как безопасностью памяти, так и проблемами конкурентности! Благодаря использованию владения и проверки типов многие ошибки конкурентности в Rust являются ошибками времени компиляции, а не времени выполнения. Поэтому, вместо того чтобы тратить много времени на попытки воспроизвести точные обстоятельства возникновения ошибки конкурентности во время выполнения, некорректный код просто не скомпилируется и выдаст ошибку с объяснением проблемы. В результате вы можете исправить код в процессе работы над ним, а не потенциально после его отправки в продакшен. Мы назвали этот аспект Rust _безопасной_ _конкурентностью_ (fearless concurrency). Безопасная конкурентность позволяет писать код, свободный от тонких ошибок, и легко рефакторить его, не внося новых ошибок.
 
-> Note: For simplicity’s sake, we’ll refer to many of the problems as
-> _concurrent_ rather than being more precise by saying _concurrent and/or
-> parallel_. For this chapter, please mentally substitute _concurrent
-> and/or parallel_ whenever we use _concurrent_. In the next chapter, where the
-> distinction matters more, we’ll be more specific.
+> Примечание: Для простоты мы будем называть многие проблемы _конкурентными_, а не уточнять, _конкурентные и/или параллельные_. В этой главе, пожалуйста, мысленно заменяйте _конкурентные и/или параллельные_ каждый раз, когда мы используем _конкурентные_. В следующей главе, где различие важнее, мы будем более конкретны.
 
-Many languages are dogmatic about the solutions they offer for handling
-concurrent problems. For example, Erlang has elegant functionality for
-message-passing concurrency but has only obscure ways to share state between
-threads. Supporting only a subset of possible solutions is a reasonable
-strategy for higher-level languages, because a higher-level language promises
-benefits from giving up some control to gain abstractions. However, lower-level
-languages are expected to provide the solution with the best performance in any
-given situation and have fewer abstractions over the hardware. Therefore, Rust
-offers a variety of tools for modeling problems in whatever way is appropriate
-for your situation and requirements.
+Многие языки догматичны в отношении решений, которые они предлагают для решения проблем конкурентности. Например, Erlang имеет элегантную функциональность для конкурентности на основе передачи сообщений, но имеет лишь запутанные способы разделения состояния между потоками. Поддержка только подмножества возможных решений — это разумная стратегия для языков более высокого уровня, поскольку такой язык обещает выгоды от отказа от части контроля ради получения абстракций. Однако от языков более низкого уровня ожидают, что они предоставят решение с наилучшей производительностью в любой данной ситуации и имеют меньше абстракций над аппаратным обеспечением. Поэтому Rust предлагает разнообразные инструменты для моделирования проблем любым подходящим для вашей ситуации и требований способом.
 
-Here are the topics we’ll cover in this chapter:
+Вот темы, которые мы рассмотрим в этой главе:
 
-- How to create threads to run multiple pieces of code at the same time
-- _Message-passing_ concurrency, where channels send messages between threads
-- _Shared-state_ concurrency, where multiple threads have access to some piece
-  of data
-- The `Sync` and `Send` traits, which extend Rust’s concurrency guarantees to
-  user-defined types as well as types provided by the standard library
+- Как создавать потоки для одновременного выполнения нескольких фрагментов кода
+- _Конкурентность на основе передачи сообщений_, при которой каналы отправляют сообщения между потоками
+- _Конкурентность на основе разделяемого состояния_, при которой несколько потоков имеют доступ к некоторому фрагменту данных
+- Типажи `Sync` и `Send`, которые распространяют гарантии конкурентности Rust на пользовательские типы, а также на типы, предоставляемые стандартной библиотекой

@@ -1,57 +1,25 @@
-## Appendix E - Editions
+## Приложение E — Издания
 
-In Chapter 1, you saw that `cargo new` adds a bit of metadata to your
-_Cargo.toml_ file about an edition. This appendix talks about what that means!
+В Главе 1 вы видели, что `cargo new` добавляет в ваш файл _Cargo.toml_ метаданные об издании. Это приложение объясняет, что это значит!
 
-The Rust language and compiler have a six-week release cycle, meaning users get
-a constant stream of new features. Other programming languages release larger
-changes less often; Rust releases smaller updates more frequently. After a
-while, all of these tiny changes add up. But from release to release, it can be
-difficult to look back and say, “Wow, between Rust 1.10 and Rust 1.31, Rust has
-changed a lot!”
+Язык Rust и компилятор имеют шестинедельный цикл выпуска, что означает постоянный поток новых функций для пользователей. Другие языки программирования выпускают крупные изменения реже; Rust выпускает более мелкие обновления чаще. Со временем все эти мелкие изменения складываются воедино. Но от выпуска к выпуску может быть трудно оглянуться назад и сказать: «Вау, между Rust 1.10 и Rust 1.31 Rust сильно изменился!»
 
-Every three years or so, the Rust team produces a new Rust _edition_. Each
-edition brings together the features that have landed into a clear package with
-fully updated documentation and tooling. New editions ship as part of the usual
-six-week release process.
+Примерно каждые три года команда Rust выпускает новое _издание_ Rust. Каждое издание объединяет появившиеся функции в чёткий пакет с полностью обновлённой документацией и инструментарием. Новые издания поставляются в рамках обычного шестинедельного процесса выпуска.
 
-Editions serve different purposes for different people:
+Издания служат разным целям для разных людей:
 
-- For active Rust users, a new edition brings together incremental changes into
-  an easy-to-understand package.
-- For non-users, a new edition signals that some major advancements have
-  landed, which might make Rust worth another look.
-- For those developing Rust, a new edition provides a rallying point for the
-  project as a whole.
+*   Для активных пользователей Rust новое издание объединяет постепенные изменения в легко понятный пакет.
+*   Для тех, кто не использует Rust, новое издание сигнализирует, что произошли некоторые крупные улучшения, которые могут сделать Rust достойным повторного внимания.
+*   Для разработчиков Rust новое издание предоставляет объединяющую идею для всего проекта.
 
-At the time of this writing, four Rust editions are available: Rust 2015, Rust
-2018, Rust 2021, and Rust 2024. This book is written using Rust 2024 edition
-idioms.
+На момент написания доступны четыре издания Rust: Rust 2015, Rust 2018, Rust 2021 и Rust 2024. Эта книга написана с использованием идиом издания Rust 2024.
 
-The `edition` key in _Cargo.toml_ indicates which edition the compiler should
-use for your code. If the key doesn’t exist, Rust uses `2015` as the edition
-value for backward compatibility reasons.
+Ключ `edition` в _Cargo.toml_ указывает, какое издание компилятор должен использовать для вашего кода. Если ключ не существует, Rust использует значение `2015` для издания по соображениям обратной совместимости.
 
-Each project can opt in to an edition other than the default 2015 edition.
-Editions can contain incompatible changes, such as including a new keyword that
-conflicts with identifiers in code. However, unless you opt in to those
-changes, your code will continue to compile even as you upgrade the Rust
-compiler version you use.
+Каждый проект может перейти на издание, отличное от стандартного издания 2015. Издания могут содержать несовместимые изменения, например, добавление нового ключевого слова, конфликтующего с идентификаторами в коде. Однако, если вы не перейдёте на эти изменения, ваш код будет продолжать компилироваться даже при обновлении используемой вами версии компилятора Rust.
 
-All Rust compiler versions support any edition that existed prior to that
-compiler’s release, and they can link crates of any supported editions
-together. Edition changes only affect the way the compiler initially parses
-code. Therefore, if you’re using Rust 2015 and one of your dependencies uses
-Rust 2018, your project will compile and be able to use that dependency. The
-opposite situation, where your project uses Rust 2018 and a dependency uses
-Rust 2015, works as well.
+Все версии компилятора Rust поддерживают любое издание, существовавшее до выпуска этого компилятора, и могут компоновать крейты любых поддерживаемых изданий вместе. Изменения изданий влияют только на способ первоначального разбора кода компилятором. Поэтому, если вы используете Rust 2015, а одна из ваших зависимостей использует Rust 2018, ваш проект скомпилируется и сможет использовать эту зависимость. Обратная ситуация, когда ваш проект использует Rust 2018, а зависимость — Rust 2015, также работает.
 
-To be clear: most features will be available on all editions. Developers using
-any Rust edition will continue to see improvements as new stable releases are
-made. However, in some cases, mainly when new keywords are added, some new
-features might only be available in later editions. You will need to switch
-editions if you want to take advantage of such features.
+Чтобы было ясно: большинство функций будут доступны во всех изданиях. Разработчики, использующие любое издание Rust, будут продолжать видеть улучшения с каждым новым стабильным выпуском. Однако в некоторых случаях, в основном при добавлении новых ключевых слов, некоторые новые функции могут быть доступны только в более поздних изданиях. Вам потребуется перейти на новое издание, если вы хотите воспользоваться такими функциями.
 
-For more details, the [_Edition Guide_](https://doc.rust-lang.org/stable/edition-guide/) is a complete book
-about editions that enumerates the differences between editions and explains
-how to automatically upgrade your code to a new edition via `cargo fix`.
+Для получения более подробной информации [_Руководство по изданиям_](https://doc.rust-lang.org/stable/edition-guide/) — это полная книга об изданиях, которая перечисляет различия между ними и объясняет, как автоматически обновить ваш код до нового издания с помощью `cargo fix`.

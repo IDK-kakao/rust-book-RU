@@ -1,14 +1,12 @@
-## Fixing Ownership Errors
+## Исправление ошибок владения
 
-Learning how to fix an ownership error is a core Rust skill. When the borrow checker rejects your code, how should you respond? In this section, we will discuss several case studies of common ownership errors. Each case study will present a function rejected by the compiler. Then we will explain why Rust rejects the function, and show several ways to fix it.
+Умение исправлять ошибки владения — это базовый навык в Rust. Когда проверка заимствований отклоняет ваш код, как реагировать? В этом разделе мы рассмотрим несколько типичных случаев ошибок владения. Каждый кейс представит функцию, отклонённую компилятором. Затем мы объясним, почему Rust отклоняет функцию, и покажем несколько способов её исправить.
 
-A common theme will be understanding whether a function is *actually* safe or unsafe. Rust will always reject an unsafe program[^safe-subset]. But sometimes, Rust will also reject a safe program. These case studies will show how to respond to errors in both situations.
+Общая тема — понимание, является ли функция *фактически* безопасной или небезопасной. Rust всегда отклоняет небезопасную программу[^safe-subset]. Но иногда Rust отклоняет и безопасную программу. Эти кейсы покажут, как реагировать на ошибки в обеих ситуациях.
 
-<!-- The last two sections have shown how a Rust program can be **unsafe** if it triggers undefined behavior. The ownership guarantee is that Rust will reject all unsafe programs. However, Rust will also reject *some* safe programs. Fixing an ownership error will depend on whether your program is *actually* safe or unsafe. -->
+### Исправление небезопасной программы: возврат ссылки на стек
 
-### Fixing an Unsafe Program: Returning a Reference to the Stack
-
-Our first case study is about returning a reference to the stack, just like we discussed last section in ["Data Must Outlive All Of Its References"](ch04-02-references-and-borrowing.html#data-must-outlive-all-of-its-references). Here's the function we looked at:
+Первый кейс — возврат ссылки на стек, как мы обсуждали в разделе ["Данные должны переживать все ссылки на них"](ch04-02-references-and-borrowing.html#data-must-outlive-all-of-its-references). Вот функция, которую мы рассматривали:
 
 ```rust,ignore,does_not_compile
 fn return_a_string() -> &String {
@@ -17,9 +15,9 @@ fn return_a_string() -> &String {
 }
 ```
 
-When thinking about how to fix this function, we need to ask: **why is this program unsafe?** Here, the issue is with the lifetime of the referred data. If you want to pass around a reference to a string, you have to make sure that the underlying string lives long enough. 
+Думая, как исправить эту функцию, нужно спросить: **почему эта программа небезопасна?** Здесь проблема со временем жизни данных, на которые ссылается функция. Если вы хотите передавать ссылку на строку, нужно убедиться, что исходная строка живёт достаточно долго.
 
-Depending on the situation, here are four ways you can extend the lifetime of the string. One is to move ownership of the string out of the function, changing `&String` to `String`:
+В зависимости от ситуации есть четыре способа продлить время жизни строки. Один — передать владение строкой из функции, изменив `&String` на `String`:
 
 ```rust
 fn return_a_string() -> String {
@@ -28,7 +26,7 @@ fn return_a_string() -> String {
 }
 ```
 
-Another possibility is to return a string literal, which lives forever (indicated by `'static`). This solution applies if we never intend to change the string, and then a heap allocation is unnecessary:
+Другой вариант — вернуть строковый литерал, который живёт вечно (обозначается `'static`). Это решение подходит, если строка никогда не будет изменяться, и тогда выделение в куче не нужно:
 
 ```rust
 fn return_a_string() -> &'static str {
@@ -36,7 +34,7 @@ fn return_a_string() -> &'static str {
 }
 ```
 
-Another possibility is to defer borrow-checking to runtime by using garbage collection. For example, you can use a [reference-counted pointer][rc]:
+Ещё один вариант — отложить проверку заимствований на время выполнения, используя сборку мусора. Например, можно использовать [указатель с подсчётом ссылок][rc]:
 
 ```rust
 use std::rc::Rc;
@@ -46,9 +44,9 @@ fn return_a_string() -> Rc<String> {
 }
 ```
 
-We will discuss reference-counting more in Chapter 15.4 ["`Rc<T>`, the Reference Counted Smart Pointer"](ch15-04-rc.html). In short, `Rc::clone` only clones a pointer to `s` and not the data itself. At runtime, the `Rc` checks when the last `Rc` pointing to data has been dropped, and then deallocates the data.
+Мы обсудим подсчёт ссылок подробнее в главе 15.4 ["`Rc<T>`, умный указатель с подсчётом ссылок"](ch15-04-rc.html). Вкратце, `Rc::clone` клонирует только указатель на `s`, а не сами данные. Во время выполнения `Rc` проверяет, когда последний `Rc`, указывающий на данные, будет удалён, и затем освобождает данные.
 
-Yet another possibility is to have the caller provide a "slot" to put the string using a mutable reference:
+Ещё один вариант — чтобы вызывающий код предоставил "слот" для строки с помощью изменяемой ссылки:
 
 ```rust
 fn return_a_string(output: &mut String) {
@@ -56,14 +54,13 @@ fn return_a_string(output: &mut String) {
 }
 ```
 
-With this strategy, the caller is responsible for creating space for the string. This style can be verbose, but it can also be more memory-efficient if the caller needs to carefully control when allocations occur.
+При такой стратегии вызывающий код отвечает за создание места для строки. Этот стиль может быть многословным, но также может быть более эффективным по памяти, если вызывающему нужно тщательно контролировать, когда происходят выделения.
 
-Which strategy is most appropriate will depend on your application. But the key idea is to recognize the root issue underlying the surface-level ownership error. How long should my string live? Who should be in charge of deallocating it? Once you have a clear answer to those questions, then it's a matter of changing your API to match.
+Какой стратегии следует выбрать, зависит от вашего приложения. Но ключевая идея — распознать корневую проблему, лежащую в основе ошибки владения. Как долго должна жить моя строка? Кто должен отвечать за её освобождение? Когда у вас есть чёткий ответ на эти вопросы, остаётся лишь изменить ваш API соответствующим образом.
 
+### Исправление небезопасной программы: недостаточно прав
 
-### Fixing an Unsafe Program: Not Enough Permissions
-
-Another common issue is trying to mutate read-only data, or trying to drop data behind a reference. For example, let's say we tried to write a function `stringify_name_with_title`. This function is supposed to create a person's full name from a vector of name parts, including an extra title.
+Другая распространённая проблема — попытка изменить данные только для чтения или попытка удалить данные через ссылку. Например, представим, что мы пытаемся написать функцию `stringify_name_with_title`. Эта функция должна создать полное имя человека из вектора частей имени, включая дополнительный титул.
 
 ```aquascope,permissions,stepper,boundaries,shouldFail
 fn stringify_name_with_title(name: &Vec<String>) -> String {
@@ -72,10 +69,10 @@ fn stringify_name_with_title(name: &Vec<String>) -> String {
     full
 }
 
-// ideally: ["Ferris", "Jr."] => "Ferris Jr. Esq."
+// идеально: ["Ferris", "Jr."] => "Ferris Jr. Esq."
 ```
 
-This program is rejected by the borrow checker because `name` is an immutable reference, but `name.push(..)` requires the @Perm{write} permission. This program is unsafe because `push` could invalidate other references to `name` outside of `stringify_name_with_title`, like this:
+Эта программа отклоняется проверкой заимствований, потому что `name` — это неизменяемая ссылка, но `name.push(..)` требует права @Perm{write}. Эта программа небезопасна, потому что `push` может сделать недействительными другие ссылки на `name` за пределами `stringify_name_with_title`, например:
 
 ```aquascope,interpreter,shouldFail,horizontal
 #fn stringify_name_with_title(name: &Vec<String>) -> String {
@@ -91,9 +88,9 @@ fn main() {
 }
 ```
 
-In this example, a reference `first` to `name[0]` is created before calling `stringify_name_with_title`. The function `name.push(..)` reallocates the contents of `name`, which invalidates `first`, causing the `println` to read deallocated memory.
+В этом примере ссылка `first` на `name[0]` создаётся до вызова `stringify_name_with_title`. Функция `name.push(..)` перераспределяет содержимое `name`, что делает `first` недействительной, вызывая чтение освобождённой памяти в `println`.
 
-So how do we fix this API? One straightforward solution is to change the type of name from `&Vec<String>` to `&mut Vec<String>`:
+Так как исправить этот API? Одно простое решение — изменить тип `name` с `&Vec<String>` на `&mut Vec<String>`:
 
 ```rust,ignore
 fn stringify_name_with_title(name: &mut Vec<String>) -> String {
@@ -103,9 +100,9 @@ fn stringify_name_with_title(name: &mut Vec<String>) -> String {
 }
 ```
 
-But this is not a good solution! **Functions should not mutate their inputs if the caller would not expect it.** A person calling `stringify_name_with_title` probably does not expect their vector to be modified by this function. Another function like `add_title_to_name` might be expected to mutate its input, but not our function.
+Но это не хорошее решение! **Функции не должны изменять свои входные данные, если вызывающий код не ожидает этого.** Человек, вызывающий `stringify_name_with_title`, вероятно, не ожидает, что его вектор будет изменён этой функцией. Другая функция, например `add_title_to_name`, может ожидать изменения входных данных, но не наша.
 
-Another option is to take ownership of the name, by changing `&Vec<String>` to `Vec<String>`:
+Другой вариант — взять владение именем, изменив `&Vec<String>` на `Vec<String>`:
 
 ```rust,ignore
 fn stringify_name_with_title(mut name: Vec<String>) -> String {
@@ -115,9 +112,9 @@ fn stringify_name_with_title(mut name: Vec<String>) -> String {
 }
 ```
 
-But this is also not a good solution! **It is very rare for Rust functions to take ownership of heap-owning data structures like `Vec` and `String`.**  This version of `stringify_name_with_title` would make the input `name` unusable, which is very annoying to a caller as we discussed at the beginning of ["References and Borrowing"](ch04-02-references-and-borrowing.html).
+Но это тоже не хорошее решение! **Очень редко функции в Rust берут владение над структурами данных в куче, такими как `Vec` и `String`.** Эта версия `stringify_name_with_title` сделает входной `name` непригодным для использования, что очень неудобно для вызывающего кода, как мы обсуждали в начале раздела ["Ссылки и заимствование"](ch04-02-references-and-borrowing.html).
 
-So the choice of `&Vec` is actually a good one, which we do *not* want to change. Instead, we can change the body of the function. There are many possible fixes which vary in how much memory they use. One possibility is to clone the input `name`:
+Таким образом, выбор `&Vec` на самом деле хорош, и мы *не* хотим его менять. Вместо этого мы можем изменить тело функции. Есть много возможных исправлений, которые различаются по объёму используемой памяти. Один вариант — клонировать входной `name`:
 
 ```rust,ignore
 fn stringify_name_with_title(name: &Vec<String>) -> String {
@@ -128,7 +125,7 @@ fn stringify_name_with_title(name: &Vec<String>) -> String {
 }
 ```
 
-By cloning `name`, we are allowed to mutate the local copy of the vector. However, the clone copies every string in the input. We can avoid unnecessary copies by adding the suffix later:
+Клонируя `name`, мы можем изменять локальную копию вектора. Однако клон копирует каждую строку во входном векторе. Мы можем избежать ненужных копий, добавив суффикс позже:
 
 ```rust,ignore
 fn stringify_name_with_title(name: &Vec<String>) -> String {
@@ -138,15 +135,13 @@ fn stringify_name_with_title(name: &Vec<String>) -> String {
 }
 ```
 
-This solution works because [`slice::join`] already copies the data in `name` into the string `full`.
+Это решение работает, потому что [`slice::join`] уже копирует данные из `name` в строку `full`.
 
-In general, writing Rust functions is a careful balance of asking for the *right* level of permissions. For this example, it's most idiomatic to only expect the read permission on `name`.
+В общем, написание функций на Rust — это тщательный баланс в запросе *правильного* уровня прав. Для этого примера наиболее идиоматично ожидать только права на чтение для `name`.
 
-{{#quiz ../quizzes/ch04-03-fixing-ownership-errors-sec1-idioms.toml}}
+### Исправление небезопасной программы: псевдонимы и изменение структуры данных
 
-### Fixing an Unsafe Program: Aliasing and Mutating a Data Structure
-
-Another unsafe operation is using a reference to heap data that gets deallocated by another alias. For example, here's a function that gets a reference to the largest string in a vector, and then uses it while mutating the vector:
+Другая небезопасная операция — использование ссылки на данные в куче, которые освобождаются другим псевдонимом. Например, вот функция, которая получает ссылку на самую длинную строку в векторе, а затем использует её, изменяя вектор:
 
 ```aquascope,permissions,stepper,boundaries,shouldFail
 fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {`(focus,paths:*dst)`
@@ -160,11 +155,11 @@ fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {`(focus,paths:*dst)`
 }
 ```
 
-> *Note:* this example uses [iterators] and [closures] to succinctly find a reference to the largest string. We will discuss those features in later chapters, and for now we will provide an intuitive sense of how the features work here.
+> *Примечание:* этот пример использует [итераторы] и [замыкания] для краткого нахождения ссылки на самую длинную строку. Мы обсудим эти возможности в следующих главах, а здесь дадим интуитивное представление о том, как они работают.
 
-This program is rejected by the borrow checker because `let largest = ..` removes the @Perm{write} permissions on `dst`. However, `dst.push(..)` requires the @Perm{write} permission. Again, we should ask: **why is this program unsafe?** Because `dst.push(..)` could deallocate the contents of `dst`, invalidating the reference `largest`.
+Эта программа отклоняется проверкой заимствований, потому что `let largest = ..` удаляет права @Perm{write} для `dst`. Однако `dst.push(..)` требует права @Perm{write}. Снова спросим: **почему эта программа небезопасна?** Потому что `dst.push(..)` может освободить содержимое `dst`, делая ссылку `largest` недействительной.
 
-To fix the program, the key insight is that we need to shorten the lifetime of `largest` to not overlap with `dst.push(..)`. One possibility is to clone `largest`:
+Чтобы исправить программу, ключевое понимание — нужно сократить время жизни `largest`, чтобы оно не перекрывалось с `dst.push(..)`. Один вариант — клонировать `largest`:
 
 ```rust
 fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {
@@ -177,9 +172,9 @@ fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {
 }
 ```
 
-However, this may cause a performance hit for allocating and copying the string data.
+Однако это может вызвать потерю производительности из-за выделения и копирования данных строки.
 
-Another possibility is to perform all the length comparisons first, and then mutate `dst` afterwards:
+Другой вариант — выполнить все сравнения длин сначала, а затем изменить `dst` afterwards:
 
 ```rust
 fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {
@@ -190,10 +185,9 @@ fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {
 }
 ```
 
-However, this also causes a performance hit for allocating the vector `to_add`.
+Однако это также вызывает потерю производительности из-за выделения вектора `to_add`.
 
-A final possibility is to copy out the length of `largest`, since we don't actually need the contents of `largest`, just its length. 
-This solution is arguably the most idiomatic and the most performant:
+Последний вариант — скопировать длину `largest`, так как нам на самом деле не нужно содержимое `largest`, только его длина. Это решение, пожалуй, самое идиоматичное и производительное:
 
 ```rust
 fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {
@@ -206,11 +200,11 @@ fn add_big_strings(dst: &mut Vec<String>, src: &[String]) {
 }
 ```
 
-These solutions all share in common the key idea: shortening the lifetime of borrows on `dst` to not overlap with a mutation to `dst`.
+Все эти решения объединяет ключевая идея: сокращение времени жизни заимствований `dst` так, чтобы они не перекрывались с изменением `dst`.
 
-### Fixing an Unsafe Program: Copying vs. Moving Out of a Collection
+### Исправление небезопасной программы: копирование vs. перемещение из коллекции
 
-A common confusion for Rust learners happens when copying data out of a collection, like a vector. For example, here's a safe program that copies a number out of a vector:
+Распространённая путаница для изучающих Rust возникает при копировании данных из коллекции, например вектора. Например, вот безопасная программа, которая копирует число из вектора:
 
 ```aquascope,permissions,stepper,boundaries
 #fn main() {
@@ -220,7 +214,7 @@ let n: i32 = *n_ref;`{}`
 #}
 ```
 
-The dereference operation `*n_ref` expects just the @Perm{read} permission, which the path `*n_ref` has. But what happens if we change the type of elements in the vector from `i32` to `String`? Then it turns out we no longer have the necessary permissions:
+Операция разыменования `*n_ref` ожидает только права @Perm{read}, которые есть у пути `*n_ref`. Но что произойдёт, если изменить тип элементов вектора с `i32` на `String`? Тогда у нас больше не будет необходимых прав:
 
 ```aquascope,permissions,stepper,boundaries,shouldFail
 #fn main() {
@@ -231,7 +225,7 @@ let s: String = *s_ref;`[]``{}`
 #}
 ```
 
-The first program will compile, but the second program will not compile. Rust gives the following error message:
+Первая программа скомпилируется, а вторая — нет. Rust выдаёт следующее сообщение об ошибке:
 
 ```text
 error[E0507]: cannot move out of `*s_ref` which is behind a shared reference
@@ -243,9 +237,9 @@ error[E0507]: cannot move out of `*s_ref` which is behind a shared reference
   |         move occurs because `*s_ref` has type `String`, which does not implement the `Copy` trait
 ```
 
-The issue is that the vector `v` owns the string "Hello world". When we dereference `s_ref`, that tries to take ownership of the string from the vector. But references are non-owning pointers &mdash; we can't take ownership *through* a reference. Therefore Rust complains that we "cannot move out of \[...\] a shared reference".
+Проблема в том, что вектор `v` владеет строкой "Hello world". Когда мы разыменовываем `s_ref`, это пытается взять владение строкой из вектора. Но ссылки — это неуправляющие указатели; мы не можем взять владение *через* ссылку. Поэтому Rust жалуется, что мы "не можем переместить из [...] общей ссылки".
 
-But why is this unsafe? We can illustrate the problem by simulating the rejected program:
+Но почему это небезопасно? Мы можем проиллюстрировать проблему, имитируя отклонённую программу:
 
 ```aquascope,interpreter,shouldFail,horizontal
 #fn main() {
@@ -254,34 +248,34 @@ let v: Vec<String> =
 let s_ref: &String = &v[0];`(focus,paths:*s_ref)`
 let s: String = *s_ref;`[]``{}`
 
-// These drops are normally implicit, but we've added them for clarity.
+// Эти удаления обычно неявны, но мы добавили их для ясности.
 drop(s);`[]`
 drop(v);`[]`
 #}
 ```
 
-What happens here is a **double-free.** After executing `let s = *s_ref`, both `v` and `s` think they own "Hello world". After `s` is dropped, "Hello world" is deallocated. Then `v` is dropped, and undefined behavior happens when the string is freed a second time.
+Что происходит здесь — **двойное освобождение.** После выполнения `let s = *s_ref` и `v`, и `s` думают, что владеют "Hello world". После удаления `s` строка "Hello world" освобождается. Затем удаляется `v`, и неопределённое поведение происходит при втором освобождении строки.
 
-> *Note:* after executing `s = *s_ref`, we don't even have to use `v` or `s` to cause undefined behavior through the double-free. As soon as we move the string out from `s_ref`, undefined behavior will happen once the elements are dropped.
+> *Примечание:* после выполнения `s = *s_ref` нам даже не нужно использовать `v` или `s`, чтобы вызвать неопределённое поведение через двойное освобождение. Как только мы перемещаем строку из `s_ref`, неопределённое поведение произойдёт, как только элементы будут удалены.
 
-However, this undefined behavior does not happen when the vector contains `i32` elements. The difference is that copying a `String` copies a pointer to heap data. Copying an `i32` does not.
-In technical terms, Rust says that the type `i32` implements the `Copy` trait, while `String` does not implement `Copy` (we will discuss traits in a later chapter).
+Однако это неопределённое поведение не происходит, когда вектор содержит элементы `i32`. Разница в том, что копирование `String` копирует указатель на данные в куче. Копирование `i32` этого не делает.
+В технических терминах Rust говорит, что тип `i32` реализует типаж `Copy`, а `String` не реализует `Copy` (мы обсудим типажи в следующей главе).
 
-In sum, **if a value does not own heap data, then it can be copied without a move.** For example:
+Таким образом, **если значение не владеет данными в куче, его можно скопировать без перемещения.** Например:
 
-* An `i32` **does not** own heap data, so it **can** be copied without a move. 
-* A `String` **does** own heap data, so it **can not** be copied without a move.
-* An `&String` **does not** own heap data, so it **can** be copied without a move.
+* `i32` **не** владеет данными в куче, поэтому его **можно** скопировать без перемещения.
+* `String` **владеет** данными в куче, поэтому его **нельзя** скопировать без перемещения.
+* `&String` **не** владеет данными в куче, поэтому его **можно** скопировать без перемещения.
 
-> *Note:* One exception to this rule is mutable references. For example, `&mut i32` is not a copyable type. So if you do something like:
+> *Примечание:* Одно исключение из этого правила — изменяемые ссылки. Например, `&mut i32` — не копируемый тип. Так что если вы делаете что-то вроде:
 > ```rust,ignore
 > let mut n = 0;
 > let a = &mut n;
 > let b = a;
 > ```
-> Then `a` cannot be used after being assigned to `b`. That prevents two mutable references to the same data from being used at the same time.
+> Тогда `a` нельзя использовать после присвоения `b`. Это предотвращает одновременное использование двух изменяемых ссылок на одни и те же данные.
 
-So if we have a vector of non-`Copy` types like `String`, then how do we safely get access to an element of the vector? Here's a few different ways to safely do so. First, you can avoid taking ownership of the string and just use an immutable reference:
+Итак, если у нас есть вектор не-`Copy` типов, таких как `String`, как безопасно получить доступ к элементу вектора? Вот несколько разных способов сделать это безопасно. Во-первых, можно избежать взятия владения строкой и просто использовать неизменяемую ссылку:
 
 ```rust,ignore
 # fn main() {
@@ -291,7 +285,7 @@ println!("{s_ref}!");
 # }
 ```
 
-Second, you can clone the data if you want to get ownership of the string while leaving the vector alone:
+Во-вторых, можно клонировать данные, если нужно получить владение строкой, оставив вектор нетронутым:
 
 ```rust,ignore
 # fn main() {
@@ -302,7 +296,7 @@ println!("{s}");
 # }
 ```
 
-Finally, you can use a method like [`Vec::remove`] to move the string out of the vector:
+Наконец, можно использовать метод, такой как [`Vec::remove`], чтобы переместить строку из вектора:
 
 ```rust,ignore
 # fn main() {
@@ -314,12 +308,11 @@ assert!(v.len() == 0);
 # }
 ```
 
+### Исправление безопасной программы: изменение разных полей кортежа
 
-### Fixing a Safe Program: Mutating Different Tuple Fields
+Приведённые выше примеры — случаи, когда программа небезопасна. Rust также может отклонять безопасные программы. Одна распространённая проблема — Rust пытается отслеживать права на очень детальном уровне. Однако Rust может объединять два разных места как одно и то же.
 
-The above examples are cases where a program is unsafe. Rust may also reject safe programs. One common issue is that Rust tries to track permissions at a fine-grained level. However, Rust may conflate two different places as the same place. 
- 
-Let's first look at an example of fine-grained permission tracking that passes the borrow checker. This program shows how you can borrow one field of a tuple, and write to a different field of the same tuple:
+Сначала посмотрим на пример детального отслеживания прав, который проходит проверку заимствований. Эта программа показывает, как можно заимствовать одно поле кортежа и записывать в другое поле того же кортежа:
 
 ```aquascope,permissions,stepper,boundaries
 #fn main() {
@@ -333,9 +326,9 @@ println!("{first} {}", name.1);
 #}
 ```
 
-The statement `let first = &name.0` borrows `name.0`. This borrow removes @Perm{write}@Perm{own} permissions from `name.0`. It also removes @Perm{write}@Perm{own} permissions from `name`. (For example, one could not pass `name` to a function that takes as input a value of type `(String, String)`.) But `name.1` still retains the @Perm{write} permission, so doing `name.1.push_str(...)` is a valid operation.
+Инструкция `let first = &name.0` заимствует `name.0`. Это заимствование удаляет права @Perm{write}@Perm{own} у `name.0`. Оно также удаляет права @Perm{write}@Perm{own} у `name`. (Например, нельзя передать `name` в функцию, принимающую значение типа `(String, String)`.) Но `name.1` по-прежнему сохраняет право @Perm{write}, поэтому операция `name.1.push_str(...)` допустима.
 
-However, Rust can lose track of exactly which places are borrowed. For example, let's say we refactor the expression `&name.0` into a function `get_first`. Notice how after calling `get_first(&name)`, Rust now removes the @Perm{write} permission on `name.1`:
+Однако Rust может потерять точное понимание, какие места заимствованы. Например, представим, что мы рефакторим выражение `&name.0` в функцию `get_first`. Обратите внимание, как после вызова `get_first(&name)` Rust теперь удаляет право @Perm{write} у `name.1`:
 
 ```aquascope,permissions,stepper,boundaries,shouldFail
 fn get_first(name: &(String, String)) -> &String {
@@ -353,7 +346,7 @@ fn main() {
 }
 ```
 
-Now we can't do `name.1.push_str(..)`! Rust will return this error:
+Теперь мы не можем сделать `name.1.push_str(..)`! Rust вернёт эту ошибку:
 
 ```text
 error[E0502]: cannot borrow `name.1` as mutable because it is also borrowed as immutable
@@ -367,15 +360,15 @@ error[E0502]: cannot borrow `name.1` as mutable because it is also borrowed as i
    |                ----- immutable borrow later used here
 ```
 
-That's strange, since the program was safe before we edited it. The edit we made doesn't meaningfully change the runtime behavior. So why does it matter that we put `&name.0` into a function?
+Это странно, ведь программа была безопасна до редактирования. Сделанное изменение существенно не меняет поведение во время выполнения. Так почему важно, что мы поместили `&name.0` в функцию?
 
-The problem is that Rust doesn't look at the implementation of `get_first` when deciding what `get_first(&name)` should borrow. Rust only looks at the type signature, which just says "some `String` in the input gets borrowed". Rust conservatively decides then that both `name.0` and `name.1` get borrowed, and eliminates write and own permissions on both. 
+Проблема в том, что Rust не смотрит на реализацию `get_first` при решении, что `get_first(&name)` должно заимствовать. Rust смотрит только на сигнатуру типа, которая просто говорит "некоторый `String` во входных данных заимствуется". Rust консервативно решает, что тогда и `name.0`, и `name.1` заимствуются, и устраняет права на запись и владение для обоих.
 
-Remember, the key idea is that **the program above is safe.** It has no undefined behavior! A future version of Rust may be smart enough to let it compile, but for today, it gets rejected. So how should we work around the borrow checker today? One possibility is to inline the expression `&name.0`, like in the original program. Another possibility is to defer borrow checking to runtime with [cells], which we will discuss in future chapters.
+Помните, ключевая идея в том, что **программа выше безопасна.** В ней нет неопределённого поведения! Будущая версия Rust может быть достаточно умной, чтобы позволить ей скомпилироваться, но сегодня она отклоняется. Так как обойти проверку заимствований сегодня? Один вариант — встроить выражение `&name.0`, как в исходной программе. Другой вариант — отложить проверку заимствований на время выполнения с помощью [ячеек], что мы обсудим в будущих главах.
 
-### Fixing a Safe Program: Mutating Different Array Elements
+### Исправление безопасной программы: изменение разных элементов массива
 
-A similar kind of problem arises when we borrow elements of an array. For example, observe what places are borrowed when we take a mutable reference to an array:
+Подобная проблема возникает при заимствовании элементов массива. Например, посмотрим, какие места заимствуются, когда мы берём изменяемую ссылку на массив:
 
 ```aquascope,permissions,stepper,boundaries
 #fn main() {
@@ -386,14 +379,14 @@ println!("{a:?}");
 #}
 ```
 
-Rust's borrow checker does not contain different places for `a[0]`, `a[1]`, and so on. It uses a single place `a[_]` that represents *all* indexes of `a`. Rust does this because it cannot always determine the value of an index. For example, imagine a more complex scenario like this:
+Проверка заимствований Rust не содержит отдельных мест для `a[0]`, `a[1]` и так далее. Она использует одно место `a[_]`, представляющее *все* индексы `a`. Rust делает это, потому что не всегда может определить значение индекса. Например, представьте более сложный сценарий:
 
 ```rust,ignore
 let idx = a_complex_function();
 let x = &mut a[idx];
 ```
 
-What is the value of `idx`? Rust isn't going to guess, so it assumes `idx` could be anything. For example, let's say we try to read from one array index while writing to a different one:
+Каково значение `idx`? Rust не будет угадывать, поэтому предполагает, что `idx` может быть чем угодно. Например, представим, что мы пытаемся прочитать из одного индекса массива, одновременно записывая в другой:
 
 ```aquascope,permissions,boundaries,stepper,shouldFail
 #fn main() {
@@ -404,7 +397,7 @@ let y = &a[2];`{}`
 #}
 ```
 
-However, Rust will reject this program because `a` gave its read permission to `x`. The compiler's error message says the same thing:
+Однако Rust отклоняет эту программу, потому что `a` отдала свои права на чтение `x`. Сообщение об ошибке компилятора говорит то же самое:
 
 ```text
 error[E0502]: cannot borrow `a[_]` as immutable because it is also borrowed as mutable
@@ -418,10 +411,7 @@ error[E0502]: cannot borrow `a[_]` as immutable because it is also borrowed as m
   | -------- mutable borrow later used here
 ```
 
-<!-- However, Rust will reject this program because `a` gave its read permission to `x`. -->
-
-
-Again, **this program is safe.** For cases like these, Rust often provides a function in the standard library that can work around the borrow checker. For example, we could use [`slice::split_at_mut`][split_at_mut]:
+Опять же, **эта программа безопасна.** Для таких случаев Rust часто предоставляет функцию в стандартной библиотеке, которая может обойти проверку заимствований. Например, мы могли бы использовать [`slice::split_at_mut`][split_at_mut]:
 
 ```rust,ignore
 # fn main() {
@@ -433,24 +423,22 @@ let y = &a_r[0];
 # }
 ```
 
-You might wonder, but how is `split_at_mut` implemented? In some Rust libraries, especially core types like `Vec` or `slice`, you will often find **`unsafe` blocks**. `unsafe` blocks allow the use of "raw" pointers, which are not checked for safety by the borrow checker. For example, we could use an unsafe block to accomplish our task:
+Вы можете спросить, но как реализован `split_at_mut`? В некоторых библиотеках Rust, особенно в основных типах, таких как `Vec` или `slice`, вы часто найдёте **`unsafe` блоки**. `unsafe` блоки позволяют использовать "сырые" указатели, которые не проверяются на безопасность проверкой заимствований. Например, мы могли бы использовать unsafe-блок для выполнения нашей задачи:
 
 ```rust,ignore
 # fn main() {
 let mut a = [0, 1, 2, 3];
 let x = &mut a[1] as *mut i32;
 let y = &a[2] as *const i32;
-unsafe { *x += *y; } // DO NOT DO THIS unless you know what you're doing!
+unsafe { *x += *y; } // НЕ ДЕЛАЙТЕ ЭТОГО, если не знаете, что делаете!
 # }
 ```
 
-Unsafe code is sometimes necessary to work around the limitations of the borrow checker. As a general strategy, let's say the borrow checker rejects a program you think is actually safe. Then you should look for standard library functions (like `split_at_mut`) that contain `unsafe` blocks which solve your problem. We will discuss unsafe code further in [Chapter 20][unsafe]. For now, just be aware that unsafe code is how Rust implements certain otherwise-impossible patterns.
+Небезопасный код иногда необходим для обхода ограничений проверки заимствований. Как общая стратегия, скажем, проверка заимствований отклоняет программу, которую вы считаете фактически безопасной. Тогда вам стоит искать функции стандартной библиотеки (такие как `split_at_mut`), содержащие `unsafe` блоки, которые решают вашу проблему. Мы обсудим небезопасный код подробнее в [Главе 20][unsafe]. Пока просто имейте в виду, что небезопасный код — это то, как Rust реализует определённые иначе невозможные шаблоны.
 
-{{#quiz ../quizzes/ch04-03-fixing-ownership-errors-sec2-safety.toml}}
+### Резюме
 
-### Summary
-
-When fixing an ownership error, you should ask yourself: is my program actually unsafe? If yes, then you need to understand the root cause of the unsafety. If no, then you need to understand the limitations of the borrow checker to work around them.
+При исправлении ошибки владения вы должны спросить себя: моя программа фактически небезопасна? Если да, то нужно понять коренную причину небезопасности. Если нет, то нужно понять ограничения проверки заимствований, чтобы их обойти.
 
 [rc]: https://doc.rust-lang.org/std/rc/index.html
 [cells]: https://doc.rust-lang.org/std/cell/index.html
@@ -461,4 +449,4 @@ When fixing an ownership error, you should ask yourself: is my program actually 
 [iterators]: ch13-02-iterators.html
 [closures]: ch13-01-closures.html
 
-[^safe-subset]: This guarantee applies for programs written in the "safe subset" of Rust. If you use `unsafe` code or invoke unsafe components (like calling a C library), then you must take extra care to avoid undefined behavior.
+[^safe-subset]: Эта гарантия применяется к программам, написанным на "безопасном подмножестве" Rust. Если вы используете `unsafe` код или вызываете небезопасные компоненты (например, библиотеку на C), то должны проявить дополнительную осторожность, чтобы избежать неопределённого поведения.

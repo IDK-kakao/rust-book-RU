@@ -29,21 +29,24 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "bark\n(silence)"
 context = """
-The implementation of `MakeNoise` provides a specific implementation for `Dog` and uses the default implementation for `Cat`.
-Therefore calling `make_noise` on each prints `bark` and `(silence)`, respectively. 
+Реализация `MakeNoise` предоставляет конкретную реализацию для `Dog` и использует реализацию по умолчанию для `Cat`.
+Поэтому вызов `make_noise` для каждого выводит `bark` и `(silence)` соответственно. 
 """
 
 [[questions]]
 id = "783f2485-e5b9-483b-8368-064366c77285"
 type = "MultipleChoice"
-prompt.prompt = "The following are statements about what kinds of trait implementations are permitted by Rust. Select each statement which is true."
-prompt.distractors = ["You can implement an external trait for an external type"]
+prompt.prompt = "Ниже приведены утверждения о том, какие реализации типажей разрешены в Rust. Выберите каждое верное утверждение."
+prompt.distractors = [
+  "Вы можете реализовать внешний типаж для внешнего типа",
+  "Вы можете реализовать локальный типаж для внешнего типа",
+  "Вы можете реализовать локальный типаж для локального типа"
+]
 answer.answer = [
-  "You can implement an external trait for a local type",
-  "You can implement a local trait for an external type",
-  "You can implement a local trait for a local type"
+  "Вы можете реализовать локальный типаж для внешнего типа",
+  "Вы можете реализовать локальный типаж для локального типа"
 ]
 context = """
-The "orphan rule" requires that you cannot implement an external trait for an external type, 
-to ensure code doesn't break if two crates provide conflicting implementations.
+«Правило сироты» требует, чтобы вы не могли реализовать внешний типаж для внешнего типа, 
+чтобы обеспечить отсутствие конфликтов реализаций, если два крейта предоставляют конфликтующие реализации.
 """

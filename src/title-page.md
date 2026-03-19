@@ -1,20 +1,20 @@
-# The Rust Programming Language
+# Язык программирования Rust
 
-*by Steve Klabnik, Carol Nichols, and Chris Krycho, with contributions from the Rust Community*
+*авторы Стив Клабник, Кэрол Николс и Крис Кричо, при участии сообщества Rust*
 
-*(and with experimental modifications!)*
+*(а также с экспериментальными изменениями!)*
 
-This version of the text assumes you’re using Rust 1.85.0 (released 2025-02-17)
-or later with `edition = "2024"` in the Cargo.toml file of all projects to
-configure them to use Rust 2024 edition idioms. See the [“Installation” section
-of Chapter 1][install]<!-- ignore --> to install or update Rust.
+Эта версия текста предполагает, что вы используете Rust 1.85.0 (выпущен 2025-02-17)
+или новее с `edition = "2024"` в файле Cargo.toml всех проектов, чтобы
+настроить их на использование идиом Rust 2024 издания. См. [раздел «Установка»
+главы 1][install]<!-- ignore --> для установки или обновления Rust.
 
-The experimental version is only available online and in English. 
-The non-experimental version is available offline with installations of Rust made with `rustup`; run `rustup doc
---book` to open.
+Экспериментальная версия доступна только онлайн и на английском языке.
+Неэкспериментальная версия доступна оффлайн с установками Rust, сделанными через `rustup`; выполните `rustup doc
+--book`, чтобы открыть.
 
-Several community [translations] of the non-experimental version are also available.
-The non-experimental text is available in [paperback and ebook format from No Starch
+Также доступно несколько переводов [неэкспериментальной версии], сделанных сообществом.
+Неэкспериментальный текст доступен в [формате бумажной и электронной книги от No Starch
 Press][nsprust].
 
 [install]: ch01-01-installation.html

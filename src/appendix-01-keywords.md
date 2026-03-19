@@ -1,69 +1,58 @@
-## Appendix A: Keywords
+## Приложение A: Ключевые слова
 
-The following list contains keywords that are reserved for current or future
-use by the Rust language. As such, they cannot be used as identifiers (except
-as raw identifiers as we’ll discuss in the “[Raw
-Identifiers][raw-identifiers]<!-- ignore -->” section). Identifiers are names
-of functions, variables, parameters, struct fields, modules, crates, constants,
-macros, static values, attributes, types, traits, or lifetimes.
+Следующий список содержит ключевые слова, зарезервированные для текущего или будущего использования языком Rust. Как таковые, они не могут использоваться в качестве идентификаторов (за исключением сырых идентификаторов, как мы обсудим в разделе «[Сырые идентификаторы][raw-identifiers]<!-- ignore -->»). Идентификаторы — это имена функций, переменных, параметров, полей структур, модулей, крейтов, констант, макросов, статических значений, атрибутов, типов, типажей или времён жизни.
 
 [raw-identifiers]: #raw-identifiers
 
-### Keywords Currently in Use
+### Ключевые слова, используемые в настоящее время
 
-The following is a list of keywords currently in use, with their functionality
-described.
+Ниже приведён список ключевых слов, используемых в настоящее время, с описанием их функциональности.
 
-- `as` - perform primitive casting, disambiguate the specific trait containing
-  an item, or rename items in `use` statements
-- `async` - return a `Future` instead of blocking the current thread
-- `await` - suspend execution until the result of a `Future` is ready
-- `break` - exit a loop immediately
-- `const` - define constant items or constant raw pointers
-- `continue` - continue to the next loop iteration
-- `crate` - in a module path, refers to the crate root
-- `dyn` - dynamic dispatch to a trait object
-- `else` - fallback for `if` and `if let` control flow constructs
-- `enum` - define an enumeration
-- `extern` - link an external function or variable
-- `false` - Boolean false literal
-- `fn` - define a function or the function pointer type
-- `for` - loop over items from an iterator, implement a trait, or specify a
-  higher-ranked lifetime
-- `if` - branch based on the result of a conditional expression
-- `impl` - implement inherent or trait functionality
-- `in` - part of `for` loop syntax
-- `let` - bind a variable
-- `loop` - loop unconditionally
-- `match` - match a value to patterns
-- `mod` - define a module
-- `move` - make a closure take ownership of all its captures
-- `mut` - denote mutability in references, raw pointers, or pattern bindings
-- `pub` - denote public visibility in struct fields, `impl` blocks, or modules
-- `ref` - bind by reference
-- `return` - return from function
-- `Self` - a type alias for the type we are defining or implementing
-- `self` - method subject or current module
-- `static` - global variable or lifetime lasting the entire program execution
-- `struct` - define a structure
-- `super` - parent module of the current module
-- `trait` - define a trait
-- `true` - Boolean true literal
-- `type` - define a type alias or associated type
-- `union` - define a [union][union]<!-- ignore -->; is only a keyword when used
-  in a union declaration
-- `unsafe` - denote unsafe code, functions, traits, or implementations
-- `use` - bring symbols into scope; specify precise captures for generic and
-  lifetime bounds
-- `where` - denote clauses that constrain a type
-- `while` - loop conditionally based on the result of an expression
+- `as` — выполнение примитивного приведения типов, уточнение конкретного типажа, содержащего элемент, или переименование элементов в операторах `use`
+- `async` — возвращает `Future` вместо блокировки текущего потока
+- `await` — приостанавливает выполнение до готовности результата `Future`
+- `break` — немедленный выход из цикла
+- `const` — определение константных элементов или константных сырых указателей
+- `continue` — переход к следующей итерации цикла
+- `crate` — в пути модуля ссылается на корень крейта
+- `dyn` — динамическая диспетчеризация для объекта типажа
+- `else` — альтернатива для управляющих конструкций `if` и `if let`
+- `enum` — определение перечисления
+- `extern` — связывание внешней функции или переменной
+- `false` — булева константа ложь
+- `fn` — определение функции или типа указателя на функцию
+- `for` — перебор элементов из итератора, реализация типажа или указание времени жизни более высокого порядка
+- `if` — ветвление на основе результата условного выражения
+- `impl` — реализация собственной функциональности или функциональности типажа
+- `in` — часть синтаксиса цикла `for`
+- `let` — связывание переменной
+- `loop` — безусловный цикл
+- `match` — сопоставление значения с образцами
+- `mod` — определение модуля
+- `move` — заставляет замыкание принимать владение всеми своими захватами
+- `mut` — обозначает изменяемость в ссылках, сырых указателях или связываниях образцов
+- `pub` — обозначает видимость `public` в полях структур, блоках `impl` или модулях
+- `ref` — связывание по ссылке
+- `return` — возврат из функции
+- `Self` — псевдоним типа для определяемого или реализуемого типа
+- `self` — субъект метода или текущий модуль
+- `static` — глобальная переменная или время жизни, длящееся всё время выполнения программы
+- `struct` — определение структуры
+- `super` — родительский модуль текущего модуля
+- `trait` — определение типажа
+- `true` — булева константа истина
+- `type` — определение псевдонима типа или ассоциированного типа
+- `union` — определение [объединения][union]; является ключевым словом только при использовании в объявлении объединения
+- `unsafe` — обозначает небезопасный код, функции, типажи или реализации
+- `use` — вводит символы в область видимости; задаёт точные захваты для обобщений и ограничений времени жизни
+- `where` — обозначает предложения, ограничивающие тип
+- `while` — условный цикл на основе результата выражения
 
 [union]: https://doc.rust-lang.org/reference/items/unions.html
 
-### Keywords Reserved for Future Use
+### Ключевые слова, зарезервированные для будущего использования
 
-The following keywords do not yet have any functionality but are reserved by
-Rust for potential future use.
+Следующие ключевые слова пока не имеют никакой функциональности, но зарезервированы Rust для потенциального использования в будущем.
 
 - `abstract`
 - `become`
@@ -80,15 +69,13 @@ Rust for potential future use.
 - `virtual`
 - `yield`
 
-### Raw Identifiers
+### Сырые идентификаторы
 
-_Raw identifiers_ are the syntax that lets you use keywords where they wouldn’t
-normally be allowed. You use a raw identifier by prefixing a keyword with `r#`.
+_Сырые идентификаторы_ — это синтаксис, позволяющий использовать ключевые слова там, где они обычно не разрешены. Вы используете сырой идентификатор, добавляя префикс `r#` перед ключевым словом.
 
-For example, `match` is a keyword. If you try to compile the following function
-that uses `match` as its name:
+Например, `match` — это ключевое слово. Если вы попытаетесь скомпилировать следующую функцию, использующую `match` в качестве имени:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```rust,ignore,does_not_compile
 fn match(needle: &str, haystack: &str) -> bool {
@@ -96,7 +83,7 @@ fn match(needle: &str, haystack: &str) -> bool {
 }
 ```
 
-you’ll get this error:
+вы получите следующую ошибку:
 
 ```text
 error: expected identifier, found keyword `match`
@@ -106,11 +93,9 @@ error: expected identifier, found keyword `match`
   |    ^^^^^ expected identifier, found keyword
 ```
 
-The error shows that you can’t use the keyword `match` as the function
-identifier. To use `match` as a function name, you need to use the raw
-identifier syntax, like this:
+Ошибка показывает, что вы не можете использовать ключевое слово `match` в качестве имени функции. Чтобы использовать `match` в качестве имени функции, вам нужно использовать синтаксис сырого идентификатора, вот так:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```rust
 fn r#match(needle: &str, haystack: &str) -> bool {
@@ -122,18 +107,8 @@ fn main() {
 }
 ```
 
-This code will compile without any errors. Note the `r#` prefix on the function
-name in its definition as well as where the function is called in `main`.
+Этот код скомпилируется без каких-либо ошибок. Обратите внимание на префикс `r#` в имени функции в её определении, а также в месте вызова функции в `main`.
 
-Raw identifiers allow you to use any word you choose as an identifier, even if
-that word happens to be a reserved keyword. This gives us more freedom to choose
-identifier names, as well as lets us integrate with programs written in a
-language where these words aren’t keywords. In addition, raw identifiers allow
-you to use libraries written in a different Rust edition than your crate uses.
-For example, `try` isn’t a keyword in the 2015 edition but is in the 2018, 2021,
-and 2024 editions. If you depend on a library that is written using the 2015
-edition and has a `try` function, you’ll need to use the raw identifier syntax,
-`r#try` in this case, to call that function from your code on later editions.
-See [Appendix E][appendix-e]<!-- ignore --> for more information on editions.
+Сырые идентификаторы позволяют использовать любое слово по вашему выбору в качестве идентификатора, даже если это слово является зарезервированным ключевым словом. Это даёт нам больше свободы в выборе имён идентификаторов, а также позволяет интегрироваться с программами, написанными на языке, где эти слова не являются ключевыми. Кроме того, сырые идентификаторы позволяют использовать библиотеки, написанные на другой редакции Rust, чем использует ваш крейт. Например, `try` не является ключевым словом в редакции 2015, но является таковым в редакциях 2018, 2021 и 2024. Если вы зависите от библиотеки, написанной с использованием редакции 2015 и имеющей функцию `try`, вам нужно будет использовать синтаксис сырого идентификатора, `r#try` в данном случае, чтобы вызвать эту функцию из вашего кода в более поздних редакциях. См. [Приложение E][appendix-e]<!-- ignore --> для получения дополнительной информации о редакциях.
 
 [appendix-e]: appendix-05-editions.html

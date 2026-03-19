@@ -1,14 +1,14 @@
-# Design Trade-offs
+# Компромиссы проектирования
 
-This section is about **design trade-offs** in Rust. To be an effective Rust engineer, it's not enough just to know how Rust works. You have to decide which of Rust's many tools are appropriate for a given job. In this section, we will give you a sequence of quizzes about your understanding of design trade-offs in Rust.  After each quiz, we will explain in-depth our rationale for each question.
+В этом разделе речь идёт о **компромиссах проектирования** в Rust. Чтобы быть эффективным инженером Rust, недостаточно просто знать, как работает Rust. Вы должны решать, какие из множества инструментов Rust подходят для конкретной задачи. В этом разделе мы предложим вам серию тестов на понимание компромиссов проектирования в Rust. После каждого теста мы подробно объясним нашу логику для каждого вопроса.
 
-Here's an example of what a question will look like. It will start out by describing a software case study with a space of designs:
+Вот пример того, как будет выглядеть вопрос. Он начинается с описания примера программного обеспечения и пространства проектных решений:
 
-> **Context:** You are designing an application with a global configuration, e.g. containing command-line flags.
+> **Контекст:** Вы разрабатываете приложение с глобальной конфигурацией, например, содержащей флаги командной строки.
 >
-> **Functionality:** The application needs to pass immutable references to this configuration throughout the application.
+> **Функциональность:** Приложению необходимо передавать неизменяемые ссылки на эту конфигурацию по всему приложению.
 >
-> **Designs:** Below are several proposed designs to implement the functionality.
+> **Проектные варианты:** Ниже представлены несколько предложенных вариантов реализации функциональности.
 >
 > ```rust,ignore
 > use std::rc::Rc;
@@ -19,39 +19,37 @@ Here's an example of what a question will look like. It will start out by descri
 >     // .. more fields ..
 > }
 > 
-> // Option 1: use a reference
+> // Вариант 1: использовать ссылку
 > struct ConfigRef<'a>(&'a Config);
 > 
-> // Option 2: use a reference-counted pointer
+> // Вариант 2: использовать указатель с подсчётом ссылок
 > struct ConfigRef(Rc<Config>);
 > 
-> // Option 3: use an atomic reference-counted pointer
+> // Вариант 3: использовать атомарный указатель с подсчётом ссылок
 > struct ConfigRef(Arc<Config>);
 > ```
 
-Given just the context and key functionality, all three designs are potential candidates. 
-We need more information about the system goals to decide which ones make the most sense.
-Hence, we give a new requirement:
+Учитывая только контекст и ключевую функциональность, все три варианта являются потенциальными кандидатами. Нам нужна дополнительная информация о целях системы, чтобы решить, какие из них наиболее подходят. Поэтому мы добавляем новое требование:
 
-> Select each design option that satisfies the following requirement:
+> Выберите каждый проектный вариант, который удовлетворяет следующему требованию:
 >
-> **Requirement:** The configuration reference must be shareable between multiple threads.
+> **Требование:** Ссылка на конфигурацию должна быть общей (shareable) между несколькими потоками.
 >
-> **Answer:**
+> **Ответ:**
 >
-> <input type="checkbox" checked disabled> Option 1 <br>
-> <input type="checkbox" disabled> Option 2 <br>
-> <input type="checkbox" checked disabled> Option 3 <br>
+> <input type="checkbox" checked disabled> Вариант 1 <br>
+> <input type="checkbox" disabled> Вариант 2 <br>
+> <input type="checkbox" checked disabled> Вариант 3 <br>
 
-In formal terms, this means that `ConfigRef` implements [`Send`] and [`Sync`]. 
-Assuming `Config: Send + Sync`, then both `&Config` and `Arc<Config>` satisfy this requirement,
-but [`Rc`] does not (because non-atomic reference-counted pointers are not thread-safe). So Option 2 does not satisfy the requirement, while Option 3 does.
+В формальных терминах это означает, что `ConfigRef` реализует [`Send`] и [`Sync`]. 
+Предполагая, что `Config: Send + Sync`, тогда и `&Config`, и `Arc<Config>` удовлетворяют этому требованию,
+но [`Rc`] — нет (потому что неатомарные указатели с подсчётом ссылок не являются потокобезопасными). Таким образом, Вариант 2 не удовлетворяет требованию, а Вариант 3 — удовлетворяет.
 
-We might also be tempted to conclude that Option 1 does not satisfy the requirement because functions like [`thread::spawn`] require that all data moved into a thread can only contain references with a `'static` lifetime. However, that does not rule out Option 1 for two reasons:
-1.  The `Config` could be stored as a global static variable (e.g., using [`OnceLock`]), so one could construct `&'static Config` references.
-2. Not all concurrency mechanisms require `'static` lifetimes, such as [`thread::scope`]. 
+Мы также можем быть склонны заключить, что Вариант 1 не удовлетворяет требованию, потому что такие функции, как [`thread::spawn`], требуют, чтобы все данные, перемещаемые в поток, содержали только ссылки с временем жизни `'static`. Однако это не исключает Вариант 1 по двум причинам:
+1.  `Config` может храниться как глобальная статическая переменная (например, с использованием [`OnceLock`]), поэтому можно создать ссылки `&'static Config`.
+2. Не все механизмы конкурентности требуют времен жизни `'static`, например, [`thread::scope`]. 
 
-Therefore the requirement as-stated only rules out non-[`Send`] types, and we consider Options 1 and 3 to be the correct answers.
+Таким образом, данное требование, как сформулировано, исключает только типы, не реализующие [`Send`], и мы считаем, что Варианты 1 и 3 являются правильными ответами.
 
 [`thread::spawn`]: https://doc.rust-lang.org/std/thread/fn.spawn.html
 [`Send`]: https://doc.rust-lang.org/std/marker/trait.Send.html
@@ -62,44 +60,43 @@ Therefore the requirement as-stated only rules out non-[`Send`] types, and we co
 
 <hr>
 
-Now you try with the questions below! Each section contains a quiz focused on a single scenario. Complete the quiz, and make sure to read the answer context after each quiz.
- <!-- These questions are both experimental and opinionated &mdash; please leave us feedback via the bug button 🐞 if you disagree with our answers. -->
+Теперь попробуйте сами с вопросами ниже! Каждый раздел содержит тест, сфокусированный на одном сценарии. Пройдите тест и обязательно прочитайте контекст ответа после каждого теста.
+ <!-- Эти вопросы носят экспериментальный и субъективный характер — пожалуйста, оставьте нам обратную связь через кнопку бага 🐞, если вы не согласны с нашими ответами. -->
 
-Along with each quiz, we have also provided links to popular Rust crates that served as inspiration for the quiz.
+Вместе с каждым тестом мы также предоставили ссылки на популярные крейты Rust, которые послужили источником вдохновения для теста.
 
-## References
+## Ссылки
 
-*Inspiration:* [Bevy assets], [Petgraph node indices], [Cargo units]
+*Вдохновение:* [Активы Bevy], [Индексы узлов Petgraph], [Единицы Cargo]
 
 {{#quiz ../quizzes/ch17-05-design-challenge-references.toml}}
 
+[Активы Bevy]: https://docs.rs/bevy/0.11.2/bevy/asset/struct.Assets.html
+[Индексы узлов Petgraph]: https://docs.rs/petgraph/0.6.4/petgraph/graph/struct.NodeIndex.html
+[Единицы Cargo]: https://docs.rs/cargo/0.73.1/cargo/core/compiler/struct.Unit.html
 
-[Bevy assets]: https://docs.rs/bevy/0.11.2/bevy/asset/struct.Assets.html
-[Petgraph node indices]: https://docs.rs/petgraph/0.6.4/petgraph/graph/struct.NodeIndex.html
-[Cargo units]: https://docs.rs/cargo/0.73.1/cargo/core/compiler/struct.Unit.html
+## Деревья типов
 
-## Trait Trees
-
-*Inspiration:* [Yew components], [Druid widgets]
+*Вдохновение:* [Компоненты Yew], [Виджеты Druid]
 
 {{#quiz ../quizzes/ch17-05-design-challenge-trait-trees.toml}}
 
-[Yew components]: https://docs.rs/yew/0.20.0/yew/html/trait.Component.html
-[Druid widgets]: https://docs.rs/druid/0.8.3/druid/trait.Widget.html
+[Компоненты Yew]: https://docs.rs/yew/0.20.0/yew/html/trait.Component.html
+[Виджеты Druid]: https://docs.rs/druid/0.8.3/druid/trait.Widget.html
 
-## Dispatch
+## Диспетчеризация
 
-*Inspiration:* [Bevy systems], [Diesel queries], [Axum handlers]
+*Вдохновение:* [Системы Bevy], [Запросы Diesel], [Обработчики Axum]
 
 {{#quiz ../quizzes/ch17-05-design-challenge-dispatch.toml}}
 
-[Bevy systems]: https://docs.rs/bevy_ecs/0.11.2/bevy_ecs/system/trait.IntoSystem.html
-[Diesel queries]: https://docs.diesel.rs/2.1.x/diesel/query_dsl/trait.BelongingToDsl.html
-[Axum handlers]: https://docs.rs/axum/0.6.20/axum/handler/trait.Handler.html
+[Системы Bevy]: https://docs.rs/bevy_ecs/0.11.2/bevy_ecs/system/trait.IntoSystem.html
+[Запросы Diesel]: https://docs.diesel.rs/2.1.x/diesel/query_dsl/trait.BelongingToDsl.html
+[Обработчики Axum]: https://docs.rs/axum/0.6.20/axum/handler/trait.Handler.html
 
-## Intermediates
+## Промежуточные представления
 
-*Inspiration:* [Serde] and [miniserde]
+*Вдохновение:* [Serde] и [miniserde]
 
 {{#quiz ../quizzes/ch17-05-design-challenge-intermediates.toml}}
 

@@ -2,10 +2,10 @@
 id = "9ff33b87-38e2-471b-8ca4-9c31a6431376"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 1:**
+**Программа 1:**
 
 ```ide
-/// Returns the n-th largest element in a slice
+/// Возвращает n-й по величине элемент в срезе
 fn find_nth<T: Ord + Clone>(elems: &[T], n: usize) -> T {
     elems.sort();
     let t = &elems[n];
@@ -13,28 +13,26 @@ fn find_nth<T: Ord + Clone>(elems: &[T], n: usize) -> T {
 }
 ```
 
-If you tried to compile this program, which of the following best describes the compiler error you would get?
+Если бы вы попытались скомпилировать эту программу, какое из следующих описаний лучше всего соответствует ошибке компилятора, которую вы получили?
 """
-answer.answer = "cannot borrow `elems` as mutable for `sort`"
+answer.answer = "не может заимствовать `elems` как изменяемый для `sort`"
 prompt.distractors = [
-  "cannot move out of shared reference for `clone`",
-  "cannot move out of shared reference in expression `&elems[n]`",
-  "the lifetime of `T` must outlive `&[T]`",
+  "не может переместить из разделяемой ссылки для `clone`",
+  "не может переместить из разделяемой ссылки в выражении `&elems[n]`",
+  "время жизни `T` должно переживать `&[T]`",
 ]
 context = """
-The method `slice::sort` expects a mutable reference to a slice, but
-instead gets an immutable reference.
+Метод `slice::sort` ожидает изменяемую ссылку на срез, но вместо этого получает неизменяемую ссылку.
 """
-
 
 [[questions]]
 id = "3ee8d846-d282-4de1-8e83-5ca0bc44fc13"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 1:**
+**Программа 1:**
 
 ```ide
-/// Returns the n-th largest element in a slice
+/// Возвращает n-й по величине элемент в срезе
 fn find_nth<T: Ord + Clone>(elems: &[T], n: usize) -> T {
     elems.sort();
     let t = &elems[n];
@@ -42,7 +40,7 @@ fn find_nth<T: Ord + Clone>(elems: &[T], n: usize) -> T {
 }
 ```
 
-Normally if you try to compile this function, the compiler returns the following error:
+Обычно, если вы попытаетесь скомпилировать эту функцию, компилятор вернёт следующую ошибку:
 
 ```text
 error[E0596]: cannot borrow `*elems` as mutable, as it is behind a `&` reference
@@ -52,11 +50,11 @@ error[E0596]: cannot borrow `*elems` as mutable, as it is behind a `&` reference
   |     ^^^^^^^^^^^^ `elems` is a `&` reference, so the data it refers to cannot be borrowed as mutable
 ```
 
-Assume that the compiler did NOT reject this function. Which (if any) of the following programs would
-(1) pass the compiler, and (2) possibly cause undefined behavior if executed?
-Check each program that satisfies both criteria, OR check "None of these programs" if none are satisfying.
+Предположим, что компилятор НЕ отклонил эту функцию. Какая (если есть) из следующих программ
+(1) пройдёт компиляцию и (2) возможно вызовет неопределённое поведение при выполнении?
+Отметьте каждую программу, удовлетворяющую обоим критериям, ИЛИ отметьте "Ни одна из этих программ", если ни одна не удовлетворяет.
 """
-answer.answer = ["None of these programs"]
+answer.answer = ["Ни одна из этих программ"]
 prompt.distractors = [
 """
 ```
@@ -81,23 +79,22 @@ println!("{}", n);
 """,
 ]
 context = """
-This program is technically memory-safe because `slice::sort` is only capable of moving
-elements around, not freeing them. For instance, `&v[0]` is guaranteed to point to 
-*some* number after calling `find_nth`, even if it is not the *original* number.
+Эта программа технически безопасна в отношении памяти, потому что `slice::sort` способен только перемещать
+элементы, не освобождая их. Например, `&v[0]` гарантированно указывает на 
+*какое-то* число после вызова `find_nth`, даже если это не *исходное* число.
 
-Note that `find_nth(&v, 10)` does not cause undefined behavior because Rust performs checks
-on array accesses, so evaluating `&v[10]` will panic.
+Обратите внимание, что `find_nth(&v, 10)` не вызывает неопределённого поведения, потому что Rust выполняет проверки
+при доступе к массиву, поэтому вычисление `&v[10]` приведёт к панике.
 """
-
 
 [[questions]]
 id = "d070eb9e-4527-453a-8c9b-698739a3dd6a"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 1:**
+**Программа 1:**
 
 ```ide
-/// Returns the n-th largest element in a slice
+/// Возвращает n-й по величине элемент в срезе
 fn find_nth<T: Ord + Clone>(elems: &[T], n: usize) -> T {
     elems.sort();
     let t = &elems[n];
@@ -105,10 +102,10 @@ fn find_nth<T: Ord + Clone>(elems: &[T], n: usize) -> T {
 }
 ```
 
-Of the following fixes (highlighted in yellow), which fix best satisfies these three criteria:
-1. The fixed function passes the Rust compiler,
-2. The fixed function preserves the intention of the original code, and
-3. The fixed function does not introduce unnecessary inefficiencies
+Какое из следующих исправлений (выделенных жёлтым) лучше всего удовлетворяет этим трём критериям:
+1. Исправленная функция проходит компиляцию Rust,
+2. Исправленная функция сохраняет намерение исходного кода, и
+3. Исправленная функция не вносит ненужных неэффективностей
 """
 answer.answer = """
 ```ide
@@ -151,27 +148,27 @@ fn find_nth<`[T: Ord]`>(`[mut elems: Vec<T>]`, n: usize) -> T {
 """,
 ]
 context = """
-A function like `find_nth` is clearly intended to be a read-only function, i.e. to
-extract some property of the input sequence. Any solution which mutates or drops the input therefore does not preserve the original function's intention, even if
-it is more efficient than creating an auxiliary vector. 
+Функция вроде `find_nth` явно предназначена быть функцией только для чтения, т.е. для
+извлечения некоторого свойства входной последовательности. Любое решение, которое изменяет или отбрасывает входные данные, поэтому не сохраняет намерение исходной функции, даже если
+оно более эффективно, чем создание вспомогательного вектора.
 
-Creating a `Vec<&T>` is preferable to creating a `Vec<T>`, since if `T` is large, then
-`elems.to_vec()` could be expensive. However, if we knew that `T: Copy`, then `to_vec`
-would be preferable to reduce the number of pointer dereferences within `elems.sort()`.
+Создание `Vec<&T>` предпочтительнее создания `Vec<T>`, поскольку если `T` большой, то
+`elems.to_vec()` может быть дорогим. Однако, если бы мы знали, что `T: Copy`, то `to_vec`
+было бы предпочтительнее для уменьшения количества разыменований указателей внутри `elems.sort()`.
 """
 
 [[questions]]
 id = "95979d75-5823-4059-a1cf-7e0eba69b41a"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 2:**
+**Программа 2:**
 
 ```ide
 struct TestResult {
-    /// Student's scores on a test
+    /// Оценки студента на тесте
     scores: Vec<usize>,
 
-    /// A possible value to curve all scores
+    /// Возможное значение для подгонки всех оценок
     curve: Option<usize>
 }
 impl TestResult {  
@@ -179,8 +176,8 @@ impl TestResult {
         &self.curve 
     }
 
-    /// If there is a curve, then increments all 
-    /// scores by the curve
+    /// Если есть подгонка, то увеличивает все 
+    /// оценки на значение подгонки
     pub fn apply_curve(&mut self) {
         if let Some(curve) = self.get_curve() {
             for score in self.scores.iter_mut() {
@@ -191,34 +188,33 @@ impl TestResult {
 }
 ```
 
-If you tried to compile this program, which of the following best describes the compiler error you would get?
+Если бы вы попытались скомпилировать эту программу, какое из следующих описаний лучше всего соответствует ошибке компилятора, которую вы получили?
 """
-answer.answer = "in `apply_curve`, cannot borrow `self.scores` as mutable for `iter_mut`"
+answer.answer = "в `apply_curve`, не может заимствовать `self.scores` как изменяемый для `iter_mut`"
 prompt.distractors = [
-  "in `get_curve`, cannot return a reference to a local variable `self.curve`",
-  "in `apply_curve`, cannot borrow `self` as immutable for `get_curve`",
-  "in `apply_curve`, `*score` cannot be mutated"
+  "в `get_curve`, не может вернуть ссылку на локальную переменную `self.curve`",
+  "в `apply_curve`, не может заимствовать `self` как неизменяемый для `get_curve`",
+  "в `apply_curve`, `*score` не может быть изменён"
 ]
 context = """
-Due to lifetime elision, the function `get_curve` has the type signature `get_curve<'a>(&'a self) -> &'a Option<usize>`. 
-This means that a call to `self.get_curve()` extends the entire borrow on `self`, not just on `self.curve`.
-Therefore `self` is immutably borrowed inside the scope of `let Some(curve) = ...`, and `self.scores.iter_mut()`
-cannot be called.
+Из-за упрощения времени жизни, функция `get_curve` имеет сигнатуру типа `get_curve<'a>(&'a self) -> &'a Option<usize>`.
+Это означает, что вызов `self.get_curve()` расширяет всё заимствование `self`, а не только `self.curve`.
+Поэтому `self` неизменно заимствован внутри области видимости `let Some(curve) = ...`, и `self.scores.iter_mut()`
+не может быть вызван.
 """
-
 
 [[questions]]
 id = "dcb42a15-d9b7-437d-95ec-f000b64ce277"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 2:**
+**Программа 2:**
 
 ```ide
 struct TestResult {
-    /// Student's scores on a test
+    /// Оценки студента на тесте
     scores: Vec<usize>,
 
-    /// A possible value to curve all scores
+    /// Возможное значение для подгонки всех оценок
     curve: Option<usize>
 }
 impl TestResult {  
@@ -226,8 +222,8 @@ impl TestResult {
         &self.curve 
     }
 
-    /// If there is a curve, then increments all 
-    /// scores by the curve
+    /// Если есть подгонка, то увеличивает все 
+    /// оценки на значение подгонки
     pub fn apply_curve(&mut self) {
         if let Some(curve) = self.get_curve() {
             for score in self.scores.iter_mut() {
@@ -238,7 +234,7 @@ impl TestResult {
 }
 ```
 
-Normally if you try to compile this function, the compiler returns the following error:
+Обычно, если вы попытаетесь скомпилировать эту функцию, компилятор вернёт следующую ошибку:
 
 ```text
 error[E0502]: cannot borrow `self.scores` as mutable because it is also borrowed as immutable
@@ -252,11 +248,11 @@ error[E0502]: cannot borrow `self.scores` as mutable because it is also borrowed
    |                           ------ immutable borrow later used here
 ```
 
-Assume that the compiler did NOT reject this function. Which (if any) of the following programs would
-(1) pass the compiler, and (2) possibly cause undefined behavior if executed?
-Check each program that satisfies both criteria, OR check "None of these programs" if none are satisfying.
+Предположим, что компилятор НЕ отклонил эту функцию. Какая (если есть) из следующих программ
+(1) пройдёт компиляцию и (2) возможно вызовет неопределённое поведение при выполнении?
+Отметьте каждую программу, удовлетворяющую обоим критериям, ИЛИ отметьте "Ни одна из этих программ", если ни одна не удовлетворяет.
 """
-answer.answer = ["None of these programs"]
+answer.answer = ["Ни одна из этих программ"]
 prompt.distractors = [
 """
 ```
@@ -290,23 +286,23 @@ println!("{:?}", result.scores);
 """,
 ]
 context = """
-This program is actually safe as written. It is a limitation of the borrow checker to not understand that `get_curve`
-only borrows `curve`, and doesn't affect `scores`. However, in theory if `get_curve` were changed to return a reference
-to something with `self.scores`, then memory safety could potentially be violated.
+Эта программа на самом деле безопасна в том виде, в котором написана. Это ограничение проверки заимствований, не понимающей, что `get_curve`
+заимствует только `curve` и не затрагивает `scores`. Однако, в теории, если `get_curve` изменить так, чтобы возвращала ссылку
+на что-то с `self.scores`, то безопасность памяти потенциально может быть нарушена.
 """
 
 [[questions]]
 id = "aa93c497-9864-4799-b69b-7de42c158f2a"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 2:**
+**Программа 2:**
 
 ```ide
 struct TestResult {
-    /// Student's scores on a test
+    /// Оценки студента на тесте
     scores: Vec<usize>,
 
-    /// A possible value to curve all scores
+    /// Возможное значение для подгонки всех оценок
     curve: Option<usize>
 }
 impl TestResult {  
@@ -314,8 +310,8 @@ impl TestResult {
         &self.curve 
     }
 
-    /// If there is a curve, then increments all 
-    /// scores by the curve
+    /// Если есть подгонка, то увеличивает все 
+    /// оценки на значение подгонки
     pub fn apply_curve(&mut self) {
         if let Some(curve) = self.get_curve() {
             for score in self.scores.iter_mut() {
@@ -326,10 +322,10 @@ impl TestResult {
 }
 ```
 
-Of the following fixes (highlighted in yellow), which fix best satisfies these three criteria:
-1. The fixed function passes the Rust compiler,
-2. The fixed function preserves the intention of the original code, and
-3. The fixed function does not introduce unnecessary inefficiencies
+Какое из следующих исправлений (выделенных жёлтым) лучше всего удовлетворяет этим трём критериям:
+1. Исправленная функция проходит компиляцию Rust,
+2. Исправленная функция сохраняет намерение исходного кода, и
+3. Исправленная функция не вносит ненужных неэффективностей
 """
 answer.answer = """
 ```ide
@@ -378,9 +374,9 @@ pub fn apply_curve(&mut self) {
 """,
 ]
 context = """
-By inlining the definition of `get_curve` into `apply_curve`, the borrow checker understands that `self.curve` is not `self.scores`,
-so it allows the function to compile. This is a common workaround for this type of borrow checker limitation.
+Встраивая определение `get_curve` в `apply_curve`, проверка заимствований понимает, что `self.curve` не является `self.scores`,
+поэтому позволяет функции скомпилироваться. Это распространённый обходной путь для такого типа ограничения проверки заимствований.
 
-Another option is to leverage the fact that `self.curve` is cheap to copy and use [`Option::copied`](https://doc.rust-lang.org/std/option/enum.Option.html#method.copied), 
-which would release the borrow on `self` as soon as `.copied()` is called.
+Другой вариант — использовать тот факт, что `self.curve` дёшево копируется, и применить [`Option::copied`](https://doc.rust-lang.org/std/option/enum.Option.html#method.copied),
+что освободит заимствование `self` сразу после вызова `.copied()`.
 """

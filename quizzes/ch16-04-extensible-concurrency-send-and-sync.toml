@@ -2,7 +2,7 @@
 id = "43081862-aac8-4e18-9c55-1107ea4c7cc1"
 type = "MultipleChoice"
 prompt.prompt = """
-Imagine you are designing an API for a database connection like this:
+Представьте, что вы проектируете API для подключения к базе данных следующим образом:
 
 ```
 struct DbConnection { /* ... */ }
@@ -13,17 +13,17 @@ impl DbConnection {
 }
 ```
 
-Your database does not support concurrent queries from the same connection. 
-Which of the following marker traits should `DbConnection` implement?
+Ваша база данных не поддерживает конкурентные запросы из одного подключения. 
+Какой из перечисленных маркерных типажей должен реализовать `DbConnection`?
 """
 answer.answer = "`Send`"
 prompt.distractors = [
-    "`Send` and `Sync`",
+    "`Send` и `Sync`",
     "`Sync`",
-    "Neither `Send` nor `Sync`"
+    "Ни `Send`, ни `Sync`"
 ]
 context = """
-It is fine to send a `DbConnection` between threads, so `DbConnection` should implement `Send`.
-But it would not be valid e.g. for an `Arc<Database>` to be shared such that multiple threads concurrently
-called `db.query()`, so `DbConnection` should not implement `Sync`.
+Отправка `DbConnection` между потоками допустима, поэтому `DbConnection` должен реализовывать `Send`.
+Но было бы неверно, например, разделять `Arc<Database>` так, чтобы несколько потоков конкурентно
+вызывали `db.query()`, поэтому `DbConnection` не должен реализовывать `Sync`.
 """

@@ -1,10 +1,10 @@
-## What Is Ownership?
+## Что такое владение?
 
-Ownership is a discipline for ensuring the **safety** of Rust programs. To understand ownership, we first need to understand what makes a Rust program safe (or unsafe).
+Владение — это дисциплина, обеспечивающая **безопасность** программ на Rust. Чтобы понять владение, сначала нужно понять, что делает программу на Rust безопасной (или небезопасной).
 
-### Safety is the Absence of Undefined Behavior
+### Безопасность — это отсутствие неопределённого поведения
 
-Let's start with an example. This program is safe to execute:
+Начнём с примера. Эта программа безопасна для выполнения:
 
 ```rust
 fn read(y: bool) {
@@ -19,7 +19,7 @@ fn main() {
 }
 ```
 
-We can make this program unsafe to execute by moving the call to `read` before the definition of `x`:
+Мы можем сделать эту программу небезопасной, переместив вызов `read` перед определением `x`:
 
 ```rust,ignore,does_not_compile
 fn read(y: bool) {
@@ -34,13 +34,13 @@ fn main() {
 }
 ```
 
-> *Note*: in this chapter, we will use many code examples that do not compile. Make sure to look for the question mark crab if you are not sure whether a program should compile or not.
+> *Примечание*: в этой главе мы будем использовать многие примеры кода, которые не компилируются. Если вы не уверены, должна ли программа компилироваться, ищите краба с вопросительным знаком.
 
-This second program is unsafe because `read(x)` expects `x` to have a value of type `bool`, but `x` doesn't have a value yet.
+Вторая программа небезопасна, потому что `read(x)` ожидает, что `x` имеет значение типа `bool`, но `x` ещё не имеет значения.
 
-When a program like this is executed by an interpreter, then reading `x` before it's defined would raise an exception such as Python's [`NameError`] or Javascript's [`ReferenceError`]. But exceptions come at a cost. Each time an interpreted program reads a variable, then the interpreter must check whether that variable is defined.
+Когда такая программа выполняется интерпретатором, чтение `x` до её определения вызывает исключение, например `NameError` в Python или `ReferenceError` в JavaScript. Но исключения имеют стоимость. Каждый раз, когда интерпретируемая программа читает переменную, интерпретатор должен проверить, определена ли эта переменная.
 
-Rust's goal is to compile programs into efficient binaries that require as few runtime checks as possible. Therefore Rust does not check at *runtime* whether a variable is defined before being used. Instead, Rust checks at *compile-time*. If you try to compile the unsafe program, you will get this error:
+Цель Rust — компилировать программы в эффективные бинарные файлы, требующие как можно меньше проверок во время выполнения. Поэтому Rust не проверяет во время *выполнения*, определена ли переменная перед её использованием. Вместо этого Rust проверяет на этапе *компиляции*. Если вы попытаетесь скомпилировать небезопасную программу, вы получите ошибку:
 
 ```text
 error[E0425]: cannot find value `x` in this scope
@@ -50,9 +50,9 @@ error[E0425]: cannot find value `x` in this scope
   |          ^ not found in this scope
 ```
 
-You probably have the intuition that it's good for Rust to ensure that variables are defined before they are used. But why? To justify the rule, we have to ask: **what would happen if Rust allowed a rejected program to compile?**
+Вы, вероятно, интуитивно понимаете, что хорошо, когда Rust обеспечивает, чтобы переменные были определены перед использованием. Но почему? Чтобы обосновать это правило, нужно спросить: **что произойдёт, если Rust разрешит скомпилировать отвергнутую программу?**
 
-Let's first consider how the safe program compiles and executes. On a computer with a processor using an [x86](https://en.wikipedia.org/wiki/X86) architecture, Rust generates the following assembly code for the `main` function in the safe program ([see the full assembly code here](https://rust.godbolt.org/z/xnT1fzsqv)):
+Сначала рассмотрим, как компилируется и выполняется безопасная программа. На компьютере с процессором архитектуры [x86](https://en.wikipedia.org/wiki/X86) Rust генерирует следующий ассемблерный код для функции `main` в безопасной программе ([см. полный ассемблерный код здесь](https://rust.godbolt.org/z/xnT1fzsqv)):
 
 ```x86asm
 main:
@@ -62,56 +62,52 @@ main:
     ; ...
 ```
 
-> _Note_: if you aren't familiar with assembly code, that's ok! This section contains a few examples of assembly just to show you how Rust actually works under the hood. You don't generally need to know assembly to understand Rust.
+> _Примечание_: если вы не знакомы с ассемблерным кодом, это нормально! Этот раздел содержит несколько примеров ассемблера, чтобы показать, как Rust работает на самом деле. Для понимания Rust обычно не нужно знать ассемблер.
 
-This assembly code will:
+Этот ассемблерный код:
+- Перемещает число 1, представляющее `true`, в регистр (вид переменной в ассемблере) под названием `edi`.
+- Вызывает функцию `read`, которая ожидает, что её первый аргумент `y` будет в регистре `edi`.
 
-- Move the number 1, representing `true`, into a "register" (a kind of assembly variable) called `edi`.
-- Call the `read` function, which expects its first argument `y` to be in the `edi` register.
-
-If the unsafe function was allowed to compile, its assembly might look like this:
+Если бы небезопасную функцию разрешили скомпилировать, её ассемблерный код мог бы выглядеть так:
 
 ```x86asm
 main:
     ; ...
     call    read
-    mov     edi, 1    ; mov is after call
+    mov     edi, 1    ; mov после call
     ; ...
 ```
 
-This program is unsafe because `read` will expect `edi` to be a boolean, which is either the number `0` or `1`. But `edi` could be anything: `2`, `100`, `0x1337BEEF`. When `read` wants to use its argument `y` for any purpose, it will immediately cause _**UNDEFINED BEHAVIOR!**_
+Эта программа небезопасна, потому что `read` ожидает, что `edi` будет логическим значением, то есть числом `0` или `1`. Но `edi` может быть чем угодно: `2`, `100`, `0x1337BEEF`. Когда `read` попытается использовать свой аргумент `y` для любой цели, это немедленно вызовет **НЕОПРЕДЕЛЁННОЕ ПОВЕДЕНИЕ!**
 
-Rust doesn't specify what happens if you try to run `if y { .. }` when `y` isn't `true` or `false`. That *behavior*, or what happens after executing the instruction, is *undefined*. Something will happen, for example:
+Rust не определяет, что происходит, если попытаться выполнить `if y { .. }`, когда `y` не равно `true` или `false`. Это *поведение*, или то, что происходит после выполнения инструкции, является *неопределённым*. Может произойти что-то, например:
+- Код выполняется без сбоев, и никто не замечает проблемы.
+- Код немедленно падает из-за [ошибки сегментации](https://en.wikipedia.org/wiki/Segmentation_fault) или другой ошибки операционной системы.
+- Код выполняется без сбоев, пока злоумышленник не создаст правильный ввод, чтобы удалить вашу рабочую базу данных, перезаписать резервные копии и украсть ваши обеденные деньги.
 
-- The code executes without crashing, and no one notices a problem.
-- The code immediately crashes due to a [segmentation fault](https://en.wikipedia.org/wiki/Segmentation_fault) or another kind of operating system error.
-- The code executes without crashing, until a malicious actor creates the right input to delete your production database, overwrite your backups, and steal your lunch money.
+**Фундаментальная цель Rust — гарантировать, что ваши программы никогда не имеют неопределённого поведения.** Вот что значит "безопасность". Неопределённое поведение особенно опасно для низкоуровневых программ с прямым доступом к памяти. Около [70% сообщённых уязвимостей безопасности](https://msrc.microsoft.com/blog/2019/07/a-proactive-approach-to-more-secure-code/) в низкоуровневых системах вызвано повреждением памяти, что является одной из форм неопределённого поведения.
 
-**A foundational goal of Rust is to ensure that your programs never have undefined behavior.** That is the meaning of "safety." Undefined behavior is especially dangerous for low-level programs with direct access to memory. About [70% of reported security vulnerabilities](https://msrc.microsoft.com/blog/2019/07/a-proactive-approach-to-more-secure-code/) in low-level systems are caused by memory corruption, which is one form of undefined behavior.
+Вторичная цель Rust — предотвращать неопределённое поведение на этапе *компиляции*, а не *выполнения*. У этой цели две мотивации:
+1. Обнаружение ошибок на этапе компиляции означает избегание этих ошибок в производственной среде, повышая надёжность вашего программного обеспечения.
+2. Обнаружение ошибок на этапе компиляции означает меньше проверок во время выполнения для этих ошибок, повышая производительность вашего программного обеспечения.
 
-A secondary goal of Rust is to prevent undefined behavior at _compile-time_ instead of _run-time_. This goal has two motivations:
+Rust не может предотвратить все ошибки. Если приложение предоставляет публичный и неаутентифицированный endpoint `/delete-production-database`, то злоумышленнику не нужна подозрительная инструкция if для удаления базы данных. Но защиты Rust всё ещё могут сделать программы безопаснее по сравнению с использованием языка с меньшим количеством защит, как показала, например, [команда Android от Google](https://security.googleblog.com/2022/12/memory-safe-languages-in-android-13.html).
 
-1. Catching bugs at compile-time means avoiding those bugs in production, improving the reliability of your software.
-2. Catching bugs at compile-time means fewer runtime checks for those bugs, improving the performance of your software.
+### Владение как дисциплина для безопасности памяти
 
-Rust cannot prevent all bugs. If an application exposes a public and unauthenticated `/delete-production-database` endpoint, then a malicious actor doesn't need a suspicious if-statement to delete the database. But Rust's protections are still likely to make programs safer versus using a language with fewer protections, e.g. as found by [Google's Android team](https://security.googleblog.com/2022/12/memory-safe-languages-in-android-13.html).
+Поскольку безопасность — это отсутствие неопределённого поведения, а владение связано с безопасностью, нам нужно понять владение с точки зрения неопределённых поведений, которые оно предотвращает. Справочник Rust содержит большой список ["Поведения, считающегося неопределённым"](https://doc.rust-lang.org/reference/behavior-considered-undefined.html). Пока мы сосредоточимся на одной категории: операции с памятью.
 
-### Ownership as a Discipline for Memory Safety
+Память — это пространство, где хранятся данные во время выполнения программы. Есть много способов думать о памяти:
+- Если вы не знакомы с системным программированием, вы можете думать о памяти на высоком уровне, например "память — это ОЗУ в моём компьютере" или "память — это то, что заканчивается, если я загружаю слишком много данных".
+- Если вы знакомы с системным программированием, вы можете думать о памяти на низком уровне, например "память — это массив байтов" или "память — это указатели, которые я получаю от `malloc`".
 
-Since safety is the absence of undefined behavior, and since ownership is about safety, then we need to understand ownership in terms of the undefined behaviors it prevents. The Rust Reference maintains a large list of ["Behavior considered undefined"](https://doc.rust-lang.org/reference/behavior-considered-undefined.html). For now, we will focus on one category: operations on memory.
+Обе эти модели памяти *действительны*, но они не являются *полезными* способами думать о том, как работает Rust. Высокоуровневая модель слишком абстрактна, чтобы объяснить, как работает Rust. Вам нужно будет понять концепцию указателя, например. Низкоуровневая модель слишком конкретна, чтобы объяснить, как работает Rust. Rust не позволяет вам интерпретировать память как массив байтов, например.
 
-Memory is the space where data is stored during the execution of a program. There are many ways to think about memory:
+Rust предоставляет особый способ думать о памяти. Владение — это дисциплина для безопасного использования памяти в рамках этого способа мышления. Остальная часть этой главы объяснит модель памяти Rust.
 
-- If you are unfamiliar with systems programming, you might think of memory at a high level like "memory is the RAM in my computer" or "memory is the thing that runs out if I load too much data".
-- If you are familiar with systems programming, you might think of memory at a low level like "memory is an array of bytes" or "memory is the pointers I get back from `malloc`".
+### Переменные живут в стеке
 
-Both of these memory models are _valid_, but they are not _useful_ ways to think about how Rust works. The high-level model is too abstract to explain how Rust works. You will need to understand the concept of a pointer, for instance. The low-level model is too concrete to explain how Rust works. Rust does not allow you to interpret memory as an array of bytes, for instance.
-
-Rust provides a particular way to think about memory. Ownership is a discipline for safely using memory within that way of thinking. The rest of this chapter will explain the Rust model of memory.
-
-### Variables Live in the Stack
-
-Here's a program like the one you saw in Section 3.3 that defines a number `n` and calls a function `plus_one` on `n`. Beneath the program is a new kind of diagram. This diagram visualizes the contents of memory during the program's execution at the three marked points.
+Вот программа, похожая на ту, что вы видели в разделе 3.3, которая определяет число `n` и вызывает функцию `plus_one` для `n`. Под программой — новый вид диаграммы. Эта диаграмма визуализирует содержимое памяти во время выполнения программы в трёх отмеченных точках.
 
 ```aquascope,interpreter,horizontal
 fn main() {
@@ -125,17 +121,16 @@ fn plus_one(x: i32) -> i32 {
 }
 ```
 
-Variables live in **frames**. A frame is a mapping from variables to values within a single scope, such as a function. For example:
+Переменные живут в **кадрах**. Кадр — это сопоставление переменных со значениями в пределах одной области видимости, такой как функция. Например:
+- Кадр для `main` в точке L1 содержит `n = 5`.
+- Кадр для `plus_one` в L2 содержит `x = 5`.
+- Кадр для `main` в точке L3 содержит `n = 5; y = 6`.
 
-- The frame for `main` at location L1 holds `n = 5`.
-- The frame for `plus_one` at L2 holds `x = 5`.
-- The frame for `main` at location L3 holds `n = 5; y = 6`.
+Кадры организованы в **стек** текущих вызываемых функций. Например, в L2 кадр для `main` находится над кадром для вызываемой функции `plus_one`. После того, как функция возвращается, Rust освобождает кадр функции. (Освобождение также называется **освобождением** или **удалением**, и мы используем эти термины взаимозаменяемо.) Эта последовательность кадров называется стеком, потому что самый недавний добавленный кадр всегда является следующим освобождаемым кадром.
 
-Frames are organized into a **stack** of currently-called-functions. For example, at L2 the frame for `main` sits above the frame for the called function `plus_one`. After a function returns, Rust deallocates the function's frame. (Deallocation is also called **freeing** or **dropping**, and we use those terms interchangeably.) This sequence of frames is called a stack because the most recent frame added is always the next frame freed.
+> _Примечание:_ эта модель памяти не полностью описывает, как Rust работает на самом деле! Как мы видели ранее с ассемблерным кодом, компилятор Rust может поместить `n` или `x` в регистр, а не в кадр стека. Но это различие — деталь реализации. Это не должно менять ваше понимание безопасности в Rust, поэтому мы можем сосредоточиться на более простом случае переменных только в кадрах.
 
-> _Note:_ this memory model does not fully describe how Rust actually works! As we saw earlier with the assembly code, the Rust compiler might put `n` or `x` into a register rather than a stack frame. But that distinction is an implementation detail. It shouldn't change your understanding of safety in Rust, so we can focus on the simpler case of frame-only variables.
-
-When an expression reads a variable, the variable's value is copied from its slot in the stack frame. For example, if we run this program:
+Когда выражение читает переменную, значение переменной копируется из её слота в кадре стека. Например, если мы запустим эту программу:
 
 ```aquascope,interpreter,horizontal
 #fn main() {
@@ -145,11 +140,11 @@ b += 1;`[]`
 #}
 ```
 
-The value of `a` is copied into `b`, and `a` is left unchanged, even after changing `b`.
+Значение `a` копируется в `b`, и `a` остаётся неизменным, даже после изменения `b`.
 
-### Boxes Live in the Heap
+### Box'ы живут в куче
 
-However, copying data can take up a lot of memory. For example, here's a slightly different program. This program copies an array with 1 million elements:
+Однако копирование данных может занимать много памяти. Например, вот немного другая программа. Эта программа копирует массив с 1 миллионом элементов:
 
 ```aquascope,interpreter
 #fn main() {
@@ -158,9 +153,9 @@ let b = a;`[]`
 #}
 ```
 
-Observe that copying `a` into `b` causes the `main` frame to contain 2 million elements. 
+Заметьте, что копирование `a` в `b` приводит к тому, что кадр `main` содержит 2 миллиона элементов.
 
-To transfer access to data without copying it, Rust uses **pointers**. A pointer is a value that describes a location in memory. The value that a pointer points-to is called its **pointee.** One common way to make a pointer is to allocate memory in the **heap**.  The heap is a separate region of memory where data can live indefinitely. Heap data is not tied to a specific stack frame. Rust provides a construct called [`Box`](https://doc.rust-lang.org/std/boxed/index.html) for putting data on the heap. For example, we can wrap the million-element array in `Box::new` like this:
+Чтобы передать доступ к данным без их копирования, Rust использует **указатели**. Указатель — это значение, описывающее расположение в памяти. Значение, на которое указывает указатель, называется **объектом указателя**. Один из распространённых способов создать указатель — выделить память в **куче**. Куча — это отдельная область памяти, где данные могут существовать неограниченно долго. Данные в куче не привязаны к конкретному кадру стека. Rust предоставляет конструкцию под названием [`Box`](https://doc.rust-lang.org/std/boxed/index.html) для размещения данных в куче. Например, мы можем обернуть массив из миллиона элементов в `Box::new` так:
 
 ```aquascope,interpreter
 #fn main() {
@@ -169,15 +164,15 @@ let b = a;`[]`
 #}
 ```
 
-Observe that now, there is only ever a single array at a time. At L1, the value of `a` is a pointer (represented by dot with an arrow) to the array inside the heap. The statement `let b = a` copies the pointer from `a` into `b`, but the pointed-to data is not copied. Note that `a` is now grayed out because it has been *moved* &mdash; we will see what that means in a moment.
+Заметьте, что теперь существует только один массив за раз. В L1 значение `a` — это указатель (представлен точкой со стрелкой) на массив внутри кучи. Инструкция `let b = a` копирует указатель из `a` в `b`, но данные, на которые указывает указатель, не копируются. Обратите внимание, что `a` теперь серое, потому что оно было *перемещено* — мы увидим, что это значит, через мгновение.
 
 {{#quiz ../quizzes/ch04-01-ownership-sec1-stackheap.toml}}
 
-### Rust Does Not Permit Manual Memory Management
+### Rust не разрешает ручное управление памятью
 
-Memory management is the process of allocating memory and deallocating memory. In other words, it's the process of finding unused memory and later returning that memory when it is no longer used. Stack frames are automatically managed by Rust. When a function is called, Rust allocates a stack frame for the called function. When the call ends, Rust deallocates the stack frame.
+Управление памятью — это процесс выделения памяти и освобождения памяти. Другими словами, это процесс поиска неиспользуемой памяти и последующего возврата этой памяти, когда она больше не используется. Кадры стека автоматически управляются Rust. Когда функция вызывается, Rust выделяет кадр стека для вызываемой функции. Когда вызов заканчивается, Rust освобождает кадр стека.
 
-As we saw above, heap data is allocated when calling `Box::new(..)`. But when is heap data deallocated? Imagine that Rust had a `free()` function that frees a heap allocation. Imagine that Rust let a programmer call `free` whenever they wanted. This kind of "manual" memory management easily leads to bugs. For example, we could read a pointer to freed memory:
+Как мы видели выше, данные в куче выделяются при вызове `Box::new(..)`. Но когда данные в куче освобождаются? Представьте, что у Rust есть функция `free()`, которая освобождает выделение в куче. Представьте, что Rust позволяет программисту вызывать `free` когда угодно. Такой "ручной" способ управления памятью легко приводит к ошибкам. Например, мы могли бы прочитать указатель на освобождённую память:
 
 ```aquascope,interpreter,shouldFail
 #fn free<T>(_t: T) {}
@@ -188,21 +183,21 @@ assert!(b[0] == 0);`[]`
 #}
 ```
 
-> *Note:* you may wonder how we are executing this Rust program that doesn't compile. We use [special tools](https://github.com/cognitive-engineering-lab/aquascope) to simulate Rust as if the borrow checker were disabled, for educational purposes. That way we can answer what-if questions, like: what if Rust let this unsafe program compile?
+> *Примечание:* вы можете спросить, как мы выполняем эту программу на Rust, которая не компилируется. Мы используем [специальные инструменты](https://github.com/cognitive-engineering-lab/aquascope) для симуляции Rust, как если бы проверка заимствований была отключена, в образовательных целях. Таким образом мы можем отвечать на гипотетические вопросы, например: что, если Rust разрешит эту небезопасную программу скомпилироваться?
 
-Here, we allocate an array on the heap. Then we call `free(b)`, which deallocates the heap memory of `b`. Therefore the value of `b` is a pointer to invalid memory, which we represent as the "⦻" icon. No undefined behavior has happened yet! The program is still safe at L2. It's not necessarily a problem to have an invalid pointer.
+Здесь мы выделяем массив в куче. Затем вызываем `free(b)`, которая освобождает память кучи для `b`. Поэтому значение `b` — это указатель на недействительную память, которую мы представляем иконкой "⦻". Неопределённое поведение ещё не произошло! Программа всё ещё безопасна в L2. Не обязательно проблема иметь недействительный указатель.
 
-The undefined behavior happens when we try to *use* the pointer by reading `b[0]`. That would attempt to access invalid memory, which could cause the program to crash. Or worse, it could not crash and return arbitrary data. Therefore this program is **unsafe**.
+Неопределённое поведение происходит, когда мы пытаемся *использовать* указатель, читая `b[0]`. Это попытка доступа к недействительной памяти, что может привести к падению программы. Или хуже, это может не привести к падению и вернуть произвольные данные. Поэтому эта программа **небезопасна**.
 
-Rust does not allow programs to manually deallocate memory. That policy avoids the kinds of undefined behaviors shown above.
+Rust не позволяет программам вручную освобождать память. Эта политика избегает типов неопределённого поведения, показанных выше.
 
-### A Box's Owner Manages Deallocation
+### Владелец Box'а управляет освобождением
 
-Instead, Rust _automatically_ frees a box's heap memory. Here is an _almost_ correct description of Rust's policy for freeing boxes:
+Вместо этого Rust *автоматически* освобождает память кучи для box'а. Вот *почти* правильное описание политики Rust для освобождения box'ов:
 
-> **Box deallocation principle (almost correct):** If a variable is bound to a box, when Rust deallocates the variable's frame, then Rust deallocates the box's heap memory.
+> **Принцип освобождения Box'а (почти правильно):** Если переменная связана с box'ом, когда Rust освобождает кадр переменной, тогда Rust освобождает память кучи box'а.
 
-For example, let's trace through a program that allocates and frees a box:
+Например, давайте проследим программу, которая выделяет и освобождает box:
 
 ```aquascope,interpreter,horizontal
 fn main() {
@@ -215,9 +210,9 @@ fn make_and_drop() {
 }
 ```
 
-At L1, before calling `make_and_drop`, the state of memory is just the stack frame for `main`. Then at L2, while calling `make_and_drop`, `a_box` points to `5` on the heap. Once `make_and_drop` is finished, Rust deallocates its stack frame. `make_and_drop` contains the variable `a_box`, so Rust also deallocates the heap data in `a_box`. Therefore the heap is empty at L3.
+В L1, перед вызовом `make_and_drop`, состояние памяти — это просто кадр стека для `main`. Затем в L2, во время вызова `make_and_drop`, `a_box` указывает на `5` в куче. Как только `make_and_drop` завершается, Rust освобождает его кадр стека. `make_and_drop` содержит переменную `a_box`, поэтому Rust также освобождает данные в куче в `a_box`. Поэтому куча пуста в L3.
 
-The box's heap memory has been successfully managed. But what if we abused this system? Returning to our earlier example, what happens when we bind two variables to a box?
+Память кучи для box'а была успешно управлена. Но что, если мы злоупотребим этой системой? Возвращаясь к нашему предыдущему примеру, что происходит, когда мы связываем две переменные с box'ом?
 
 ```rust,ignore
 # fn main() {
@@ -226,18 +221,17 @@ let b = a;
 # }
 ```
 
-The boxed array has now been bound to both `a` and `b`. By our "almost correct" principle, Rust would try to free the box's heap memory *twice* on behalf of both variables. That's undefined behavior too!
+Массивированный массив теперь связан как с `a`, так и с `b`. Согласно нашему "почти правильному" принципу, Rust попытается освободить память кучи box'а *дважды* от имени обеих переменных. Это тоже неопределённое поведение!
 
-To avoid this situation, we finally arrive at ownership. When `a` is bound to `Box::new([0; 1_000_000])`, we say that `a` **owns** the box. The statement `let b = a` **moves** ownership of the box from `a` to `b`. Given these concepts, Rust's policy for freeing boxes is more accurately described as:
+Чтобы избежать этой ситуации, мы наконец приходим к владению. Когда `a` связывается с `Box::new([0; 1_000_000])`, мы говорим, что `a` **владеет** box'ом. Инструкция `let b = a` **перемещает** владение box'ом из `a` в `b`. Учитывая эти концепции, политика Rust для освобождения box'ов более точно описывается так:
 
-> **Box deallocation principle (fully correct):** If a variable owns a box, when Rust deallocates the variable's frame, then Rust deallocates the box's heap memory.
+> **Принцип освобождения Box'а (полностью правильно):** Если переменная владеет box'ом, когда Rust освобождает кадр переменной, тогда Rust освобождает память кучи box'ом.
 
-In the example above, `b` owns the boxed array. Therefore when the scope ends, Rust deallocates the box only once on behalf of `b`, not `a`.
+В примере выше `b` владеет box'ом с массивом. Поэтому когда область видимости заканчивается, Rust освобождает box только один раз от имени `b`, а не `a`.
 
+### Коллекции используют Box'ы
 
-### Collections Use Boxes
-
-Boxes are used by Rust data structures[^boxed-data-structures] like [`Vec`](https://doc.rust-lang.org/std/vec/struct.Vec.html), [`String`](https://doc.rust-lang.org/std/string/struct.String.html), and [`HashMap`](https://doc.rust-lang.org/std/collections/struct.HashMap.html) to hold a variable number of elements. For example, here's a program that creates, moves, and mutates a string:
+Box'ы используются структурами данных Rust[^boxed-data-structures] такими как [`Vec`](https://doc.rust-lang.org/std/vec/struct.Vec.html), [`String`](https://doc.rust-lang.org/std/string/struct.String.html) и [`HashMap`](https://doc.rust-lang.org/std/collections/struct.HashMap.html) для хранения переменного числа элементов. Например, вот программа, которая создаёт, перемещает и изменяет строку:
 
 ```aquascope,interpreter,horizontal
 fn main() {
@@ -252,23 +246,21 @@ fn add_suffix(mut name: String) -> String {
 }
 ```
 
-This program is more involved, so make sure you follow each step:
+Эта программа более сложная, поэтому убедитесь, что вы следите за каждым шагом:
+1. В L1 строка "Ferris" была выделена в куче. Её владеет `first`.
+2. В L2 была вызвана функция `add_suffix(first)`. Это перемещает владение строкой из `first` в `name`. Данные строки не копируются, но указатель на данные копируется.
+3. В L3 функция `name.push_str(" Jr.")` изменяет размер выделения кучи для строки. Это делает три вещи. Во-первых, создаётся новое большее выделение. Во-вторых, в новое выделение записывается "Ferris Jr.". В-третьих, освобождается исходная память кучи. `first` теперь указывает на освобождённую память.
+4. В L4 кадр для `add_suffix` исчез. Эта функция вернула `name`, передавая владение строкой `full`.
 
-1. At L1, the string "Ferris" has been allocated on the heap. It is owned by `first`.
-2. At L2, the function `add_suffix(first)` has been called. This moves ownership of the string from `first` to `name`. The string data is not copied, but the pointer to the data is copied.
-3. At L3, the function `name.push_str(" Jr.")` resizes the string's heap allocation. This does three things. First, it creates a new larger allocation. Second, it writes "Ferris Jr." into the new allocation. Third, it frees the original heap memory. `first` now points to deallocated memory.
-4. At L4, the frame for `add_suffix` is gone. This function returned `name`, transferring ownership of the string to `full`.
+### Переменные нельзя использовать после перемещения
 
-
-### Variables Cannot Be Used After Being Moved
-
-The string program helps illustrate a key safety principle for ownership. Imagine that `first` were used in `main` after calling `add_suffix`. We can simulate such a program and see the undefined behavior that results:
+Программа со строкой помогает проиллюстрировать ключевой принцип безопасности для владения. Представьте, что `first` используется в `main` после вызова `add_suffix`. Мы можем смоделировать такую программу и увидеть неопределённое поведение, которое возникает:
 
 ```aquascope,interpreter,shouldFail
 fn main() {
     let first = String::from("Ferris");
     let full = add_suffix(first);
-    println!("{full}, originally {first}");`[]` // first is now used here
+    println!("{full}, originally {first}");`[]` // first теперь используется здесь
 }
 
 fn add_suffix(mut name: String) -> String {
@@ -277,9 +269,9 @@ fn add_suffix(mut name: String) -> String {
 }
 ```
 
-`first` points to deallocated memory after calling `add_suffix`. Reading `first` in `println!` would therefore be a violation of memory safety (undefined behavior). Remember: it's not a problem that `first` points to deallocated memory. It's a problem that we tried to *use* `first` after it became invalid.
+`first` указывает на освобождённую память после вызова `add_suffix`. Поэтому чтение `first` в `println!` было бы нарушением безопасности памяти (неопределённое поведение). Помните: проблема не в том, что `first` указывает на освобождённую память. Проблема в том, что мы попытались *использовать* `first` после того, как она стала недействительной.
 
-Thankfully, Rust will refuse to compile this program, giving the following error:
+К счастью, Rust откажется компилировать эту программу, выдавая следующую ошибку:
 
 ```text
 error[E0382]: borrow of moved value: `first`
@@ -293,17 +285,17 @@ error[E0382]: borrow of moved value: `first`
   |                                   ^^^^^ value borrowed here after move
 ```
 
-Let's walk through the steps of this error. Rust says that `first` is moved when we called `add_suffix(first)` on line 3. The error clarifies that `first` is moved because it has type `String`, which does not implement `Copy`. We will discuss `Copy` soon &mdash; in brief, you would not get this error if you used an `i32` instead of `String`. Finally, the error says that we use `first` after being moved (it's "borrowed", which we discuss next section).
+Давайте пройдёмся по шагам этой ошибки. Rust говорит, что `first` перемещена при вызове `add_suffix(first)` в строке 3. Ошибка уточняет, что `first` перемещена, потому что имеет тип `String`, который не реализует `Copy`. Мы обсудим `Copy` скоро — вкратце, вы не получили бы эту ошибку, если бы использовали `i32` вместо `String`. Наконец, ошибка говорит, что мы используем `first` после перемещения (она "заимствована", что мы обсуждаем в следующем разделе).
 
-So if you move a variable, Rust will stop you from using that variable later. More generally, the compiler will enforce this principle:
+Итак, если вы перемещаете переменную, Rust не даст вам использовать эту переменную позже. В более общем смысле, компилятор будет применять этот принцип:
 
-> **Moved heap data principle:** if a variable `x` moves ownership of heap data to another variable `y`, then `x` cannot be used after the move.
+> **Принцип перемещённых данных в куче:** если переменная `x` перемещает владение данными в куче в другую переменную `y`, тогда `x` не может быть использована после перемещения.
 
-Now you should start to see the relationship between ownership, moves, and safety. Moving ownership of heap data avoids undefined behavior from reading deallocated memory.
+Теперь вы должны начать видеть связь между владением, перемещениями и безопасностью. Перемещение владения данными в куче избегает неопределённого поведения из-за чтения освобождённой памяти.
 
-### Cloning Avoids Moves
+### Клонирование избегает перемещений
 
-One way to avoid moving data is to *clone* it using the `.clone()` method. For example, we can fix the safety issue in the previous program with a clone:
+Один из способов избежать перемещения данных — *клонировать* их, используя метод `.clone()`. Например, мы можем исправить проблему безопасности в предыдущей программе с клоном:
 
 ```aquascope,interpreter
 fn main() {
@@ -319,24 +311,23 @@ fn add_suffix(mut name: String) -> String {
 }
 ```
 
-Observe that at L1, `first_clone` did not "shallow" copy the pointer in `first`, but instead "deep" copied the string data into a new heap allocation. Therefore at L2, while `first_clone` has been moved and invalidated by `add_suffix`, the original `first` variable is unchanged. It is safe to continue using `first`.
+Заметьте, что в L1 `first_clone` не "поверхностно" скопировал указатель в `first`, а вместо этого "глубоко" скопировал данные строки в новое выделение кучи. Поэтому в L2, пока `first_clone` была перемещена и сделана недействительной `add_suffix`, исходная переменная `first` остаётся неизменной. Безопасно продолжать использовать `first`.
 
 {{#quiz ../quizzes/ch04-01-ownership-sec2-moves.toml}}
 
-### Summary
+### Резюме
 
-Ownership is primarily a discipline of heap management:[^pointer-management]
+Владение в первую очередь является дисциплиной управления кучей:[^pointer-management]
+- Все данные в куче должны принадлежать ровно одной переменной.
+- Rust освобождает данные в куче, когда их владелец выходит из области видимости.
+- Владение может быть передано через перемещения, которые происходят при присваиваниях и вызовах функций.
+- Данные в куче могут быть доступны только через их текущего владельца, а не через предыдущего владельца.
 
-- All heap data must be owned by exactly one variable.
-- Rust deallocates heap data once its owner goes out of scope.
-- Ownership can be transferred by moves, which happen on assignments and function calls.
-- Heap data can only be accessed through its current owner, not a previous owner.
+Мы подчёркивали не только *как* работают гарантии Rust, но и *почему* они избегают неопределённого поведения. Когда вы получаете сообщение об ошибке от компилятора Rust, легко расстроиться, если вы не понимаете, почему Rust жалуется. Эти концептуальные основы должны помочь вам интерпретировать сообщения об ошибках Rust. Они также должны помочь вам проектировать более идиоматичные API.
 
-We have emphasized not just _how_ Rust's safeguards work, but _why_ they avoid undefined behavior. When you get an error message from the Rust compiler, it's easy to get frustrated if you don't understand why Rust is complaining. These conceptual foundations should help you with interpreting Rust's error messages.  They should also help you design more Rustic APIs.
+[^boxed-data-structures]: Эти структуры данных не используют буквальный тип `Box`. Например, `String` реализован с `Vec`, а `Vec` реализован с [`RawVec`](https://doc.rust-lang.org/nomicon/vec/vec-raw.html), а не с `Box`. Но типы вроде `RawVec` всё ещё похожи на box: они владеют памятью в куче.
 
-[^boxed-data-structures]: These data structures don't use the literal `Box` type. For example, `String` is implemented with `Vec`, and `Vec` is implemented with [`RawVec`](https://doc.rust-lang.org/nomicon/vec/vec-raw.html) rather than `Box`. But types like `RawVec` are still box-like: they own memory in the heap.
-
-[^pointer-management]: In another sense, ownership is a discipline of *pointer* management. But we haven't described yet about how to create pointers to anywhere other than the heap. We'll get there in the next section.
+[^pointer-management]: В другом смысле владение — это дисциплина управления *указателями*. Но мы ещё не описали, как создавать указатели куда-либо, кроме кучи. Мы дойдём до этого в следующем разделе.
 
 [`NameError`]: https://docs.python.org/3/library/exceptions.html#NameError
 [`ReferenceError`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/ReferenceError

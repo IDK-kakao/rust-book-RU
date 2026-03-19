@@ -2,9 +2,9 @@
 id = "31c55174-3fdf-4a21-959c-bb4056def264"
 type = "MultipleChoice"
 prompt.prompt = """
-A Rust programmer is designing a library for writing command-line interfaces. 
-As a part of this library, they are implementing a function to parse command-line flags provided by a user. 
-Which implementation would be most appropriate for this domain?
+Программист на Rust разрабатывает библиотеку для создания интерфейсов командной строки. 
+В рамках этой библиотеки он реализует функцию для разбора флагов командной строки, предоставленных пользователем. 
+Какая реализация будет наиболее подходящей для этой предметной области?
 
 ```
 fn parse_flag_v1(flag: &str) -> Result<String, String> {
@@ -26,7 +26,7 @@ answer.answer = "`parse_flag_v1`"
 prompt.distractors = [ "`parse_flag_v2`" ]
 prompt.answerIndex = 0
 context = """
-Here, the programmer would likely want to use a *recoverable* error (the `Result`). If a CLI user passes an incorrectly formatted flag,
-then the CLI library might want to provide additional help like displaying the possible set of flags. A panic would force the application
-to only show the panic message, and would probably be a worse user experience.
+Здесь программист, скорее всего, захочет использовать *восстанавливаемую* ошибку (`Result`). Если пользователь CLI передаёт некорректно отформатированный флаг,
+то библиотека CLI, возможно, захочет предоставить дополнительную справку, например, отобразить возможный набор флагов. Паника заставит приложение
+показать только сообщение о панике и, вероятно, обеспечит худший пользовательский опыт.
 """

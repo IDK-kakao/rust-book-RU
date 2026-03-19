@@ -1,66 +1,24 @@
-## Futures and the Async Syntax
+## Фьючерсы и синтаксис async
 
-The key elements of asynchronous programming in Rust are _futures_ and Rust’s
-`async` and `await` keywords.
+Ключевыми элементами асинхронного программирования в Rust являются _фьючерсы_ (futures) и ключевые слова Rust `async` и `await`.
 
-A _future_ is a value that may not be ready now but will become ready at some
-point in the future. (This same concept shows up in many languages, sometimes
-under other names such as _task_ or _promise_.) Rust provides a `Future` trait
-as a building block so that different async operations can be implemented with
-different data structures but with a common interface. In Rust, futures are
-types that implement the `Future` trait. Each future holds its own information
-about the progress that has been made and what "ready" means.
+_Фьючерс_ — это значение, которое может быть не готово сейчас, но станет готовым в будущем. (Эта же концепция встречается во многих языках, иногда под другими названиями, такими как _задача_ (task) или _обещание_ (promise).) Rust предоставляет _типаж_ (trait) `Future` в качестве строительного блока, чтобы разные асинхронные операции могли быть реализованы с разными структурами данных, но с общим интерфейсом. В Rust фьючерсы — это типы, которые реализуют типаж `Future`. Каждый фьючерс хранит собственную информацию о ходе выполнения и о том, что значит "готово".
 
-You can apply the `async` keyword to blocks and functions to specify that they
-can be interrupted and resumed. Within an async block or async function, you can
-use the `await` keyword to _await a future_ (that is, wait for it to become
-ready). Any point where you await a future within an async block or function is
-a potential spot for that async block or function to pause and resume. The
-process of checking with a future to see if its value is available yet is called
-_polling_.
+Вы можете применить ключевое слово `async` к блокам и функциям, чтобы указать, что они могут быть прерваны и возобновлены. Внутри async-блока или async-функции вы можете использовать ключевое слово `await`, чтобы _ожидать фьючерс_ (то есть дождаться, пока он не станет готовым). Любая точка, где вы ожидаете фьючерс внутри async-блока или функции, — это потенциальное место, где этот async-блок или функция могут приостановиться и возобновиться. Процесс проверки, доступно ли уже значение фьючерса, называется _опросом_ (polling).
 
-Some other languages, such as C# and JavaScript, also use `async` and `await`
-keywords for async programming. If you’re familiar with those languages, you may
-notice some significant differences in how Rust does things, including how it
-handles the syntax. That’s for good reason, as we’ll see!
+Некоторые другие языки, такие как C# и JavaScript, также используют ключевые слова `async` и `await` для асинхронного программирования. Если вы знакомы с этими языками, вы можете заметить некоторые существенные различия в том, как Rust работает, включая обработку синтаксиса. И на это есть веская причина, как мы увидим!
 
-When writing async Rust, we use the `async` and `await` keywords most of the
-time. Rust compiles them into equivalent code using the `Future` trait, much as
-it compiles `for` loops into equivalent code using the `Iterator` trait. Because
-Rust provides the `Future` trait, though, you can also implement it for your own
-data types when you need to. Many of the functions we’ll see throughout this
-chapter return types with their own implementations of `Future`. We’ll return to
-the definition of the trait at the end of the chapter and dig into more of how
-it works, but this is enough detail to keep us moving forward.
+При написании асинхронного Rust мы используем ключевые слова `async` и `await` большую часть времени. Rust компилирует их в эквивалентный код с использованием типажа `Future`, подобно тому как он компилирует циклы `for` в эквивалентный код с использованием типажа `Iterator`. Поскольку Rust предоставляет типаж `Future`, вы также можете реализовать его для своих собственных типов данных, когда это необходимо. Многие функции, которые мы увидим в этой главе, возвращают типы с собственной реализацией `Future`. Мы вернёмся к определению этого типажа в конце главы и подробнее разберём, как он работает, но этих деталей достаточно, чтобы двигаться дальше.
 
-This may all feel a bit abstract, so let’s write our first async program: a
-little web scraper. We’ll pass in two URLs from the command line, fetch both of
-them concurrently, and return the result of whichever one finishes first. This
-example will have a fair bit of new syntax, but don’t worry—we’ll explain
-everything you need to know as we go.
+Все это может показаться немного абстрактным, поэтому давайте напишем нашу первую асинхронную программу: небольшой веб-скрапер. Мы передадим два URL из командной строки, загрузим их одновременно и вернём результат того, который завершится первым. В этом примере будет много нового синтаксиса, но не беспокойтесь — мы объясним всё, что вам нужно знать, по ходу дела.
 
-## Our First Async Program
+## Наша первая асинхронная программа
 
-To keep the focus of this chapter on learning async rather than juggling parts
-of the ecosystem, we’ve created the `trpl` crate (`trpl` is short for “The Rust
-Programming Language”). It re-exports all the types, traits, and functions
-you’ll need, primarily from the [`futures`][futures-crate]<!-- ignore --> and
-[`tokio`][tokio]<!-- ignore --> crates. The `futures` crate is an official home
-for Rust experimentation for async code, and it’s actually where the `Future`
-trait was originally designed. Tokio is the most widely used async runtime in
-Rust today, especially for web applications. There are other great runtimes out
-there, and they may be more suitable for your purposes. We use the `tokio` crate
-under the hood for `trpl` because it’s well tested and widely used.
+Чтобы сосредоточить внимание этой главы на изучении async, а не на управлении частями экосистемы, мы создали крейт `trpl` (`trpl` — сокращение от "The Rust Programming Language"). Он повторно экспортирует все типы, типажи и функции, которые вам понадобятся, в основном из крейтов [`futures`][futures-crate]<!-- ignore --> и [`tokio`][tokio]<!-- ignore -->. Крейт `futures` — это официальное место для экспериментов Rust с асинхронным кодом, и именно там изначально был разработан типаж `Future`. Tokio — это наиболее широко используемый асинхронный рантайм в Rust на сегодняшний день, особенно для веб-приложений. Существуют и другие отличные рантаймы, и они могут быть более подходящими для ваших целей. Мы используем крейт `tokio` внутри `trpl`, потому что он хорошо протестирован и широко распространён.
 
-In some cases, `trpl` also renames or wraps the original APIs to keep you
-focused on the details relevant to this chapter. If you want to understand what
-the crate does, we encourage you to check out [its source
-code][crate-source]<!-- ignore -->. You’ll be able to see what crate each
-re-export comes from, and we’ve left extensive comments explaining what the
-crate does.
+В некоторых случаях `trpl` также переименовывает или оборачивает оригинальные API, чтобы вы могли сосредоточиться на деталях, актуальных для этой главы. Если вы хотите понять, что делает крейт, мы рекомендуем вам ознакомиться с его [исходным кодом][crate-source]<!-- ignore -->. Вы сможете увидеть, из какого крейта происходит каждый повторный экспорт, и мы оставили подробные комментарии, объясняющие, что делает крейт.
 
-Create a new binary project named `hello-async` and add the `trpl` crate as a
-dependency:
+Создайте новый бинарный проект с именем `hello-async` и добавьте крейт `trpl` в качестве зависимости:
 
 ```console
 $ cargo new hello-async
@@ -68,17 +26,13 @@ $ cd hello-async
 $ cargo add trpl
 ```
 
-Now we can use the various pieces provided by `trpl` to write our first async
-program. We’ll build a little command line tool that fetches two web pages,
-pulls the `<title>` element from each, and prints out the title of whichever
-page finishes that whole process first.
+Теперь мы можем использовать различные компоненты, предоставляемые `trpl`, чтобы написать нашу первую асинхронную программу. Мы создадим небольшой инструмент командной строки, который загружает две веб-страницы, извлекает из каждой элемент `<title>` и выводит заголовок той страницы, которая завершит весь этот процесс первой.
 
-### Defining the page_title Function
+### Определение функции page_title
 
-Let’s start by writing a function that takes one page URL as a parameter, makes
-a request to it, and returns the text of the title element (see Listing 17-1).
+Давайте начнём с написания функции, которая принимает один URL страницы в качестве параметра, отправляет на него запрос и возвращает текст элемента заголовка (см. Листинг 17-1).
 
-<Listing number="17-1" file-name="src/main.rs" caption="Defining an async function to get the title element from an HTML page">
+<Listing number="17-1" file-name="src/main.rs" caption="Определение async-функции для получения элемента заголовка из HTML-страницы">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-01/src/main.rs:all}}
@@ -86,55 +40,17 @@ a request to it, and returns the text of the title element (see Listing 17-1).
 
 </Listing>
 
-First, we define a function named `page_title` and mark it with the `async`
-keyword. Then we use the `trpl::get` function to fetch whatever URL is passed in
-and add the `await` keyword to await the response. To get the text of the
-response, we call its `text` method, and once again await it with the `await`
-keyword. Both of these steps are asynchronous. For the `get` function, we have
-to wait for the server to send back the first part of its response, which will
-include HTTP headers, cookies, and so on, and can be delivered separately from
-the response body. Especially if the body is very large, it can take some time
-for it all to arrive. Because we have to wait for the _entirety_ of the response
-to arrive, the `text` method is also async.
+Сначала мы определяем функцию с именем `page_title` и помечаем её ключевым словом `async`. Затем мы используем функцию `trpl::get` для загрузки переданного URL и добавляем ключевое слово `await`, чтобы дождаться ответа. Чтобы получить текст ответа, мы вызываем его метод `text` и снова ожидаем его с помощью ключевого слова `await`. Оба этих шага являются асинхронными. Для функции `get` нам нужно дождаться, пока сервер не отправит первую часть своего ответа, которая будет включать HTTP-заголовки, куки и т.д., и которая может быть доставлена отдельно от тела ответа. Особенно если тело очень большое, на его полную доставку может уйти некоторое время. Поскольку нам нужно дождаться _полного_ прихода ответа, метод `text` также является асинхронным.
 
-We have to explicitly await both of these futures, because futures in Rust are
-_lazy_: they don’t do anything until you ask them to with the `await` keyword.
-(In fact, Rust will show a compiler warning if you don’t use a future.) This
-might remind you of Chapter 13’s discussion of iterators in the section
-[Processing a Series of Items With Iterators][iterators-lazy]<!-- ignore -->.
-Iterators do nothing unless you call their `next` method—whether directly or by
-using `for` loops or methods such as `map` that use `next` under the hood.
-Likewise, futures do nothing unless you explicitly ask them to. This laziness
-allows Rust to avoid running async code until it’s actually needed.
+Мы должны явно ожидать оба этих фьючерса, потому что фьючерсы в Rust _ленивые_: они ничего не делают, пока вы не попросите их об этом с помощью ключевого слова `await`. (Фактически, Rust покажет предупреждение компилятора, если вы не используете фьючерс.) Это может напомнить вам обсуждение итераторов в Главе 13 в разделе [Обработка серии элементов с помощью итераторов][iterators-lazy]<!-- ignore -->. Итераторы ничего не делают, пока вы не вызовете их метод `next` — будь то напрямую или с помощью циклов `for` или методов, таких как `map`, которые используют `next` под капотом. Точно так же фьючерсы ничего не делают, пока вы явно не попросите их об этом. Эта лень позволяет Rust избежать запуска асинхронного кода, пока он на самом деле не нужен.
 
-> Note: This is different from the behavior we saw in the previous chapter when
-> using `thread::spawn` in [Creating a New Thread with
-> spawn][thread-spawn]<!--ignore-->, where the closure we passed to another
-> thread started running immediately. It’s also different from how many other
-> languages approach async. But it’s important for Rust to be able to provide
-> its performance guarantees, just as it is with iterators.
+> Примечание: Это отличается от поведения, которое мы видели в предыдущей главе при использовании `thread::spawn` в разделе [Создание нового потока с помощью spawn][thread-spawn]<!--ignore-->, где замыкание, переданное в другой поток, начинало выполняться немедленно. Это также отличается от подхода многих других языков к async. Но это важно для того, чтобы Rust мог обеспечивать свои гарантии производительности, как и в случае с итераторами.
 
-Once we have `response_text`, we can parse it into an instance of the `Html`
-type using `Html::parse`. Instead of a raw string, we now have a data type we
-can use to work with the HTML as a richer data structure. In particular, we can
-use the `select_first` method to find the first instance of a given CSS
-selector. By passing the string `"title"`, we’ll get the first `<title>` element
-in the document, if there is one. Because there may not be any matching element,
-`select_first` returns an `Option<ElementRef>`. Finally, we use the
-`Option::map` method, which lets us work with the item in the `Option` if it’s
-present, and do nothing if it isn’t. (We could also use a `match` expression
-here, but `map` is more idiomatic.) In the body of the function we supply to
-`map`, we call `inner_html` on the `title_element` to get its content, which is
-a `String`. When all is said and done, we have an `Option<String>`.
+Как только у нас есть `response_text`, мы можем разобрать её в экземпляр типа `Html` с помощью `Html::parse`. Вместо сырой строки у нас теперь есть тип данных, который мы можем использовать для работы с HTML как с более богатой структурой данных. В частности, мы можем использовать метод `select_first`, чтобы найти первый экземпляр заданного CSS-селектора. Передав строку `"title"`, мы получим первый элемент `<title>` в документе, если он есть. Поскольку совпадающего элемента может не быть, `select_first` возвращает `Option<ElementRef>`. Наконец, мы используем метод `Option::map`, который позволяет нам работать с элементом в `Option`, если он присутствует, и ничего не делать, если его нет. (Мы также могли бы использовать выражение `match` здесь, но `map` более идиоматично.) В теле функции, которую мы передаём в `map`, мы вызываем `inner_html` для `title_element`, чтобы получить его содержимое, которое является `String`. В итоге у нас есть `Option<String>`.
 
-Notice that Rust’s `await` keyword goes _after_ the expression you’re awaiting,
-not before it. That is, it’s a _postfix_ keyword. This may differ from what
-you’re used to if you’ve used `async` in other languages, but in Rust it makes
-chains of methods much nicer to work with. As a result, we can change the body
-of `page_title` to chain the `trpl::get` and `text` function calls together
-with `await` between them, as shown in Listing 17-2.
+Обратите внимание, что ключевое слово `await` в Rust идёт _после_ выражения, которое вы ожидаете, а не перед ним. То есть это _постфиксное_ ключевое слово. Это может отличаться от того, к чему вы привыкли, если использовали `async` в других языках, но в Rust это делает цепочки методов гораздо более удобными для работы. В результате мы можем изменить тело `page_title` так, чтобы объединить вызовы функций `trpl::get` и `text` вместе с `await` между ними, как показано в Листинге 17-2.
 
-<Listing number="17-2" file-name="src/main.rs" caption="Chaining with the `await` keyword">
+<Listing number="17-2" file-name="src/main.rs" caption="Объединение с ключевым словом `await`">
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-02/src/main.rs:chaining}}
@@ -142,20 +58,11 @@ with `await` between them, as shown in Listing 17-2.
 
 </Listing>
 
-With that, we have successfully written our first async function! Before we add
-some code in `main` to call it, let’s talk a little more about what we’ve
-written and what it means.
+С этим мы успешно написали нашу первую async-функцию! Прежде чем добавить код в `main` для её вызова, давайте немного подробнее поговорим о том, что мы написали, и что это значит.
 
-When Rust sees a block marked with the `async` keyword, it compiles it into a
-unique, anonymous data type that implements the `Future` trait. When Rust sees a
-function marked with `async`, it compiles it into a non-async function whose
-body is an async block. An async function’s return type is the type of the
-anonymous data type the compiler creates for that async block.
+Когда Rust видит блок, помеченный ключевым словом `async`, он компилирует его в уникальный, анонимный тип данных, который реализует типаж `Future`. Когда Rust видит функцию, помеченную `async`, он компилирует её в неасинхронную функцию, тело которой является async-блоком. Возвращаемый тип async-функции — это тип анонимного типа данных, который компилятор создаёт для этого async-блока.
 
-Thus, writing `async fn` is equivalent to writing a function that returns a
-_future_ of the return type. To the compiler, a function definition such as the
-`async fn page_title` in Listing 17-1 is equivalent to a non-async function
-defined like this:
+Таким образом, написание `async fn` эквивалентно написанию функции, которая возвращает _фьючерс_ возвращаемого типа. Для компилятора определение функции, такое как `async fn page_title` в Листинге 17-1, эквивалентно неасинхронной функции, определённой так:
 
 ```rust
 # extern crate trpl; // required for mdbook test
@@ -172,35 +79,21 @@ fn page_title(url: &str) -> impl Future<Output = Option<String>> {
 }
 ```
 
-Let’s walk through each part of the transformed version:
+Давайте пройдёмся по каждой части преобразованной версии:
 
-- It uses the `impl Trait` syntax we discussed back in Chapter 10 in the
-  [“Traits as Parameters”][impl-trait]<!-- ignore --> section.
-- The returned trait is a `Future` with an associated type of `Output`. Notice
-  that the `Output` type is `Option<String>`, which is the same as the original
-  return type from the `async fn` version of `page_title`.
-- All of the code called in the body of the original function is wrapped in an
-  `async move` block. Remember that blocks are expressions. This whole block is
-  the expression returned from the function.
-- This async block produces a value with the type `Option<String>`, as just
-  described. That value matches the `Output` type in the return type. This
-  is just like other blocks you have seen.
-- The new function body is an `async move` block because of how it uses the
-  `url` parameter. (We’ll talk much more about `async` versus `async move` later
-  in the chapter.)
+- Она использует синтаксис `impl Trait`, который мы обсуждали в Главе 10 в разделе ["Типажи как параметры"][impl-trait]<!-- ignore -->.
+- Возвращаемый типаж — это `Future` с ассоциированным типом `Output`. Обратите внимание, что тип `Output` — это `Option<String>`, что совпадает с исходным возвращаемым типом из версии `async fn` функции `page_title`.
+- Весь код, вызываемый в теле исходной функции, обёрнут в блок `async move`. Помните, что блоки — это выражения. Этот весь блок является выражением, возвращаемым из функции.
+- Этот async-блок производит значение с типом `Option<String>`, как только что было описано. Это значение соответствует типу `Output` в возвращаемом типе. Это так же, как и в случае с другими блоками, которые вы видели.
+- Новое тело функции — это блок `async move` из-за того, как оно использует параметр `url`. (Мы подробнее поговорим о `async` против `async move` позже в главе.)
 
-Now we can call `page_title` in `main`.
+Теперь мы можем вызвать `page_title` в `main`.
 
-## Determining a Single Page’s Title
+## Определение заголовка одной страницы
 
-To start, we’ll just get the title for a single page. In Listing 17-3, we follow
-the same pattern we used in Chapter 12 to get command line arguments in the
-[Accepting Command Line Arguments][cli-args]<!-- ignore --> section. Then we
-pass the first URL `page_title` and await the result. Because the value
-produced by the future is an `Option<String>`, we use a `match` expression to
-print different messages to account for whether the page had a `<title>`.
+Для начала мы просто получим заголовок для одной страницы. В Листинге 17-3 мы следуем тому же шаблону, который использовали в Главе 12 для получения аргументов командной строки в разделе [Принятие аргументов командной строки][cli-args]<!-- ignore -->. Затем мы передаём первый URL в `page_title` и ожидаем результат. Поскольку значение, производимое фьючерсом, является `Option<String>`, мы используем выражение `match`, чтобы выводить разные сообщения с учётом того, была ли на странице `<title>`.
 
-<Listing number="17-3" file-name="src/main.rs" caption="Calling the `page_title` function from `main` with a user-supplied argument">
+<Listing number="17-3" file-name="src/main.rs" caption="Вызов функции `page_title` из `main` с аргументом, предоставленным пользователем">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch17-async-await/listing-17-03/src/main.rs:main}}
@@ -208,9 +101,7 @@ print different messages to account for whether the page had a `<title>`.
 
 </Listing>
 
-Unfortunately, this code doesn’t compile. The only place we can use the `await`
-keyword is in async functions or blocks, and Rust won’t let us mark the
-special `main` function as `async`.
+К сожалению, этот код не компилируется. Единственное место, где можно использовать ключевое слово `await`, — это в async-функциях или блоках, и Rust не позволит нам пометить специальную функцию `main` как `async`.
 
 <!-- manual-regeneration
 cd listings/ch17-async-await/listing-17-03
@@ -226,35 +117,15 @@ error[E0752]: `main` function is not allowed to be `async`
   | ^^^^^^^^^^^^^^^ `main` function is not allowed to be `async`
 ```
 
-The reason `main` can’t be marked `async` is that async code needs a _runtime_:
-a Rust crate that manages the details of executing asynchronous code. A
-program’s `main` function can _initialize_ a runtime, but it’s not a runtime
-_itself_. (We’ll see more about why this is the case in a bit.) Every Rust
-program that executes async code has at least one place where it sets up a
-runtime and executes the futures.
+Причина, по которой `main` не может быть помечена `async`, в том, что асинхронному коду нужен _рантайм_: крейт Rust, который управляет деталями выполнения асинхронного кода. Функция `main` программы может _инициализировать_ рантайм, но сама она не является _рантаймом_. (Мы увидим больше о том, почему это так, через мгновение.) Каждая программа на Rust, которая выполняет асинхронный код, имеет по крайней мере одно место, где она настраивает рантайм и выполняет фьючерсы.
 
-Most languages that support async bundle a runtime, but Rust does not. Instead,
-there are many different async runtimes available, each of which makes different
-tradeoffs suitable to the use case it targets. For example, a high-throughput
-web server with many CPU cores and a large amount of RAM has very different
-needs than a microcontroller with a single core, a small amount of RAM, and no
-heap allocation ability. The crates that provide those runtimes also often
-supply async versions of common functionality such as file or network I/O.
+Большинство языков, поддерживающих async, поставляют рантайм в комплекте, но Rust — нет. Вместо этого существует множество различных асинхронных рантаймов, каждый из которых делает разные компромиссы, подходящие для целевого использования. Например, высокопроизводительный веб-сервер с множеством ядер CPU и большим объёмом RAM имеет совершенно другие потребности, чем микроконтроллер с одним ядром, небольшим объёмом RAM и без возможности выделения памяти в куче. Крейты, которые предоставляют эти рантаймы, также часто поставляют асинхронные версии общей функциональности, такие как файловый или сетевой ввод-вывод.
 
-Here, and throughout the rest of this chapter, we’ll use the `run` function from
-the `trpl` crate, which takes a future as an argument and runs it to completion.
-Behind the scenes, calling `run` sets up a runtime that’s used to run the future
-passed in. Once the future completes, `run` returns whatever value the future
-produced.
+Здесь и на протяжении всей оставшейся части этой главы мы будем использовать функцию `run` из крейта `trpl`, которая принимает фьючерс в качестве аргумента и выполняет его до завершения. За кулисами вызов `run` настраивает рантайм, который используется для выполнения переданного фьючерса. Как только фьючерс завершается, `run` возвращает любое значение, которое произвёл фьючерс.
 
-We could pass the future returned by `page_title` directly to `run`, and once it
-completed, we could match on the resulting `Option<String>`, as
-we tried to do in Listing 17-3. However, for most of the examples in the chapter
-(and most async code in the real world), we’ll be doing more than just one
-async function call, so instead we’ll pass an `async` block and explicitly
-await the result of the `page_title` call, as in Listing 17-4.
+Мы могли бы передать фьючерс, возвращаемый `page_title`, непосредственно в `run`, и как только он завершится, мы могли бы сопоставить результирующий `Option<String>`, как мы пытались сделать в Листинге 17-3. Однако для большинства примеров в этой главе (и для большинства асинхронного кода в реальном мире) мы будем делать больше, чем просто один вызов async-функции, поэтому вместо этого мы передадим `async`-блок и явно ожидаем результат вызова `page_title`, как в Листинге 17-4.
 
-<Listing number="17-4" caption="Awaiting an async block with `trpl::run`" file-name="src/main.rs">
+<Listing number="17-4" caption="Ожидание async-блока с помощью `trpl::run`" file-name="src/main.rs">
 
 <!-- should_panic,noplayground because mdbook test does not pass args -->
 
@@ -264,7 +135,7 @@ await the result of the `page_title` call, as in Listing 17-4.
 
 </Listing>
 
-When we run this code, we get the behavior we expected initially:
+Когда мы запускаем этот код, мы получаем ожидаемое поведение:
 
 <!-- manual-regeneration
 cd listings/ch17-async-await/listing-17-04
@@ -281,53 +152,27 @@ The title for https://www.rust-lang.org was
             Rust Programming Language
 ```
 
-Phew—we finally have some working async code! But before we add the code to race
-the two sites against each other, let’s briefly turn our attention back to how
-futures work.
+Фух — наконец-то у нас есть работающий асинхронный код! Но прежде чем добавить код для гонки двух сайтов друг против друга, давайте ненадолго вернёмся к тому, как работают фьючерсы.
 
-Each _await point_—that is, every place where the code uses the `await`
-keyword—represents a place where control is handed back to the runtime. To
-make that work, Rust needs to keep track of the state involved in the async
-block so that the runtime can kick off some other work and then come back when
-it’s ready to try advancing the first one again. This is an invisible state machine,
-as if you’d written an enum like this to save the current state at each await
-point:
+Каждая _точка ожидания_ (await point) — то есть каждое место, где код использует ключевое слово `await` — представляет собой место, где управление возвращается рантайму. Чтобы это работало, Rust должен отслеживать состояние, связанное с async-блоком, чтобы рантайм мог запустить другую работу, а затем вернуться, когда будет готов попробовать продвинуть первый снова. Это невидимая машина состояний, как если бы вы написали перечисление (enum) вроде этого для сохранения текущего состояния в каждой точке ожидания:
 
 ```rust
 {{#rustdoc_include ../listings/ch17-async-await/no-listing-state-machine/src/lib.rs:enum}}
 ```
 
-Writing the code to transition between each state by hand would be tedious and
-error-prone, however, especially when you need to add more functionality and
-more states to the code later. Fortunately, the Rust compiler creates and
-manages the state machine data structures for async code automatically. The
-normal borrowing and ownership rules around data structures all still apply, and
-happily, the compiler also handles checking those for us and provides useful
-error messages. We’ll work through a few of those later in the chapter.
+Написание кода для перехода между каждым состоянием вручную было бы утомительным и подверженным ошибкам, особенно когда вам нужно позже добавить больше функциональности и больше состояний в код. К счастью, компилятор Rust создаёт и управляет структурами данных машины состояний для асинхронного кода автоматически. Обычные правила заимствования и владения для структур данных всё ещё применяются, и, к счастью, компилятор также проверяет их за нас и предоставляет полезные сообщения об ошибках. Мы разберём несколько из них позже в главе.
 
-Ultimately, something has to execute this state machine, and that something is a
-runtime. (This is why you may come across references to _executors_
-when looking into runtimes: an executor is the part of a runtime responsible for
-executing the async code.)
+В конечном счёте, что-то должно выполнять эту машину состояний, и этим чем-то является рантайм. (Поэтому при изучении рантаймов вы можете встречать ссылки на _исполнителей_ (executors): исполнитель — это часть рантайма, ответственная за выполнение асинхронного кода.)
 
-Now you can see why the compiler stopped us from making `main` itself an async
-function back in Listing 17-3. If `main` were an async function, something else
-would need to manage the state machine for whatever future `main` returned, but
-`main` is the starting point for the program! Instead, we called the `trpl::run`
-function in `main` to set up a runtime and run the future returned by the
-`async` block until it is done.
+Теперь вы понимаете, почему компилятор остановил нас от того, чтобы сделать `main` самой асинхронной функцией в Листинге 17-3. Если бы `main` была асинхронной функцией, кому-то ещё нужно было бы управлять машиной состояний для любого фьючерса, который возвращает `main`, но `main` — это отправная точка программы! Вместо этого мы вызвали функцию `trpl::run` в `main`, чтобы настроить рантайм и выполнить фьючерс, возвращаемый async-блоком, до его завершения.
 
-> Note: Some runtimes provide macros so you _can_ write an async `main`
-> function. Those macros rewrite `async fn main() { ... }` to be a normal `fn
-> main`, which does the same thing we did by hand in Listing 17-4: call a
-> function that runs a future to completion the way `trpl::run` does.
+> Примечание: Некоторые рантаймы предоставляют макросы, так что вы _можете_ написать асинхронную функцию `main`. Эти макросы переписывают `async fn main() { ... }` в обычную `fn main`, которая делает то же самое, что мы сделали вручную в Листинге 17-4: вызывает функцию, которая выполняет фьючерс до завершения, как это делает `trpl::run`.
 
-Now let’s put these pieces together and see how we can write concurrent code.
+Теперь давайте объединим эти части и посмотрим, как мы можем писать конкурентный код.
 
-### Racing Our Two URLs Against Each Other
+### Гонка наших двух URL друг против друга
 
-In Listing 17-5, we call `page_title` with two different URLs passed in from the
-command line and race them.
+В Листинге 17-5 мы вызываем `page_title` с двумя разными URL, переданными из командной строки, и устраиваем между ними гонку.
 
 <Listing number="17-5" caption="" file-name="src/main.rs">
 
@@ -339,23 +184,11 @@ command line and race them.
 
 </Listing>
 
-We begin by calling `page_title` for each of the user-supplied URLs. We save the
-resulting futures as `title_fut_1` and `title_fut_2`. Remember, these don’t do
-anything yet, because futures are lazy and we haven’t yet awaited them. Then we
-pass the futures to `trpl::race`, which returns a value to indicate which of the
-futures passed to it finishes first.
+Мы начинаем с вызова `page_title` для каждого из предоставленных пользователем URL. Сохраняемые фьючерсы мы называем `title_fut_1` и `title_fut_2`. Помните, они ничего не делают пока, потому что фьючерсы ленивые, и мы ещё не ожидали их. Затем мы передаём фьючерсы в `trpl::race`, которая возвращает значение, указывающее, какой из переданных фьючерсов завершится первым.
 
-> Note: Under the hood, `race` is built on a more general function, `select`,
-> which you will encounter more often in real-world Rust code. A `select`
-> function can do a lot of things that the `trpl::race` function can’t, but it
-> also has some additional complexity that we can skip over for now.
+> Примечание: Под капотом `race` построена на более общей функции `select`, с которой вы чаще столкнётесь в реальном коде на Rust. Функция `select` может делать многое из того, что функция `trpl::race` не может, но у неё также есть дополнительная сложность, которую мы пока можем пропустить.
 
-Either future can legitimately “win,” so it doesn’t make sense to return a
-`Result`. Instead, `race` returns a type we haven’t seen before,
-`trpl::Either`. The `Either` type is somewhat similar to a `Result` in that it
-has two cases. Unlike `Result`, though, there is no notion of success or
-failure baked into `Either`. Instead, it uses `Left` and `Right` to indicate
-“one or the other”:
+Любой фьючерс может законно "выиграть", поэтому не имеет смысла возвращать `Result`. Вместо этого `race` возвращает тип, который мы раньше не видели, `trpl::Either`. Тип `Either` несколько похож на `Result` в том смысле, что у него два случая. В отличие от `Result`, однако, в `Either` нет встроенного понятия успеха или неудачи. Вместо этого он использует `Left` и `Right`, чтобы указать "один или другой":
 
 ```rust
 enum Either<A, B> {
@@ -364,23 +197,11 @@ enum Either<A, B> {
 }
 ```
 
-The `race` function returns `Left` with the output from the first future
-argument it finishes first, or `Right` with the output of the second future
-argument if that one finishes first. This matches the order the arguments appear
-in when calling the function: the first argument is to the left of the second
-argument.
+Функция `race` возвращает `Left` с выводом первого аргумента-фьючерса, который завершится первым, или `Right` с выводом второго аргумента-фьючерса, если тот завершится первым. Это соответствует порядку, в котором аргументы появляются при вызове функции: первый аргумент находится слева от второго аргумента.
 
-We also update `page_title` to return the same URL passed in. That way, if
-the page that returns first does not have a `<title>` we can resolve, we can
-still print a meaningful message. With that information available, we wrap up by
-updating our `println!` output to indicate both which URL finished first and
-what, if any, the `<title>` is for the web page at that URL.
+Мы также обновляем `page_title`, чтобы она возвращала тот же URL, который был передан. Таким образом, если страница, которая возвращается первой, не имеет разрешаемого `<title>`, мы всё равно сможем вывести осмысленное сообщение. Имея эту информацию, мы завершаем обновлением нашего вывода `println!`, чтобы указать и то, какой URL завершился первым, и что, если есть, `<title>` для веб-страницы по этому URL.
 
-You have built a small working web scraper now! Pick a couple URLs and run the
-command line tool. You may discover that some sites are consistently faster than
-others, while in other cases the faster site varies from run to run. More
-importantly, you’ve learned the basics of working with futures, so now we can
-dig deeper into what we can do with async.
+Теперь у вас есть небольшой работающий веб-скрапер! Возьмите пару URL и запустите инструмент командной строки. Вы можете обнаружить, что некоторые сайты стабильно быстрее других, а в других случаях более быстрый сайт варьируется от запуска к запуску. Что более важно, вы изучили основы работы с фьючерсами, так что теперь мы можем копнуть глубже в то, что мы можем делать с async.
 
 {{#quiz ../quizzes/async-01-futures-and-syntax.toml}}
 

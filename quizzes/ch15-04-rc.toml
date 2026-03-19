@@ -13,8 +13,7 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 5
 context = """
-Data inside an `Rc` cannot be mutated without the use of interior mutability (seen next section). `Rc` enforces this property
-by implementing the `Deref` trait, but not implementing the `DerefMut` trait.
+Данные внутри `Rc` нельзя изменять без использования внутренней изменяемости (см. следующий раздел). `Rc` обеспечивает это свойство, реализуя типаж `Deref`, но не реализует типаж `DerefMut`.
 """
 
 [[questions]]
@@ -46,7 +45,5 @@ drop
 C
 """
 context = """
-The value inside a reference-counted pointer is only ever dropped once, so "drop" is only printed once.
-The initial `drop(x)` decrements the reference count, but does not drop the value because `y` is still live.
-Then dropping `y` finds that the reference count is 0, and drops `Example`.
+Значение внутри указателя с подсчётом ссылок удаляется только один раз, поэтому «drop» печатается только один раз. Первоначальный `drop(x)` уменьшает счётчик ссылок, но не удаляет значение, потому что `y` всё ещё жив. Затем удаление `y` обнаруживает, что счётчик ссылок равен 0, и удаляет `Example`.
 """

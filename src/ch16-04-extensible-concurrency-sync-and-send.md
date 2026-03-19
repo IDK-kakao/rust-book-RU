@@ -1,98 +1,51 @@
-## Extensible Concurrency with the `Send` and `Sync` Traits
+## Расширяемая конкурентность с помощью типажей `Send` и `Sync`
 
 <!-- Old link, do not remove -->
 
 <a id="extensible-concurrency-with-the-sync-and-send-traits"></a>
 
-Interestingly, almost every concurrency feature we’ve talked about so far in
-this chapter has been part of the standard library, not the language. Your
-options for handling concurrency are not limited to the language or the standard
-library; you can write your own concurrency features or use those written by
-others.
+Интересно, что почти все возможности конкурентности, о которых мы говорили до сих пор в этой главе, являются частью стандартной библиотеки, а не языка. Ваши варианты обработки конкурентности не ограничены языком или стандартной библиотекой; вы можете написать собственные возможности конкурентности или использовать те, что написаны другими.
 
-However, among the key concurrency concepts that are embedded in the language
-rather than the standard library are the `std::marker` traits `Send` and
-`Sync`.
+Однако среди ключевых концепций конкурентности, встроенных в язык, а не в стандартную библиотеку, находятся маркер-типажи `std::marker` `Send` и `Sync`.
 
-### Allowing Transference of Ownership Between Threads with `Send`
+### Разрешение передачи владения между потоками с помощью `Send`
 
-The `Send` marker trait indicates that ownership of values of the type
-implementing `Send` can be transferred between threads. Almost every Rust type
-is `Send`, but there are some exceptions, including `Rc<T>`: this cannot
-implement `Send` because if you cloned an `Rc<T>` value and tried to transfer
-ownership of the clone to another thread, both threads might update the
-reference count at the same time. For this reason, `Rc<T>` is implemented for
-use in single-threaded situations where you don’t want to pay the thread-safe
-performance penalty.
+Маркер-типаж `Send` указывает, что владение значениями типа, реализующего `Send`, может быть передано между потоками. Почти каждый тип Rust является `Send`, но есть некоторые исключения, включая `Rc<T>`: он не может реализовать `Send`, потому что если бы вы клонировали значение `Rc<T>` и попытались передать владение клоном другому потоку, оба потока могли бы одновременно обновлять счётчик ссылок. По этой причине `Rc<T>` реализован для использования в однопоточных ситуациях, где вы не хотите платить штраф производительности за потокобезопасность.
 
-Therefore, Rust’s type system and trait bounds ensure that you can never
-accidentally send an `Rc<T>` value across threads unsafely. When we tried to do
-this in Listing 16-14, we got the error `the trait Send is not implemented for
-Rc<Mutex<i32>>`. When we switched to `Arc<T>`, which does implement `Send`, the
-code compiled.
+Таким образом, система типов Rust и ограничения типажей гарантируют, что вы никогда не отправите значение `Rc<T>` между потоками небезопасным образом. Когда мы пытались сделать это в Листинге 16-14, мы получили ошибку `the trait Send is not implemented for Rc<Mutex<i32>>`. Когда мы переключились на `Arc<T>`, который реализует `Send`, код скомпилировался.
 
-Any type composed entirely of `Send` types is automatically marked as `Send` as
-well. Almost all primitive types are `Send`, aside from raw pointers, which
-we’ll discuss in Chapter 20.
+Любой тип, состоящий полностью из типов `Send`, автоматически также помечается как `Send`. Почти все примитивные типы являются `Send`, за исключением сырых указателей, которые мы обсудим в Главе 20.
 
-### Allowing Access from Multiple Threads with `Sync`
+### Разрешение доступа из нескольких потоков с помощью `Sync`
 
-The `Sync` marker trait indicates that it is safe for the type implementing
-`Sync` to be referenced from multiple threads. In other words, any type `T`
-implements  `Sync` if `&T` (an immutable reference to `T`) implements `Send`,
-meaning the reference can be sent safely to another thread. Similar to `Send`,
-primitive types all implement `Sync`, and types composed entirely of types that
-implement `Sync` also implement `Sync`.
+Маркер-типаж `Sync` указывает, что для типа, реализующего `Sync`, безопасно иметь ссылку из нескольких потоков. Другими словами, любой тип `T` реализует `Sync`, если `&T` (неизменяемая ссылка на `T`) реализует `Send`, что означает, что ссылку можно безопасно отправить в другой поток. Подобно `Send`, все примитивные типы реализуют `Sync`, и типы, состоящие полностью из типов, которые реализуют `Sync`, также реализуют `Sync`.
 
 <!-- BEGIN INTERVENTION: 43081862-aac8-4e18-9c55-1107ea4c7cc1 -->
 
-`Sync` is the most similar concept in Rust to the colloquial meaning of the phrase "thread-safe", i.e. that a particular piece of data can be safely used by multiple concurrent threads. The reason for having separate `Send` and `Sync` traits is that a type can sometimes be one, or both, or neither. For example:
-*  The smart pointer `Rc<T>` is also neither `Send` nor `Sync`, for reasons described above.
-* The `RefCell<T>` type (which we talked about in Chapter 15) and the
-family of related `Cell<T>` types are `Send` (if `T: Send`), but they are not `Sync`. A `RefCell` can be sent across a thread boundary, but not accessed concurrently because the implementation of borrow checking that `RefCell<T>` does at runtime is not thread-safe. 
-* The smart pointer `Mutex<T>` is `Send` and `Sync`, and can be used to share access with multiple threads as you saw in the [“Sharing a `Mutex<T>` Between Multiple Threads”][sharing-a-mutext-between-multiple-threads]<!-- ignore --> section.
-* The type `MutexGuard<'a, T>` that is returned by `Mutex::lock` is `Sync` (if `T: Sync`) but not `Send`. It is specifically not `Send` because [some platforms mandate that mutexes are unlocked by the same thread that locked them][mutex-guards-are-not-send].
+`Sync` — это наиболее близкое понятие в Rust к разговорному значению фразы "потокобезопасный" (thread-safe), т.е. что определённый фрагмент данных может безопасно использоваться несколькими параллельными потоками. Причина наличия отдельных типажей `Send` и `Sync` в том, что тип иногда может быть одним, или обоими, или ни одним. Например:
+*  Умный указатель `Rc<T>` также не является ни `Send`, ни `Sync` по описанным выше причинам.
+* Тип `RefCell<T>` (о котором мы говорили в Главе 15) и семейство связанных типов `Cell<T>` являются `Send` (если `T: Send`), но они не являются `Sync`. `RefCell` можно отправить через границу потока, но не можно получить доступ параллельно, потому что реализация проверки заимствований, которую `RefCell<T>` выполняет во время выполнения, не является потокобезопасной. 
+* Умный указатель `Mutex<T>` является `Send` и `Sync` и может использоваться для общего доступа с несколькими потоками, как вы видели в разделе ["Общий доступ к `Mutex<T>` между несколькими потоками"][sharing-a-mutext-between-multiple-threads]<!-- ignore -->.
+* Тип `MutexGuard<'a, T>`, который возвращается `Mutex::lock`, является `Sync` (если `T: Sync`), но не `Send`. Он именно не `Send`, потому что [некоторые платформы требуют, чтобы мьютексы разблокировались тем же потоком, который их заблокировал][mutex-guards-are-not-send].
 
 <!-- END INTERVENTION: 43081862-aac8-4e18-9c55-1107ea4c7cc1 -->
 
 
 
-### Implementing `Send` and `Sync` Manually Is Unsafe
+### Ручная реализация `Send` и `Sync` является небезопасной
 
-Because types composed entirely of other types that implement the `Send` and
-`Sync` traits also automatically implement `Send` and `Sync`, we don’t have to
-implement those traits manually. As marker traits, they don’t even have any
-methods to implement. They’re just useful for enforcing invariants related to
-concurrency.
+Поскольку типы, состоящие полностью из других типов, которые реализуют типажи `Send` и `Sync`, также автоматически реализуют `Send` и `Sync`, нам не нужно реализовывать эти типажи вручную. Как маркер-типажи, у них даже нет никаких методов для реализации. Они просто полезны для обеспечения инвариантов, связанных с конкурентностью.
 
-Manually implementing these traits involves implementing unsafe Rust code.
-We’ll talk about using unsafe Rust code in Chapter 20; for now, the important
-information is that building new concurrent types not made up of `Send` and
-`Sync` parts requires careful thought to uphold the safety guarantees. [“The
-Rustonomicon”][nomicon] has more information about these guarantees and how to
-uphold them.
+Ручная реализация этих типажей предполагает написание небезопасного кода Rust.
+Мы поговорим об использовании небезопасного кода Rust в Главе 20; пока что важная информация заключается в том, что создание новых конкурентных типов, не состоящих из частей `Send` и `Sync`, требует тщательного обдумывания для поддержания гарантий безопасности. В ["Rustonomicon"][nomicon] есть более подробная информация об этих гарантиях и о том, как их поддерживать.
 
-## Summary
+## Резюме
 
-This isn’t the last you’ll see of concurrency in this book: the next chapter
-focuses on async programming, and the project in Chapter 21 will use the
-concepts in this chapter in a more realistic situation than the smaller examples
-discussed here.
+Это не последний раз, когда вы увидите конкурентность в этой книге: следующая глава сосредоточена на асинхронном программировании, а проект в Главе 21 будет использовать концепции этой главы в более реалистичной ситуации, чем небольшие примеры, рассмотренные здесь.
 
-As mentioned earlier, because very little of how Rust handles concurrency is
-part of the language, many concurrency solutions are implemented as crates.
-These evolve more quickly than the standard library, so be sure to search
-online for the current, state-of-the-art crates to use in multithreaded
-situations.
+Как упоминалось ранее, поскольку очень малое из того, как Rust обрабатывает конкурентность, является частью языка, многие решения конкурентности реализованы как крейты. Они развиваются быстрее, чем стандартная библиотека, поэтому обязательно ищите в интернете текущие, передовые крейты для использования в многопоточных ситуациях.
 
-The Rust standard library provides channels for message passing and smart
-pointer types, such as `Mutex<T>` and `Arc<T>`, that are safe to use in
-concurrent contexts. The type system and the borrow checker ensure that the
-code using these solutions won’t end up with data races or invalid references.
-Once you get your code to compile, you can rest assured that it will happily
-run on multiple threads without the kinds of hard-to-track-down bugs common in
-other languages. Concurrent programming is no longer a concept to be afraid of:
-go forth and make your programs concurrent, fearlessly!
+Стандартная библиотека Rust предоставляет каналы для передачи сообщений и типы умных указателей, такие как `Mutex<T>` и `Arc<T>`, которые безопасно использовать в конкурентных контекстах. Система типов и проверка заимствований гарантируют, что код, использующий эти решения, не закончится гонками данных или недействительными ссылками. Как только ваш код скомпилируется, вы можете быть уверены, что он будет успешно работать в нескольких потоках без тех трудноуловимых ошибок, которые характерны для других языков. Конкурентное программирование больше не концепция, которой стоит бояться: идите и делайте свои программы конкурентными, без страха!
 
 {{#quiz ../quizzes/ch16-04-extensible-concurrency-send-and-sync.toml}}
 

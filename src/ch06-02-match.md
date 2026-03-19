@@ -2,29 +2,15 @@
 
 <a id="the-match-control-flow-operator"></a>
 
-## The `match` Control Flow Construct
+## Конструкция управления потоком `match`
 
-Rust has an extremely powerful control flow construct called `match` that
-allows you to compare a value against a series of patterns and then execute
-code based on which pattern matches. Patterns can be made up of literal values,
-variable names, wildcards, and many other things; [Chapter
-19][ch19-00-patterns]<!-- ignore --> covers all the different kinds of patterns
-and what they do. The power of `match` comes from the expressiveness of the
-patterns and the fact that the compiler confirms that all possible cases are
-handled.
+В Rust есть чрезвычайно мощная конструкция управления потоком под названием `match`, которая позволяет сравнивать значение с серией образцов и затем выполнять код в зависимости от того, какой образец совпал. Образцы могут состоять из литералов, имён переменных, шаблонов по умолчанию и многих других элементов; все виды образцов и их назначение описаны в [Главе 19][ch19-00-patterns]. Мощь `match` заключается в выразительности образцов и в том, что компилятор проверяет, что все возможные случаи обработаны.
 
-Think of a `match` expression as being like a coin-sorting machine: coins slide
-down a track with variously sized holes along it, and each coin falls through
-the first hole it encounters that it fits into. In the same way, values go
-through each pattern in a `match`, and at the first pattern the value “fits,”
-the value falls into the associated code block to be used during execution.
+Представьте выражение `match` как монетоприёмник: монеты скользят по дорожке с отверстиями разного размера, и каждая монета проваливается через первое отверстие, в которое она подходит. Таким же образом значения проходят через каждый образец в `match`, и при первом совпадении значение попадает в соответствующий блок кода для выполнения.
 
-Speaking of coins, let’s use them as an example using `match`! We can write a
-function that takes an unknown US coin and, in a similar way as the counting
-machine, determines which coin it is and returns its value in cents, as shown
-in Listing 6-3.
+Раз уж речь о монетах, давайте используем их в примере с `match`! Мы можем написать функцию, которая принимает неизвестную монету США и, подобно сортировочной машине, определяет, какая это монета, и возвращает её значение в центах, как показано в Листинге 6-3.
 
-<Listing number="6-3" caption="An enum and a `match` expression that has the variants of the enum as its patterns">
+<Listing number="6-3" caption="Перечисление и выражение `match`, где варианты перечисления используются в качестве образцов">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-03/src/main.rs:here}}
@@ -32,53 +18,27 @@ in Listing 6-3.
 
 </Listing>
 
-Let’s break down the `match` in the `value_in_cents` function. First we list
-the `match` keyword followed by an expression, which in this case is the value
-`coin`. This seems very similar to a conditional expression used with `if`, but
-there’s a big difference: with `if`, the condition needs to evaluate to a
-Boolean value, but here it can be any type. The type of `coin` in this example
-is the `Coin` enum that we defined on the first line.
+Разберём `match` в функции `value_in_cents`. Сначала указываем ключевое слово `match`, за которым следует выражение — в данном случае значение `coin`. Это похоже на условное выражение с `if`, но есть важное отличие: в `if` условие должно оцениваться в логическое значение, а здесь может быть любой тип. Тип `coin` в этом примере — перечисление `Coin`, которое мы определили в первой строке.
 
-Next are the `match` arms. An arm has two parts: a pattern and some code. The
-first arm here has a pattern that is the value `Coin::Penny` and then the `=>`
-operator that separates the pattern and the code to run. The code in this case
-is just the value `1`. Each arm is separated from the next with a comma.
+Далее идут ветви `match`. Каждая ветвь состоит из двух частей: образца и кода. Первая ветвь имеет образец — значение `Coin::Penny` — и оператор `=>`, который разделяет образец и код для выполнения. Код в этом случае — просто значение `1`. Каждую ветвь отделяет от следующей запятая.
 
-When the `match` expression executes, it compares the resultant value against
-the pattern of each arm, in order. If a pattern matches the value, the code
-associated with that pattern is executed. If that pattern doesn’t match the
-value, execution continues to the next arm, much as in a coin-sorting machine.
-We can have as many arms as we need: in Listing 6-3, our `match` has four arms.
+При выполнении выражения `match` оно сравнивает полученное значение с образцом каждой ветви по порядку. Если образец совпадает со значением, выполняется код, связанный с этим образцом. Если образец не совпадает, выполнение переходит к следующей ветви, как в монетоприёмнике. Ветвей может быть сколько угодно: в Листинге 6-3 у нашего `match` четыре ветви.
 
-The code associated with each arm is an expression, and the resultant value of
-the expression in the matching arm is the value that gets returned for the
-entire `match` expression.
+Код, связанный с каждой ветвью, — это выражение, и результирующее значение выражения в совпавшей ветви становится значением всего выражения `match`.
 
-We don’t typically use curly brackets if the match arm code is short, as it is
-in Listing 6-3 where each arm just returns a value. If you want to run multiple
-lines of code in a match arm, you must use curly brackets, and the comma
-following the arm is then optional. For example, the following code prints
-“Lucky penny!” every time the method is called with a `Coin::Penny`, but still
-returns the last value of the block, `1`:
+Мы обычно не используем фигурные скобки, если код ветви короткий, как в Листинге 6-3, где каждая ветвь просто возвращает значение. Если нужно выполнить несколько строк кода в ветви `match`, необходимо использовать фигурные скобки, а запятая после ветви тогда необязательна. Например, следующий код выводит «Lucky penny!» каждый раз, когда функция вызывается с `Coin::Penny`, но всё равно возвращает последнее значение блока, `1`:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-08-match-arm-multiple-lines/src/main.rs:here}}
 ```
 
-### Patterns That Bind to Values
+### Образцы, привязывающие к значениям
 
-Another useful feature of match arms is that they can bind to the parts of the
-values that match the pattern. This is how we can extract values out of enum
-variants.
+Ещё одна полезная особенность ветвей `match` — они могут привязывать к частям значений, которые совпадают с образцом. Именно так мы извлекаем значения из вариантов перечисления.
 
-As an example, let’s change one of our enum variants to hold data inside it.
-From 1999 through 2008, the United States minted quarters with different
-designs for each of the 50 states on one side. No other coins got state
-designs, so only quarters have this extra value. We can add this information to
-our `enum` by changing the `Quarter` variant to include a `UsState` value
-stored inside it, which we’ve done in Listing 6-4.
+Например, изменим один из вариантов нашего перечисления, чтобы он содержал данные. С 1999 по 2008 год в США чеканили четвертаки с разными дизайнами 50 штатов на одной стороне. Никакие другие монеты не имели таких дизайнов, поэтому только четвертаки имеют это дополнительное значение. Мы можем добавить эту информацию в наше `enum`, изменив вариант `Quarter` так, чтобы он включал значение `UsState`, хранящееся внутри него, как мы сделали в Листинге 6-4.
 
-<Listing number="6-4" caption="A `Coin` enum in which the `Quarter` variant also holds a `UsState` value">
+<Listing number="6-4" caption="Перечисление `Coin`, в котором вариант `Quarter` также содержит значение `UsState`">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-04/src/main.rs:here}}
@@ -86,44 +46,25 @@ stored inside it, which we’ve done in Listing 6-4.
 
 </Listing>
 
-Let’s imagine that a friend is trying to collect all 50 state quarters. While
-we sort our loose change by coin type, we’ll also call out the name of the
-state associated with each quarter so that if it’s one our friend doesn’t have,
-they can add it to their collection.
+Представим, что друг пытается собрать все 50 штатных четвертаков. Пока мы сортируем мелочь по типу монет, мы также называем название штата, связанного с каждым четвертаком, чтобы, если его нет у друга, он мог добавить его в коллекцию.
 
-In the match expression for this code, we add a variable called `state` to the
-pattern that matches values of the variant `Coin::Quarter`. When a
-`Coin::Quarter` matches, the `state` variable will bind to the value of that
-quarter’s state. Then we can use `state` in the code for that arm, like so:
+В выражении `match` для этого кода мы добавляем переменную с именем `state` в образец, который совпадает со значениями варианта `Coin::Quarter`. Когда `Coin::Quarter` совпадает, переменная `state` привяжется к значению штата этого четвертака. Затем мы можем использовать `state` в коде для этой ветви, например:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-09-variable-in-pattern/src/main.rs:here}}
 ```
 
-If we were to call `value_in_cents(Coin::Quarter(UsState::Alaska))`, `coin`
-would be `Coin::Quarter(UsState::Alaska)`. When we compare that value with each
-of the match arms, none of them match until we reach `Coin::Quarter(state)`. At
-that point, the binding for `state` will be the value `UsState::Alaska`. We can
-then use that binding in the `println!` expression, thus getting the inner
-state value out of the `Coin` enum variant for `Quarter`.
- 
-### Matching with `Option<T>`
+Если бы мы вызвали `value_in_cents(Coin::Quarter(UsState::Alaska))`, `coin` был бы `Coin::Quarter(UsState::Alaska)`. Когда мы сравниваем это значение с каждой ветвью `match`, ни одна не совпадёт, пока мы не дойдём до `Coin::Quarter(state)`. В этот момент привязка для `state` будет значением `UsState::Alaska`. Затем мы можем использовать эту привязку в выражении `println!`, таким образом получая внутреннее значение штата из варианта `Quarter` перечисления `Coin`.
 
-In the previous section, we wanted to get the inner `T` value out of the `Some`
-case when using `Option<T>`; we can also handle `Option<T>` using `match`, as
-we did with the `Coin` enum! Instead of comparing coins, we’ll compare the
-variants of `Option<T>`, but the way the `match` expression works remains the
-same.
+### Сопоставление с `Option<T>`
 
-Let’s say we want to write a function that takes an `Option<i32>` and, if
-there’s a value inside, adds 1 to that value. If there isn’t a value inside,
-the function should return the `None` value and not attempt to perform any
-operations.
+В предыдущем разделе мы хотели извлечь внутреннее значение `T` из случая `Some` при использовании `Option<T>`; мы также можем обрабатывать `Option<T>` с помощью `match`, как мы делали с перечислением `Coin`! Вместо сравнения монет мы будем сравнивать варианты `Option<T>`, но способ работы выражения `match` остаётся тем же.
 
-This function is very easy to write, thanks to `match`, and will look like
-Listing 6-5.
+Допустим, мы хотим написать функцию, которая принимает `Option<i32>` и, если внутри есть значение, добавляет 1 к этому значению. Если внутри нет значения, функция должна вернуть значение `None` и не пытаться выполнять никаких операций.
 
-<Listing number="6-5" caption="A function that uses a `match` expression on an `Option<i32>`">
+Эту функцию очень легко написать благодаря `match`, и она будет выглядеть как в Листинге 6-5.
+
+<Listing number="6-5" caption="Функция, использующая выражение `match` для `Option<i32>`">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:here}}
@@ -131,132 +72,82 @@ Listing 6-5.
 
 </Listing>
 
-Let’s examine the first execution of `plus_one` in more detail. When we call
-`plus_one(five)`, the variable `x` in the body of `plus_one` will have the
-value `Some(5)`. We then compare that against each match arm:
+Рассмотрим первый вызов `plus_one` более подробно. Когда мы вызываем `plus_one(five)`, переменная `x` в теле `plus_one` будет иметь значение `Some(5)`. Затем мы сравниваем его с каждой ветвью `match`:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:first_arm}}
 ```
 
-The `Some(5)` value doesn’t match the pattern `None`, so we continue to the
-next arm:
+Значение `Some(5)` не совпадает с образцом `None`, поэтому переходим к следующей ветви:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:second_arm}}
 ```
 
-Does `Some(5)` match `Some(i)`? It does! We have the same variant. The `i`
-binds to the value contained in `Some`, so `i` takes the value `5`. The code in
-the match arm is then executed, so we add 1 to the value of `i` and create a
-new `Some` value with our total `6` inside.
+Совпадает ли `Some(5)` с `Some(i)`? Да! У нас одинаковый вариант. `i` привязывается к значению, contained в `Some`, поэтому `i` принимает значение `5`. Затем выполняется код в ветви `match`, поэтому мы добавляем 1 к значению `i` и создаём новое значение `Some` с нашей суммой `6` внутри.
 
-Now let’s consider the second call of `plus_one` in Listing 6-5, where `x` is
-`None`. We enter the `match` and compare to the first arm:
+Теперь рассмотрим второй вызов `plus_one` в Листинге 6-5, где `x` равен `None`. Мы входим в `match` и сравниваем с первой ветвью:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-05/src/main.rs:first_arm}}
 ```
 
-It matches! There’s no value to add to, so the program stops and returns the
-`None` value on the right side of `=>`. Because the first arm matched, no other
-arms are compared.
+Оно совпало! Нет значения, к которому можно добавить, поэтому программа останавливается и возвращает значение `None` справа от `=>`. Поскольку первая ветвь совпала, никакие другие ветви не сравниваются.
 
-Combining `match` and enums is useful in many situations. You’ll see this
-pattern a lot in Rust code: `match` against an enum, bind a variable to the
-data inside, and then execute code based on it. It’s a bit tricky at first, but
-once you get used to it, you’ll wish you had it in all languages. It’s
-consistently a user favorite.
+Комбинирование `match` и перечислений полезно во многих ситуациях. Вы увидите этот шаблон очень часто в коде Rust: сопоставление с перечислением, привязка переменной к данным внутри и затем выполнение кода на основе этого. Сначала это немного сложно, но как только вы привыкнете, вы захотите иметь это во всех языках. Это последовательно любимый пользователями шаблон.
 
-### Matches Are Exhaustive
+### Соответствия исчерпывающи
 
-There’s one other aspect of `match` we need to discuss: the arms’ patterns must
-cover all possibilities. Consider this version of our `plus_one` function,
-which has a bug and won’t compile:
+Есть ещё один аспект `match`, который нужно обсудить: образцы ветвей должны покрывать все возможности. Рассмотрим эту версию нашей функции `plus_one`, в которой есть ошибка и которая не скомпилируется:
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-10-non-exhaustive-match/src/main.rs:here}}
 ```
 
-We didn’t handle the `None` case, so this code will cause a bug. Luckily, it’s
-a bug Rust knows how to catch. If we try to compile this code, we’ll get this
-error:
+Мы не обработали случай `None`, поэтому этот код вызовет ошибку. К счастью, это ошибка, которую Rust умеет ловить. Если мы попытаемся скомпилировать этот код, получим следующую ошибку:
 
 ```console
 {{#include ../listings/ch06-enums-and-pattern-matching/no-listing-10-non-exhaustive-match/output.txt}}
 ```
 
-Rust knows that we didn’t cover every possible case, and even knows which
-pattern we forgot! Matches in Rust are _exhaustive_: we must exhaust every last
-possibility in order for the code to be valid. Especially in the case of
-`Option<T>`, when Rust prevents us from forgetting to explicitly handle the
-`None` case, it protects us from assuming that we have a value when we might
-have null, thus making the billion-dollar mistake discussed earlier impossible.
+Rust знает, что мы не покрыли каждый возможный случай, и даже знает, какой образец мы забыли! Соответствия в Rust _исчерпывающи_: мы должны исчерпать каждую возможность, чтобы код был действительным. Особенно в случае `Option<T>`, когда Rust не даёт нам забыть явно обработать случай `None`, он защищает нас от предположения, что у нас есть значение, когда у нас может быть null, тем самым делая невозможным миллиардную ошибку, обсуждавшуюся ранее.
 
-### Catch-All Patterns and the `_` Placeholder
+### Универсальные образцы и заполнитель `_`
 
-Using enums, we can also take special actions for a few particular values, but
-for all other values take one default action. Imagine we’re implementing a game
-where, if you roll a 3 on a dice roll, your player doesn’t move, but instead
-gets a new fancy hat. If you roll a 7, your player loses a fancy hat. For all
-other values, your player moves that number of spaces on the game board. Here’s
-a `match` that implements that logic, with the result of the dice roll
-hardcoded rather than a random value, and all other logic represented by
-functions without bodies because actually implementing them is out of scope for
-this example:
+Используя перечисления, мы также можем предпринимать специальные действия для нескольких конкретных значений, но для всех остальных значений выполнять одно действие по умолчанию. Представьте, что мы реализуем игру, в которой, если при броске кубика выпадает 3, ваш игрок не двигается, а вместо этого получает новую модную шляпу. Если выпадает 7, игрок теряет модную шляпу. Для всех остальных значений игрок двигается на это количество клеток на игровом поле. Вот `match`, который реализует эту логику, с результатом броска кубика жёстко заданным, а не случайным значением, и вся остальная логика представлена функциями без тел, так как фактическая реализация выходит за рамки этого примера:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-15-binding-catchall/src/main.rs:here}}
 ```
 
-For the first two arms, the patterns are the literal values `3` and `7`. For
-the last arm that covers every other possible value, the pattern is the
-variable we’ve chosen to name `other`. The code that runs for the `other` arm
-uses the variable by passing it to the `move_player` function.
+Для первых двух ветвей образцы — это литеральные значения `3` и `7`. Для последней ветви, покрывающей все остальные возможные значения, образец — это переменная, которую мы назвали `other`. Код, выполняемый для ветви `other`, использует эту переменную, передавая её функции `move_player`.
 
-This code compiles, even though we haven’t listed all the possible values a
-`u8` can have, because the last pattern will match all values not specifically
-listed. This catch-all pattern meets the requirement that `match` must be
-exhaustive. Note that we have to put the catch-all arm last because the
-patterns are evaluated in order. If we put the catch-all arm earlier, the other
-arms would never run, so Rust will warn us if we add arms after a catch-all!
+Этот код компилируется, хотя мы не перечислили все возможные значения, которые может принимать `u8`, потому что последний образец совпадёт со всеми значениями, которые не указаны явно. Этот универсальный образец удовлетворяет требованию, что `match` должен быть исчерпывающим. Обратите внимание, что мы должны поместить универсальную ветвь последней, потому что образцы оцениваются по порядку. Если мы поместим универсальную ветвь раньше, другие ветви никогда не выполнятся, поэтому Rust предупредит нас, если мы добавим ветви после универсальной!
 
-Rust also has a pattern we can use when we want a catch-all but don’t want to
-_use_ the value in the catch-all pattern: `_` is a special pattern that matches
-any value and does not bind to that value. This tells Rust we aren’t going to
-use the value, so Rust won’t warn us about an unused variable.
+Rust также имеет образец, который мы можем использовать, когда хотим универсальный шаблон, но не хотим _использовать_ значение в этом образце: `_` — это специальный образец, который совпадает с любым значением и не привязывается к этому значению. Это говорит Rust, что мы не собираемся использовать значение, поэтому Rust не предупредит нас о неиспользуемой переменной.
 
-Let’s change the rules of the game: now, if you roll anything other than a 3 or
-a 7, you must roll again. We no longer need to use the catch-all value, so we
-can change our code to use `_` instead of the variable named `other`:
+Изменим правила игры: теперь, если вы бросите что-либо кроме 3 или 7, вы должны бросить снова. Нам больше не нужно использовать универсальное значение, поэтому мы можем изменить наш код, используя `_` вместо переменной с именем `other`:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-16-underscore-catchall/src/main.rs:here}}
 ```
 
-This example also meets the exhaustiveness requirement because we’re explicitly
-ignoring all other values in the last arm; we haven’t forgotten anything.
+Этот пример также удовлетворяет требованию исчерпывающего сопоставления, потому что мы явно игнорируем все остальные значения в последней ветви; мы ничего не забыли.
 
-Finally, we’ll change the rules of the game one more time so that nothing else
-happens on your turn if you roll anything other than a 3 or a 7. We can express
-that by using the unit value (the empty tuple type we mentioned in [“The Tuple
-Type”][tuples]<!-- ignore --> section) as the code that goes with the `_` arm:
+Наконец, изменим правила игры ещё раз так, чтобы ничего не происходило в ваш ход, если вы бросите что-либо кроме 3 или 7. Мы можем выразить это, используя единичное значение (пустой тип кортежа, упомянутый в разделе [«Тип кортежа»][tuples]) в качестве кода, который идёт с ветвью `_`:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-17-underscore-unit/src/main.rs:here}}
 ```
 
-Here, we’re telling Rust explicitly that we aren’t going to use any other value
-that doesn’t match a pattern in an earlier arm, and we don’t want to run any
-code in this case.
+Здесь мы явно говорим Rust, что не собираемся использовать никакое другое значение, которое не совпадает с образцом в более ранней ветви, и не хотим выполнять никакой код в этом случае.
 
-There’s more about patterns and matching that we’ll cover in [Chapter
-19][ch19-00-patterns]<!-- ignore -->.
+Есть больше об образцах и сопоставлении, что мы рассмотрим в [Главе 19][ch19-00-patterns].
 
 <!-- BEGIN INTERVENTION: 1e4f082c-ffa4-4d33-8726-2dbcd72e1aa2 -->
-### How Matches Interact with Ownership
+### Как соответствия взаимодействуют с владением
 
-If an enum contains non-copyable data like a String, then you should be careful with whether a match will move or borrow that data. For example, this program using an `Option<String>` will compile:
+Если перечисление содержит некопируемые данные, такие как `String`, то следует быть осторожным с тем, перемещает или заимствует `match` эти данные. Например, эта программа с использованием `Option<String>` скомпилируется:
 
 ```aquascope,permissions,stepper,boundaries
 # fn main() {
@@ -272,7 +163,7 @@ println!("{:?}", opt);
 # }
 ```
 
-But if we replace the placeholder in `Some(_)` with a variable name, like `Some(s)`, then the program will NOT compile:
+Но если мы заменим заполнитель в `Some(_)` на имя переменной, например `Some(s)`, то программа НЕ скомпилируется:
 
 ```aquascope,permissions,stepper,boundaries,shouldFail
 #fn main() {
@@ -290,9 +181,9 @@ println!("{:?}", opt);`{}`
 ```
 
 
-`opt` is a plain enum &mdash; its type is `Option<String>` and not a reference like `&Option<String>`. Therefore a match on `opt` will move non-ignored fields like `s`. Notice how `opt` loses read and own permission sooner in the second program compared to the first. After the match expression, the data within `opt` has been moved, so it is illegal to read `opt` in the `println`.
+`opt` — это обычное перечисление &mdash; его тип `Option<String>`, а не ссылка, такая как `&Option<String>`. Поэтому `match` по `opt` переместит неигнорируемые поля, такие как `s`. Обратите внимание, как `opt` теряет разрешения на чтение и владение раньше во второй программе по сравнению с первой. После выражения `match` данные внутри `opt` были перемещены, поэтому чтение `opt` в `println` недопустимо.
 
-If we want to peek into `opt` without moving its contents, the idiomatic solution is to match on a reference:
+Если мы хотим заглянуть в `opt` без перемещения его содержимого, идиоматичным решением является сопоставление по ссылке:
 
 ```aquascope,permissions,stepper,boundaries
 #fn main() {
@@ -309,7 +200,7 @@ println!("{:?}", opt);
 #}
 ```
 
-Rust will “push down” the reference from the outer enum, `&Option<String>`, to the inner field, `&String`. Therefore `s` has type `&String`, and `opt` can be used after the match. To better understand this “pushing down” mechanism, see the section about [binding modes](https://doc.rust-lang.org/reference/patterns.html#binding-modes) in the Rust Reference.
+Rust «протолкнёт» ссылку из внешнего перечисления, `&Option<String>`, во внутреннее поле, `&String`. Поэтому `s` имеет тип `&String`, и `opt` можно использовать после `match`. Чтобы лучше понять механизм «проталкивания», см. раздел о [режимах привязки](https://doc.rust-lang.org/reference/patterns.html#binding-modes) в Справочнике Rust.
 <!-- END INTERVENTION -->
 
 {{#quiz ../quizzes/ch06-02-match.toml}}

@@ -1,48 +1,22 @@
-# Generic Types, Traits, and Lifetimes
+# Обобщения, типажи и время жизни
 
-Every programming language has tools for effectively handling the duplication
-of concepts. In Rust, one such tool is _generics_: abstract stand-ins for
-concrete types or other properties. We can express the behavior of generics or
-how they relate to other generics without knowing what will be in their place
-when compiling and running the code.
+В каждом языке программирования есть инструменты для эффективной работы с дублированием концепций. В Rust одним из таких инструментов являются _обобщения_ (generics): абстрактные замены для конкретных типов или других свойств. Мы можем описать поведение обобщений или их взаимосвязь, не зная, какие конкретные типы будут подставлены при компиляции и выполнении кода.
 
-Functions can take parameters of some generic type, instead of a concrete type
-like `i32` or `String`, in the same way they take parameters with unknown
-values to run the same code on multiple concrete values. In fact, we’ve already
-used generics in Chapter 6 with `Option<T>`, in Chapter 8 with `Vec<T>` and
-`HashMap<K, V>`, and in Chapter 9 with `Result<T, E>`. In this chapter, you’ll
-explore how to define your own types, functions, and methods with generics!
+Функции могут принимать параметры некоторого обобщённого типа вместо конкретного, такого как `i32` или `String`, подобно тому как они принимают параметры с неизвестными значениями для выполнения одного и того же кода на разных конкретных данных. Фактически, мы уже использовали обобщения в главе 6 с `Option<T>`, в главе 8 с `Vec<T>` и `HashMap<K, V>` и в главе 9 с `Result<T, E>`. В этой главе вы узнаете, как определять собственные типы, функции и методы с обобщениями!
 
-First we’ll review how to extract a function to reduce code duplication. We’ll
-then use the same technique to make a generic function from two functions that
-differ only in the types of their parameters. We’ll also explain how to use
-generic types in struct and enum definitions.
+Сначала мы рассмотрим, как выделить функцию для уменьшения дублирования кода. Затем применим тот же приём, чтобы создать обобщённую функцию из двух функций, которые отличаются только типами своих параметров. Мы также объясним, как использовать обобщённые типы в определениях структур и перечислений.
 
-Then you’ll learn how to use _traits_ to define behavior in a generic way. You
-can combine traits with generic types to constrain a generic type to accept
-only those types that have a particular behavior, as opposed to just any type.
+Затем вы узнаете, как использовать _типажи_ (traits) для определения поведения в обобщённом виде. Вы можете комбинировать типажи с обобщёнными типами, чтобы ограничить обобщённый тип только теми типами, которые обладают определённым поведением, а не любым типом.
 
-Finally, we’ll discuss _lifetimes_: a variety of generics that give the
-compiler information about how references relate to each other. Lifetimes allow
-us to give the compiler enough information about borrowed values so that it can
-ensure references will be valid in more situations than it could without our
-help.
+Наконец, мы обсудим _время жизни_ (lifetimes): разновидность обобщений, которые дают компилятору информацию о том, как ссылки соотносятся друг с другом. Время жизни позволяет дать компилятору достаточно сведений о заимствованных значениях, чтобы он мог гарантировать, что ссылки будут действительными в большем числе ситуаций, чем мог бы без нашей помощи.
 
-## Removing Duplication by Extracting a Function
+## Устранение дублирования путём выделения функции
 
-Generics allow us to replace specific types with a placeholder that represents
-multiple types to remove code duplication. Before diving into generics syntax,
-let’s first look at how to remove duplication in a way that doesn’t involve
-generic types by extracting a function that replaces specific values with a
-placeholder that represents multiple values. Then we’ll apply the same
-technique to extract a generic function! By looking at how to recognize
-duplicated code you can extract into a function, you’ll start to recognize
-duplicated code that can use generics.
+Обобщения позволяют заменить конкретные типы заполнителем, представляющим множество типов, чтобы устранить дублирование кода. Прежде чем углубляться в синтаксис обобщений, давайте сначала посмотрим, как устранить дублирование без использования обобщённых типов, выделив функцию, которая заменяет конкретные значения заполнителем, представляющим множество значений. Затем мы применим тот же приём для создания обобщённой функции! Поняв, как распознать дублирующийся код для выделения в функцию, вы начнёте распознавать дублирующийся код, который может использовать обобщения.
 
-We’ll begin with the short program in Listing 10-1 that finds the largest
-number in a list.
+Начнём с короткой программы в Листинге 10-1, которая находит наибольшее число в списке.
 
-<Listing number="10-1" file-name="src/main.rs" caption="Finding the largest number in a list of numbers">
+<Listing number="10-1" file-name="src/main.rs" caption="Поиск наибольшего числа в списке чисел">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-01/src/main.rs:here}}
@@ -50,20 +24,11 @@ number in a list.
 
 </Listing>
 
-We store a list of integers in the variable `number_list` and place a reference
-to the first number in the list in a variable named `largest`. We then iterate
-through all the numbers in the list, and if the current number is greater than
-the number stored in `largest`, we replace the reference in that variable.
-However, if the current number is less than or equal to the largest number seen
-so far, the variable doesn’t change, and the code moves on to the next number
-in the list. After considering all the numbers in the list, `largest` should
-refer to the largest number, which in this case is 100.
+Мы храним список целых чисел в переменной `number_list` и помещаем ссылку на первое число списка в переменную с именем `largest`. Затем мы перебираем все числа в списке, и если текущее число больше числа, хранящегося в `largest`, мы заменяем ссылку в этой переменной. Однако, если текущее число меньше или равно наибольшему числу,seen so far, переменная не изменяется, и код переходит к следующему числу в списке. После рассмотрения всех чисел в списке `largest` должна ссылаться на наибольшее число, которое в данном случае равно 100.
 
-We’ve now been tasked with finding the largest number in two different lists of
-numbers. To do so, we can choose to duplicate the code in Listing 10-1 and use
-the same logic at two different places in the program, as shown in Listing 10-2.
+Теперь нам поручено найти наибольшее число в двух разных списках чисел. Для этого мы можем продублировать код из Листинга 10-1 и использовать ту же логику в двух разных местах программы, как показано в Листинге 10-2.
 
-<Listing number="10-2" file-name="src/main.rs" caption="Code to find the largest number in *two* lists of numbers">
+<Listing number="10-2" file-name="src/main.rs" caption="Код для поиска наибольшего числа в *двух* списках чисел">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-02/src/main.rs}}
@@ -71,21 +36,13 @@ the same logic at two different places in the program, as shown in Listing 10-2.
 
 </Listing>
 
-Although this code works, duplicating code is tedious and error prone. We also
-have to remember to update the code in multiple places when we want to change
-it.
+Хотя этот код работает, дублирование кода утомительно и склонно к ошибкам. Кроме того, когда мы хотим изменить код, мы должны помнить обновлять его в нескольких местах.
 
-To eliminate this duplication, we’ll create an abstraction by defining a
-function that operates on any list of integers passed in as a parameter. This
-solution makes our code clearer and lets us express the concept of finding the
-largest number in a list abstractly.
+Чтобы устранить это дублирование, мы создадим абстракцию, определив функцию, которая работает с любым списком целых чисел, передаваемым в качестве параметра. Это решение делает наш код более понятным и позволяет выразить концепцию поиска наибольшего числа в списке абстрактно.
 
-In Listing 10-3, we extract the code that finds the largest number into a
-function named `largest`. Then we call the function to find the largest number
-in the two lists from Listing 10-2. We could also use the function on any other
-list of `i32` values we might have in the future.
+В Листинге 10-3 мы выделяем код, находящий наибольшее число, в функцию с именем `largest`. Затем вызываем эту функцию для поиска наибольшего числа в двух списках из Листинга 10-2. Мы также могли бы использовать эту функцию для любого другого списка значений `i32`, который у нас может появиться в будущем.
 
-<Listing number="10-3" file-name="src/main.rs" caption="Abstracted code to find the largest number in two lists">
+<Listing number="10-3" file-name="src/main.rs" caption="Абстрагированный код для поиска наибольшего числа в двух списках">
 
 ```rust
 {{#rustdoc_include ../listings/ch10-generic-types-traits-and-lifetimes/listing-10-03/src/main.rs:here}}
@@ -93,23 +50,14 @@ list of `i32` values we might have in the future.
 
 </Listing>
 
-The `largest` function has a parameter called `list`, which represents any
-concrete slice of `i32` values we might pass into the function. As a result,
-when we call the function, the code runs on the specific values that we pass
-in.
+Функция `largest` имеет параметр с именем `list`, который представляет любой конкретный срез значений `i32`, который мы могли бы передать в функцию. В результате, когда мы вызываем функцию, код выполняется на конкретных значениях, которые мы передаём.
 
-In summary, here are the steps we took to change the code from Listing 10-2 to
-Listing 10-3:
+Вкратце, вот шаги, которые мы предприняли, чтобы изменить код из Листинга 10-2 в Листинг 10-3:
 
-1. Identify duplicate code.
-1. Extract the duplicate code into the body of the function, and specify the
-   inputs and return values of that code in the function signature.
-1. Update the two instances of duplicated code to call the function instead.
+1. Определите дублирующийся код.
+1. Выделите дублирующийся код в тело функции и укажите входные данные и возвращаемые значения этого кода в сигнатуре функции.
+1. Обновите два экземпляра дублирующегося кода, заменив их вызовом функции.
 
-Next, we’ll use these same steps with generics to reduce code duplication. In
-the same way that the function body can operate on an abstract `list` instead
-of specific values, generics allow code to operate on abstract types.
+Далее мы применим эти же шаги с обобщениями для уменьшения дублирования кода. Так же как тело функции может работать с абстрактным `list` вместо конкретных значений, обобщения позволяют коду работать с абстрактными типами.
 
-For example, say we had two functions: one that finds the largest item in a
-slice of `i32` values and one that finds the largest item in a slice of `char`
-values. How would we eliminate that duplication? Let’s find out!
+Например, допустим, у нас есть две функции: одна находит наибольший элемент в срезе значений `i32`, а другая находит наибольший элемент в срезе значений `char`. Как нам устранить это дублирование? Давайте выясним!

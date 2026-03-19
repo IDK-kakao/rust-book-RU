@@ -1,58 +1,29 @@
-## Shared-State Concurrency
+## Конкурентность с общим состоянием
 
-Message passing is a fine way to handle concurrency, but it’s not the only
-way. Another method would be for multiple threads to access the same shared
-data. Consider this part of the slogan from the Go language documentation
-again: “Do not communicate by sharing memory.”
+Передача сообщений — хороший способ работы с конкурентностью, но это не единственный вариант. Другой метод — это доступ нескольких потоков к одним и тем же общим данным. Ещё раз вспомните лозунг из документации языка Go: «Не общайтесь, разделяя память».
 
-What would communicating by sharing memory look like? In addition, why would
-message-passing enthusiasts caution not to use memory sharing?
+Как выглядит общение через разделение памяти? И почему сторонники передачи сообщений предостерегают от использования разделения памяти?
 
-In a way, channels in any programming language are similar to single ownership,
-because once you transfer a value down a channel, you should no longer use that
-value. Shared-memory concurrency is like multiple ownership: multiple threads
-can access the same memory location at the same time. As you saw in Chapter 15,
-where smart pointers made multiple ownership possible, multiple ownership can
-add complexity because these different owners need managing. Rust’s type system
-and ownership rules greatly assist in getting this management correct. For an
-example, let’s look at mutexes, one of the more common concurrency primitives
-for shared memory.
+В каком-то смысле каналы в любом языке программирования похожи на единоличное владение, потому что после передачи значения по каналу вы больше не должны использовать это значение. Конкурентность с общей памятью похожа на множественное владение: несколько потоков могут одновременно обращаться к одному и тому же участку памяти. Как вы видели в главе 15, где умные указатели сделали множественное владение возможным, множественное владение может усложнить ситуацию, потому что эти разные владельцы требуют управления. Система типов и правила владения Rust значительно помогают сделать это управление правильным. Например, рассмотрим мьютексы, один из наиболее распространённых примитивов конкурентности для общей памяти.
 
-### Using Mutexes to Allow Access to Data from One Thread at a Time
+### Использование мьютексов для предоставления доступа к данным из одного потока в каждый момент времени
 
-_Mutex_ is an abbreviation for _mutual exclusion_, as in a mutex allows only
-one thread to access some data at any given time. To access the data in a
-mutex, a thread must first signal that it wants access by asking to acquire the
-mutex’s _lock_. The lock is a data structure that is part of the mutex that
-keeps track of who currently has exclusive access to the data. Therefore, the
-mutex is described as _guarding_ the data it holds via the locking system.
+_Мьютекс_ — это сокращение от _взаимного исключения_, поскольку мьютекс позволяет только одному потоку обращаться к некоторым данным в любой данный момент времени. Чтобы получить доступ к данным в мьютексе, поток должен сначала сигнализировать, что он хочет получить доступ, запрашивая получение _блокировки_ мьютекса. Блокировка — это структура данных, которая является частью мьютекса и отслеживает, кто в данный момент имеет исключительный доступ к данным. Поэтому мьютекс описывается как _защищающий_ хранимые им данные через систему блокировок.
 
-Mutexes have a reputation for being difficult to use because you have to
-remember two rules:
+Мьютексы имеют репутацию сложных в использовании, потому что нужно помнить два правила:
 
-1. You must attempt to acquire the lock before using the data.
-2. When you’re done with the data that the mutex guards, you must unlock the
-   data so other threads can acquire the lock.
+1. Вы должны попытаться получить блокировку перед использованием данных.
+2. Когда вы закончите работу с данными, защищёнными мьютексом, вы должны разблокировать данные, чтобы другие потоки могли получить блокировку.
 
-For a real-world metaphor for a mutex, imagine a panel discussion at a
-conference with only one microphone. Before a panelist can speak, they have to
-ask or signal that they want to use the microphone. When they get the
-microphone, they can talk for as long as they want to and then hand the
-microphone to the next panelist who requests to speak. If a panelist forgets to
-hand the microphone off when they’re finished with it, no one else is able to
-speak. If management of the shared microphone goes wrong, the panel won’t work
-as planned!
+Для реальной метафоры мьютекса представьте панельную дискуссию на конференции с только одним микрофоном. Прежде чем участник панели сможет говорить, он должен попросить или сигнализировать, что хочет использовать микрофон. Когда он получает микрофон, он может говорить сколько угодно долго, а затем передать микрофон следующему участнику, который запросил слово. Если участник забывает передать микрофон после завершения, никто больше не может говорить. Если управление общим микрофоном идёт не так, панель не будет работать по плану!
 
-Management of mutexes can be incredibly tricky to get right, which is why so
-many people are enthusiastic about channels. However, thanks to Rust’s type
-system and ownership rules, you can’t get locking and unlocking wrong.
+Управление мьютексами может быть невероятно сложным, поэтому многие энтузиасты предпочитают каналы. Однако благодаря системе типов и правилам владения Rust вы не можете ошибиться с получением и освобождением блокировки.
 
-#### The API of `Mutex<T>`
+#### API `Mutex<T>`
 
-As an example of how to use a mutex, let’s start by using a mutex in a
-single-threaded context, as shown in Listing 16-12.
+В качестве примера использования мьютекса начнём с использования мьютекса в однопоточном контексте, как показано в листинге 16-12.
 
-<Listing number="16-12" file-name="src/main.rs" caption="Exploring the API of `Mutex<T>` in a single-threaded context for simplicity">
+<Listing number="16-12" file-name="src/main.rs" caption="Изучение API `Mutex<T>` в однопоточном контексте для простоты">
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-12/src/main.rs}}
@@ -60,44 +31,21 @@ single-threaded context, as shown in Listing 16-12.
 
 </Listing>
 
-As with many types, we create a `Mutex<T>` using the associated function `new`.
-To access the data inside the mutex, we use the `lock` method to acquire the
-lock. This call will block the current thread so it can’t do any work until
-it’s our turn to have the lock.
+Как и со многими типами, мы создаём `Mutex<T>` с использованием ассоциированной функции `new`. Для доступа к данным внутри мьютекса мы используем метод `lock` для получения блокировки. Этот вызов блокирует текущий поток, чтобы он не мог выполнять никакую работу, пока не наступит наша очередь иметь блокировку.
 
-The call to `lock` would fail if another thread holding the lock panicked. In
-that case, no one would ever be able to get the lock, so we’ve chosen to
-`unwrap` and have this thread panic if we’re in that situation.
+Вызов `lock` завершится ошибкой, если другой поток, владеющий блокировкой, перейдёт в состояние паники. В этом случае никто никогда не сможет получить блокировку, поэтому мы решили вызвать `unwrap` и перевести этот поток в состояние паники, если окажемся в такой ситуации.
 
-After we’ve acquired the lock, we can treat the return value, named `num` in
-this case, as a mutable reference to the data inside. The type system ensures
-that we acquire a lock before using the value in `m`. The type of `m` is
-`Mutex<i32>`, not `i32`, so we _must_ call `lock` to be able to use the `i32`
-value. We can’t forget; the type system won’t let us access the inner `i32`
-otherwise.
+После того как мы получили блокировку, мы можем рассматривать возвращаемое значение, названное `num` в этом случае, как изменяемую ссылку на данные внутри. Система типов гарантирует, что мы получаем блокировку перед использованием значения в `m`. Тип `m` — это `Mutex<i32>`, а не `i32`, поэтому мы _должны_ вызвать `lock`, чтобы использовать значение `i32`. Мы не можем забыть об этом; система типов не позволит нам получить доступ к внутреннему `i32` иначе.
 
-As you might suspect, `Mutex<T>` is a smart pointer. More accurately, the call
-to `lock` _returns_ a smart pointer called `MutexGuard`, wrapped in a
-`LockResult` that we handled with the call to `unwrap`. The `MutexGuard` smart
-pointer implements `Deref` to point at our inner data; the smart pointer also
-has a `Drop` implementation that releases the lock automatically when a
-`MutexGuard` goes out of scope, which happens at the end of the inner scope. As
-a result, we don’t risk forgetting to release the lock and blocking the mutex
-from being used by other threads, because the lock release happens
-automatically.
+Как вы могли предполагать, `Mutex<T>` — это умный указатель. Точнее, вызов `lock` _возвращает_ умный указатель под названием `MutexGuard`, обёрнутый в `LockResult`, который мы обработали вызовом `unwrap`. Умный указатель `MutexGuard` реализует `Deref`, чтобы указывать на наши внутренние данные; умный указатель также имеет реализацию `Drop`, которая автоматически освобождает блокировку, когда `MutexGuard` выходит из области видимости, что происходит в конце внутренней области видимости. В результате мы не рискуем забыть освободить блокировку и заблокировать мьютекс от использования другими потоками, потому что освобождение блокировки происходит автоматически.
 
-After dropping the lock, we can print the mutex value and see that we were able
-to change the inner `i32` to 6.
+После освобождения блокировки мы можем вывести значение мьютекса и увидеть, что смогли изменить внутренний `i32` на 6.
 
-#### Sharing a `Mutex<T>` Between Multiple Threads
+#### Общий `Mutex<T>` между несколькими потоками
 
-Now let’s try to share a value between multiple threads using `Mutex<T>`. We’ll
-spin up 10 threads and have them each increment a counter value by 1, so the
-counter goes from 0 to 10. The example in Listing 16-13 will have a compiler
-error, and we’ll use that error to learn more about using `Mutex<T>` and how
-Rust helps us use it correctly.
+Теперь попробуем разделить значение между несколькими потоками с использованием `Mutex<T>`. Мы запустим 10 потоков и заставим каждый из них увеличить значение счётчика на 1, так что счётчик перейдёт от 0 до 10. Пример в листинге 16-13 не скомпилируется, и мы используем эту ошибку, чтобы узнать больше об использовании `Mutex<T>` и о том, как Rust помогает нам использовать его правильно.
 
-<Listing number="16-13" file-name="src/main.rs" caption="Ten threads, each incrementing a counter guarded by a `Mutex<T>`">
+<Listing number="16-13" file-name="src/main.rs" caption="Десять потоков, каждый из которых увеличивает счётчик, защищённый `Mutex<T>`">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-13/src/main.rs}}
@@ -105,38 +53,23 @@ Rust helps us use it correctly.
 
 </Listing>
 
-We create a `counter` variable to hold an `i32` inside a `Mutex<T>`, as we did
-in Listing 16-12. Next, we create 10 threads by iterating over a range of
-numbers. We use `thread::spawn` and give all the threads the same closure: one
-that moves the counter into the thread, acquires a lock on the `Mutex<T>` by
-calling the `lock` method, and then adds 1 to the value in the mutex. When a
-thread finishes running its closure, `num` will go out of scope and release the
-lock so another thread can acquire it.
+Мы создаём переменную `counter` для хранения `i32` внутри `Mutex<T>`, как в листинге 16-12. Далее мы создаём 10 потоков, перебирая диапазон чисел. Мы используем `thread::spawn` и даём всем потокам одно и то же замыкание: то, которое перемещает счётчик в поток, получает блокировку на `Mutex<T>`, вызвав метод `lock`, а затем добавляет 1 к значению в мьютексе. Когда поток завершает выполнение своего замыкания, `num` выйдет из области видимости и освободит блокировку, чтобы другой поток мог её получить.
 
-In the main thread, we collect all the join handles. Then, as we did in Listing
-16-2, we call `join` on each handle to make sure all the threads finish. At
-that point, the main thread will acquire the lock and print the result of this
-program.
+В основном потоке мы собираем все дескрипторы присоединения. Затем, как в листинге 16-2, мы вызываем `join` для каждого дескриптора, чтобы убедиться, что все потоки завершились. В этот момент основной поток получит блокировку и выведет результат этой программы.
 
-We hinted that this example wouldn’t compile. Now let’s find out why!
+Мы намекнули, что этот пример не скомпилируется. Теперь узнаем почему!
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-13/output.txt}}
 ```
 
-The error message states that the `counter` value was moved in the previous
-iteration of the loop. Rust is telling us that we can’t move the ownership
-of lock `counter` into multiple threads. Let’s fix the compiler error with the
-multiple-ownership method we discussed in Chapter 15.
+Сообщение об ошибке гласит, что значение `counter` было перемещено в предыдущей итерации цикла. Rust говорит нам, что мы не можем переместить владение блокировкой `counter` в несколько потоков. Давайте исправим ошибку компиляции с помощью метода множественного владения, который мы обсуждали в главе 15.
 
-#### Multiple Ownership with Multiple Threads
+#### Множественное владение с несколькими потоками
 
-In Chapter 15, we gave a value to multiple owners by using the smart pointer
-`Rc<T>` to create a reference counted value. Let’s do the same here and see
-what happens. We’ll wrap the `Mutex<T>` in `Rc<T>` in Listing 16-14 and clone
-the `Rc<T>` before moving ownership to the thread.
+В главе 15 мы передавали значение нескольким владельцам, используя умный указатель `Rc<T>` для создания значения с подсчётом ссылок. Давайте сделаем то же самое здесь и посмотрим, что произойдёт. Мы обернём `Mutex<T>` в `Rc<T>` в листинге 16-14 и клонируем `Rc<T>` перед перемещением владения в поток.
 
-<Listing number="16-14" file-name="src/main.rs" caption="Attempting to use `Rc<T>` to allow multiple threads to own the `Mutex<T>`">
+<Listing number="16-14" file-name="src/main.rs" caption="Попытка использовать `Rc<T>` для того, чтобы позволить нескольким потокам владеть `Mutex<T>`">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-14/src/main.rs}}
@@ -144,51 +77,25 @@ the `Rc<T>` before moving ownership to the thread.
 
 </Listing>
 
-Once again, we compile and get… different errors! The compiler is teaching us a
-lot.
+Снова компилируем и получаем... другие ошибки! Компилятор учит нас многому.
 
 ```console
 {{#include ../listings/ch16-fearless-concurrency/listing-16-14/output.txt}}
 ```
 
-Wow, that error message is very wordy! Here’s the important part to focus on:
-`` `Rc<Mutex<i32>>` cannot be sent between threads safely ``. The compiler is
-also telling us the reason why: `` the trait `Send` is not implemented for
-`Rc<Mutex<i32>>` ``. We’ll talk about `Send` in the next section: it’s one of
-the traits that ensures the types we use with threads are meant for use in
-concurrent situations.
+Ух вы, это сообщение об ошибке очень многословное! Вот важная часть, на которую стоит обратить внимание: `` `Rc<Mutex<i32>>` не может быть безопасно отправлен между потоками ``. Компилятор также сообщает причину: `` типаж `Send` не реализован для `Rc<Mutex<i32>>``. Мы поговорим о `Send` в следующем разделе: это один из типажей, который гарантирует, что типы, которые мы используем с потоками, предназначены для использования в конкурентных ситуациях.
 
-Unfortunately, `Rc<T>` is not safe to share across threads. When `Rc<T>`
-manages the reference count, it adds to the count for each call to `clone` and
-subtracts from the count when each clone is dropped. But it doesn’t use any
-concurrency primitives to make sure that changes to the count can’t be
-interrupted by another thread. This could lead to wrong counts—subtle bugs that
-could in turn lead to memory leaks or a value being dropped before we’re done
-with it. What we need is a type that is exactly like `Rc<T>` but one that makes
-changes to the reference count in a thread-safe way.
+К сожалению, `Rc<T>` небезопасен для разделения между потоками. Когда `Rc<T>` управляет подсчётом ссылок, он увеличивает счёт для каждого вызова `clone` и уменьшает счёт, когда каждый клон уничтожается. Но он не использует примитивы конкурентности, чтобы убедиться, что изменения счёта не могут быть прерваны другим потоком. Это может привести к неверным подсчётам — тонким ошибкам, которые, в свою очередь, могут привести к утечкам памяти или уничтожению значения до того, как мы с ним закончим. Нам нужен тип, который точно такой же, как `Rc<T>`, но который изменяет подсчёт ссылок потокобезопасным способом.
 
-#### Atomic Reference Counting with `Arc<T>`
+#### Атомарный подсчёт ссылок с `Arc<T>`
 
-Fortunately, `Arc<T>` _is_ a type like `Rc<T>` that is safe to use in
-concurrent situations. The _a_ stands for _atomic_, meaning it’s an _atomically
-reference-counted_ type. Atomics are an additional kind of concurrency
-primitive that we won’t cover in detail here: see the standard library
-documentation for [`std::sync::atomic`][atomic]<!-- ignore --> for more
-details. At this point, you just need to know that atomics work like primitive
-types but are safe to share across threads.
+К счастью, `Arc<T>` — это тип, подобный `Rc<T>`, который безопасно использовать в конкурентных ситуациях. Буква _a_ означает _атомарный_, то есть это _атомарно подсчитываемый по ссылкам_ тип. Атомарные операции — это дополнительный вид примитива конкурентности, который мы здесь подробно не рассматриваем: см. документацию стандартной библиотеки по [`std::sync::atomic`][atomic]<!-- ignore --> для более подробной информации. На данный момент вам просто нужно знать, что атомарные операции работают как примитивные типы, но безопасны для разделения между потоками.
 
-You might then wonder why all primitive types aren’t atomic and why standard
-library types aren’t implemented to use `Arc<T>` by default. The reason is that
-thread safety comes with a performance penalty that you only want to pay when
-you really need to. If you’re just performing operations on values within a
-single thread, your code can run faster if it doesn’t have to enforce the
-guarantees atomics provide.
+Вы можете затем спросить, почему все примитивные типы не атомарны и почему типы стандартной библиотеки не реализованы для использования `Arc<T>` по умолчанию. Причина в том, что безопасность потоков сопряжена с штрафом производительности, который вы хотите платить только тогда, когда это действительно необходимо. Если вы просто выполняете операции над значениями в одном потоке, ваш код может работать быстрее, если ему не нужно обеспечивать гарантии, которые предоставляют атомарные операции.
 
-Let’s return to our example: `Arc<T>` and `Rc<T>` have the same API, so we fix
-our program by changing the `use` line, the call to `new`, and the call to
-`clone`. The code in Listing 16-15 will finally compile and run.
+Вернёмся к нашему примеру: `Arc<T>` и `Rc<T>` имеют одинаковый API, поэтому мы исправляем нашу программу, изменив строку `use`, вызов `new` и вызов `clone`. Код в листинге 16-15 наконец скомпилируется и запустится.
 
-<Listing number="16-15" file-name="src/main.rs" caption="Using an `Arc<T>` to wrap the `Mutex<T>` to be able to share ownership across multiple threads">
+<Listing number="16-15" file-name="src/main.rs" caption="Использование `Arc<T>` для обёртки `Mutex<T>` с целью возможности разделения владения между несколькими потоками">
 
 ```rust
 {{#rustdoc_include ../listings/ch16-fearless-concurrency/listing-16-15/src/main.rs}}
@@ -196,51 +103,27 @@ our program by changing the `use` line, the call to `new`, and the call to
 
 </Listing>
 
-This code will print the following:
+Этот код выведет следующее:
 
-<!-- Not extracting output because changes to this output aren't significant;
-the changes are likely to be due to the threads running differently rather than
-changes in the compiler -->
+<!-- Не извлекаем вывод, потому что изменения в этом выводе незначительны;
+изменения, скорее всего, будут вызваны разным выполнением потоков, а не
+изменениями в компиляторе -->
 
 ```text
 Result: 10
 ```
 
-We did it! We counted from 0 to 10, which may not seem very impressive, but it
-did teach us a lot about `Mutex<T>` and thread safety. You could also use this
-program’s structure to do more complicated operations than just incrementing a
-counter. Using this strategy, you can divide a calculation into independent
-parts, split those parts across threads, and then use a `Mutex<T>` to have each
-thread update the final result with its part.
+У нас получилось! Мы посчитали от 0 до 10, что может показаться не очень впечатляющим, но это многое нам рассказало о `Mutex<T>` и безопасности потоков. Вы также могли бы использовать структуру этой программы для более сложных операций, чем просто увеличение счётчика. Используя эту стратегию, вы можете разделить вычисление на независимые части, распределить эти части по потокам, а затем использовать `Mutex<T>`, чтобы каждый поток обновлял окончательный результат своей частью.
 
-Note that if you are doing simple numerical operations, there are types simpler
-than `Mutex<T>` types provided by the [`std::sync::atomic` module of the
-standard library][atomic]<!-- ignore -->. These types provide safe, concurrent,
-atomic access to primitive types. We chose to use `Mutex<T>` with a primitive
-type for this example so we could concentrate on how `Mutex<T>` works.
+Обратите внимание, что если вы выполняете простые числовые операции, существуют типы проще, чем `Mutex<T>`, предоставляемые [модулем `std::sync::atomic` стандартной библиотеки][atomic]<!-- ignore -->. Эти типы обеспечивают безопасный, конкурентный, атомарный доступ к примитивным типам. Мы выбрали использование `Mutex<T>` с примитивным типом для этого примера, чтобы сосредоточиться на том, как работает `Mutex<T>`.
 
-### Similarities Between `RefCell<T>`/`Rc<T>` and `Mutex<T>`/`Arc<T>`
+### Сходство между `RefCell<T>`/`Rc<T>` и `Mutex<T>`/`Arc<T>`
 
-You might have noticed that `counter` is immutable but we could get a mutable
-reference to the value inside it; this means `Mutex<T>` provides interior
-mutability, as the `Cell` family does. In the same way we used `RefCell<T>` in
-Chapter 15 to allow us to mutate contents inside an `Rc<T>`, we use `Mutex<T>`
-to mutate contents inside an `Arc<T>`.
+Вы могли заметить, что `counter` является неизменяемым, но мы могли получить изменяемую ссылку на значение внутри него; это означает, что `Mutex<T>` обеспечивает внутреннюю изменяемость, как и семейство `Cell`. Так же, как мы использовали `RefCell<T>` в главе 15, чтобы позволить ourselves изменять содержимое внутри `Rc<T>`, мы используем `Mutex<T>` для изменения содержимого внутри `Arc<T>`.
 
-Another detail to note is that Rust can’t protect you from all kinds of logic
-errors when you use `Mutex<T>`. Recall from Chapter 15 that using `Rc<T>` came
-with the risk of creating reference cycles, where two `Rc<T>` values refer to
-each other, causing memory leaks. Similarly, `Mutex<T>` comes with the risk of
-creating _deadlocks_. These occur when an operation needs to lock two resources
-and two threads have each acquired one of the locks, causing them to wait for
-each other forever. If you’re interested in deadlocks, try creating a Rust
-program that has a deadlock; then research deadlock mitigation strategies for
-mutexes in any language and have a go at implementing them in Rust. The
-standard library API documentation for `Mutex<T>` and `MutexGuard` offers
-useful information.
+Ещё один момент, на который стоит обратить внимание: Rust не может защитить вас от всех видов логических ошибок при использовании `Mutex<T>`. Вспомните из главы 15, что использование `Rc<T>` несло риск создания циклических ссылок, где два значения `Rc<T>` ссылаются друг на друга, вызывая утечки памяти. Аналогично, `Mutex<T>` несёт риск создания _взаимной блокировки_ (deadlock). Они возникают, когда операция должна заблокировать два ресурса, и два потока уже получили по одной из блокировок, заставляя их ждать друг друга вечно. Если вас интересуют взаимные блокировки, попробуйте создать программу на Rust, которая имеет взаимную блокировку; затем изучите стратегии смягчения взаимных блокировок для мьютексов в любом языке и попробуйте реализовать их на Rust. Документация API стандартной библиотеки для `Mutex<T>` и `MutexGuard` предлагает полезную информацию.
 
-We’ll round out this chapter by talking about the `Send` and `Sync` traits and
-how we can use them with custom types.
+Мы завершим эту главу, поговорив о типажах `Send` и `Sync` и о том, как мы можем использовать их с пользовательскими типами.
 
 {{#quiz ../quizzes/ch16-03-shared-state.toml}}
 

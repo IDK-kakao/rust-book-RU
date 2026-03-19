@@ -1,22 +1,22 @@
 [[questions]]
 type = "MultipleChoice"
-prompt.prompt = "If you want to wait on a future in non-async code, you should do which of the following?"
+prompt.prompt = "Если вы хотите дождаться завершения фьючерса в неасинхронном коде, что следует сделать?"
 prompt.distractors = [
-  "Put an `.await` directly after the future",
-  "Give the future to Rust's built-in async runtime",
-  "Wrap the future in an `async` block and `.await` the block",  
+  "Поставить `.await` сразу после фьючерса",
+  "Передать фьючерс встроенному асинхронному рантайму Rust",
+  "Обернуть фьючерс в блок `async` и дождаться (`.await`) блока",  
 ]
-answer.answer = "Give the future to a third-party async runtime" 
+answer.answer = "Передать фьючерс стороннему асинхронному рантайму"
 context = """
-Rust does not let you use `.await` outside of `async` blocks or functions. Rust also does not have a built-in async runtime.
-You should use a third-party async runtime like `tokio` or `trpl`. 
+Rust не позволяет использовать `.await` вне блоков или функций `async`. Rust также не имеет встроенного асинхронного рантайма.
+Вам следует использовать сторонний асинхронный рантайм, такой как `tokio` или `trpl`. 
 """
 id = "de2a5023-dd5c-412e-8425-c8ed638f18f0"
 
 [[questions]]
 type = "MultipleChoice"
 prompt.prompt = """
-The async function below desugars into which type signature?
+В какой тип-сигнатуру превращается после десугаризации (desugars) приведённая ниже асинхронная функция?
 
 ```rust
 async fn calculate(nums: &[i32]) -> i32 {
@@ -47,9 +47,8 @@ fn calculate<'a>(nums: &'a [i32]) -> impl Future<Output = i32> + 'a;
 ```
 """
 context = """
-An async function returns an anonymous type that implements the `Future` trait whose output is the function's return type. 
-So here, that is represented as `impl Future<Output = i32>`. The future captures any lifetimes in the function's arguments.
-Therefore the returned type has the bound `+ 'a` and the input slice has the type `&'a [i32]`. This indicates that the slice 
-must live at least as long as the future which captures it.
+Асинхронная функция возвращает анонимный тип, который реализует типаж `Future`, чей результат (output) равен возвращаемому типу функции. 
+Здесь это представлено как `impl Future<Output = i32>`. Фьючерс захватывает любые времена жизни (lifetimes) в аргументах функции.
+Поэтому возвращаемый тип имеет ограничение `+ 'a`, а тип входного среза — `&'a [i32]`. Это указывает, что срез должен жить как минимум столько же, сколько живет фьючерс, который его захватывает.
 """
 id = "9c000322-464b-4d34-9e30-55591f9283d2"

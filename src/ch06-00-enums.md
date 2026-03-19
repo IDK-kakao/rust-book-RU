@@ -1,11 +1,3 @@
-# Enums and Pattern Matching
+# Перечисления и сопоставление с образцом
 
-In this chapter, we’ll look at _enumerations_, also referred to as _enums_.
-Enums allow you to define a type by enumerating its possible _variants_. First
-we’ll define and use an enum to show how an enum can encode meaning along with
-data. Next, we’ll explore a particularly useful enum, called `Option`, which
-expresses that a value can be either something or nothing. Then we’ll look at
-how pattern matching in the `match` expression makes it easy to run different
-code for different values of an enum. Finally, we’ll cover how the `if let`
-construct is another convenient and concise idiom available to handle enums in
-your code.
+В этой главе мы рассмотрим _перечисления_ (enums). Перечисления позволяют определить тип, перечислив его возможные _варианты_. Сначала мы определим и используем перечисление, чтобы показать, как оно может кодировать значение вместе с данными. Затем мы изучим особенно полезное перечисление `Option`, которое выражает, что значение может быть либо чем-то, либо ничем. Далее мы посмотрим, как _сопоставление с образцом_ в выражении `match` позволяет легко выполнять разный код для разных вариантов перечисления. Наконец, мы рассмотрим, как конструкция `if let` является ещё одним удобным и кратким идиоматическим способом работы с перечислениями в вашем коде.

@@ -21,15 +21,14 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "5"
 context = """ 
-Each match is tried from top to bottom. Both the second and third pattern are applicable, so the second one is used.
+Каждый вариант сопоставления проверяется сверху вниз. Оба второго и третьего образца применимы, поэтому используется второй.
 """
-
 
 [[questions]]
 id = "f7c361e0-733a-4d48-9809-736e3c1e2b67"
 type = "MultipleChoice"
 prompt.prompt = """
-Consider this method implemented for the `Option` type:
+Рассмотрим этот метод, реализованный для типа `Option`:
 
 ```
 impl<T> Option<T> {
@@ -42,19 +41,18 @@ impl<T> Option<T> {
 }
 ```
 
-Which sentence best describes the behavior of this function?
+Какое предложение лучше всего описывает поведение этой функции?
 """
-answer.answer = "Returns the object inside `self` if it exists, and `other` otherwise"
+answer.answer = "Возвращает объект внутри `self`, если он существует, и `other` в противном случае"
 prompt.distractors = [
-  "Returns a new option containing the object inside `self` if it exists, and `other` otherwise",
-  "Inserts `other` into `self` if `self` does not already contain a value",
-  "Returns a reference to the object inside `self` if it exists, and `other` otherwise"
+  "Возвращает новую опцию, содержащую объект внутри `self`, если он существует, и `other` в противном случае",
+  "Вставляет `other` в `self`, если `self` не содержит значение",
+  "Возвращает ссылку на объект внутри `self`, если он существует, и `other` в противном случае"
 ]
 context = """
-This function "unwraps" the option by consuming ownership of it and retrieving the value inside, but if no value exists then it falls back by returning `other`.
-This is a real function in the standard library!
+Эта функция «разворачивает» опцию, потребляя владение ею и извлекая внутреннее значение, но если значение отсутствует, то она возвращается к `other`.
+Это реальная функция из стандартной библиотеки!
 """
-
 
 [[questions]]
 id = "1e4f082c-ffa4-4d33-8726-2dbcd72e1aa2"
@@ -78,15 +76,14 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 13
 context = """
-The match arm `Either::Right(s)` moves the field `s`, so `x` cannot be used in the `println`.
+Арма сопоставления `Either::Right(s)` перемещает поле `s`, поэтому `x` не может быть использован в `println`.
 """
-
 
 [[questions]]
 id = "6e012d34-5c59-443e-85d9-385f0d7dee13"
 type = "MultipleChoice"
 prompt.prompt = """
-Consider these two implementations of a function to decrement an unsigned number twice.
+Рассмотрим эти две реализации функции для двойного уменьшения беззнакового числа.
 
 ```
 fn decr_twice_v1(n: u32) -> Option<u32> {
@@ -108,10 +105,10 @@ fn decr_twice_v2(n: u32) -> Option<u32> {
 }
 ```
 
-The functions have the same behavior for:
+Функции имеют одинаковое поведение для:
 """
-answer.answer = "All inputs"
-prompt.distractors = [ "No inputs", "Some, but not all inputs" ]
+answer.answer = "Всех входных данных"
+prompt.distractors = [ "Никаких входных данных", "Некоторые, но не все входные данные" ]
 context = """
-The `match` and `if` perform the same function here. A match is like a specialized `if` that checks for equality of the matched object.
+`match` и `if` здесь выполняют одну и ту же функцию. Сопоставление — это специализированный `if`, который проверяет равенство сопоставляемого объекта.
 """

@@ -1,14 +1,14 @@
 [[questions]]
 id = "87c3b09e-84d3-49d7-8680-0b2d068a7fc5"
 type = "ShortAnswer"
-prompt.prompt = "Every executable Rust program must contain a function with the name:"
+prompt.prompt = "Каждая исполняемая программа на Rust должна содержать функцию с именем:"
 answer.answer = "main"
 context = """
-In your program, you add a main function like this:
+В вашей программе вы добавляете функцию main так:
 
 ```
 fn main() {
-  // your code here
+  // ваш код здесь
 }
 ```
 """
@@ -17,7 +17,7 @@ fn main() {
 id = "0d78d302-eb3d-4ac7-a1ac-f2d661810744"
 type = "MultipleChoice"
 prompt.prompt = """
-Let's say you have the following program in a file `hello.rs`:
+Предположим, у вас есть следующая программа в файле `hello.rs`:
 
 ```
 fn main() {
@@ -25,14 +25,14 @@ fn main() {
 }
 ```
 
-Say you then run the command `rustc hello.rs` from the command-line. Which statement best describes what happens next?
+Если вы затем выполните команду `rustc hello.rs` из командной строки. Какое утверждение лучше всего описывает, что происходит дальше?
 """
-answer.answer = "`rustc` generates a binary executable named `hello`"
+answer.answer = "`rustc` создаёт бинарный исполняемый файл с именем `hello`"
 prompt.distractors = [
-  "`rustc` will print an error because this is an invalid program",
-  "`rustc` executes the program and prints out `Hello world!`",
-  "`rustc` reformats `hello.rs` according to the Rust style guide"
+  "`rustc` выведет ошибку, так как это недопустимая программа",
+  "`rustc` выполняет программу и выводит `Hello world!`",
+  "`rustc` переформатирует `hello.rs` в соответствии с руководством по стилю Rust"
 ]
 context = """
-Running `rustc` checks and compiles your program, but does not execute it.
+Запуск `rustc` проверяет и компилирует вашу программу, но не выполняет её.
 """

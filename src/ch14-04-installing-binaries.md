@@ -1,28 +1,14 @@
-<!-- Old link, do not remove -->
+<!-- Старая ссылка, не удалять -->
 
 <a id="installing-binaries-from-cratesio-with-cargo-install"></a>
 
-## Installing Binaries with `cargo install`
+## Установка бинарных файлов с помощью `cargo install`
 
-The `cargo install` command allows you to install and use binary crates
-locally. This isn’t intended to replace system packages; it’s meant to be a
-convenient way for Rust developers to install tools that others have shared on
-[crates.io](https://crates.io/)<!-- ignore -->. Note that you can only install
-packages that have binary targets. A _binary target_ is the runnable program
-that is created if the crate has a _src/main.rs_ file or another file specified
-as a binary, as opposed to a library target that isn’t runnable on its own but
-is suitable for including within other programs. Usually, crates have
-information in the _README_ file about whether a crate is a library, has a
-binary target, or both.
+Команда `cargo install` позволяет устанавливать и использовать бинарные крейты локально. Это не предназначено для замены системных пакетов; её цель — предоставить удобный способ разработчикам Rust устанавливать инструменты, которыми другие поделились на [crates.io](https://crates.io/)<!-- ignore -->. Обратите внимание, что вы можете устанавливать только пакеты, имеющие бинарные цели. _Бинарная цель_ — это запускаемая программа, которая создаётся, если в крейте есть файл _src/main.rs_ или другой файл, указанный как бинарный, в отличие от библиотечной цели, которая сама по себе не запускаема, но пригодна для включения в другие программы. Обычно в файле _README_ крейта есть информация о том, является ли он библиотекой, имеет ли бинарную цель или и то, и другое.
 
-All binaries installed with `cargo install` are stored in the installation
-root’s _bin_ folder. If you installed Rust using _rustup.rs_ and don’t have any
-custom configurations, this directory will be *$HOME/.cargo/bin*. Ensure that
-directory is in your `$PATH`to be able to run programs you’ve installed with`cargo install`.
+Все бинарные файлы, установленные через `cargo install`, сохраняются в папке _bin_ корня установки. Если вы установили Rust с помощью _rustup.rs_ и не имеете пользовательских настроек, этот каталог будет *$HOME/.cargo/bin*. Убедитесь, что этот каталог присутствует в вашем `$PATH`, чтобы иметь возможность запускать программы, установленные с помощью `cargo install`.
 
-For example, in Chapter 12 we mentioned that there’s a Rust implementation of
-the `grep` tool called `ripgrep` for searching files. To install `ripgrep`, we
-can run the following:
+Например, в Главе 12 мы упоминали, что существует реализация инструмента `grep` на Rust под названием `ripgrep` для поиска по файлам. Чтобы установить `ripgrep`, выполните следующую команду:
 
 <!-- manual-regeneration
 cargo install something you don't have, copy relevant output below
@@ -41,7 +27,4 @@ $ cargo install ripgrep
    Installed package `ripgrep v14.1.1` (executable `rg`)
 ```
 
-The second-to-last line of the output shows the location and the name of the
-installed binary, which in the case of `ripgrep` is `rg`. As long as the
-installation directory is in your `$PATH`, as mentioned previously, you can
-then run `rg --help` and start using a faster, Rustier tool for searching files!
+Предпоследняя строка вывода показывает расположение и имя установленного бинарного файла, которым в случае `ripgrep` является `rg`. Если каталог установки, как упоминалось ранее, находится в вашем `$PATH`, вы затем сможете запустить `rg --help` и начать использовать более быстрый инструмент на Rust для поиска по файлам!

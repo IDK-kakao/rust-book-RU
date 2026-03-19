@@ -17,6 +17,6 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "3 1"
 context = """
-The three strong refs are `r1`, `r5`, and `r6`. The one weak ref is `r4`, which is dropped at the end of `main`.
-`r2` is dropped at the end of its scope.
+Три сильные ссылки — это `r1`, `r5` и `r6`. Одна слабая ссылка — это `r4`, которая удаляется в конце `main`.
+`r2` удаляется в конце своей области видимости.
 """

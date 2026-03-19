@@ -19,15 +19,15 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "2"
 context = """
-The `move` keyword causes `n` to be copied into the closure, so the assignments
-`n = n + 1` within `thread::spawn` have no effect on the outer `n`.
+Ключевое слово `move` приводит к копированию `n` в замыкание, поэтому присваивания
+`n = n + 1` внутри `thread::spawn` не влияют на внешний `n`.
 """
 
 [[questions]]
 id = "c2a84e6d-8143-4944-bf20-b00e49144ac9"
 type = "MultipleChoice"
 prompt.prompt = """
-Consider this example from the text where a vector is improperly captured by a thread:
+Рассмотрим этот пример из текста, где вектор неправильно захватывается потоком:
 
 ```
 use std::thread;
@@ -43,7 +43,7 @@ fn main() {
 }
 ```
 
-The Rust compiler includes this diagnostic:
+Компилятор Rust выводит эту диагностику:
 
 ```text
 note: function requires argument type to outlive `'static`
@@ -56,18 +56,16 @@ note: function requires argument type to outlive `'static`
   | |______^
 ```
 
-Recall that `'static` is the lifetime of references that are valid for the entire program's duration.
+Напомним, что `'static` — это время жизни ссылок, которые действительны на протяжении всей программы.
 
-Which of the following best describes the note "function requires argument type to outlive `'static`"?
+Что лучше всего описывает примечание "function requires argument type to outlive `'static`"?
 """
-answer.answer = "Rust doesn't know how long a thread will run, so the thread's captures must live forever"
+answer.answer = "Rust не знает, как долго будет работать поток, поэтому захваты потока должны жить вечно"
 prompt.distractors = [
-    "The closure passed to `thread::spawn` is not allowed to take any arguments",
-    "The vector `v` contains values that do not outlive `'static`",
-    "A closure may only capture string constants of type `&'static str`"
+    "Замыкание, переданное в `thread::spawn`, не может принимать аргументы",
+    "Вектор `v` содержит значения, время жизни которых не превышает `'static`",
+    "Замыкание может захватывать только строковые константы типа `&'static str`"
 ]
 context = """
-If a closure captures a reference to a value that lived less than `'static`, it's possible that the thread would live 
-longer than the value and violate memory safety. Note that [`thread::scope`](https://doc.rust-lang.org/std/thread/fn.scope.html) 
-can be used to allow threads to capture non-static references by statically limiting the lifetime of the thread.
+Если замыкание захватывает ссылку на значение, время жизни которого меньше `'static`, возможно, что поток будет существовать дольше значения и нарушит безопасность памяти. Обратите внимание, что [`thread::scope`](https://doc.rust-lang.org/std/thread/fn.scope.html) можно использовать, чтобы разрешить потокам захватывать нестатические ссылки, статически ограничивая время жизни потока.
 """

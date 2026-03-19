@@ -1,5 +1,5 @@
-## Ownership Inventory #3
+## Инвентаризация владения #3
 
-The Ownership Inventory is a series of quizzes that test your understanding of ownership in real-world scenarios. These scenarios are inspired by common StackOverflow questions about Rust.
+Инвентаризация владения — это серия викторин, проверяющих ваше понимание владения в реальных сценариях. Эти сценарии вдохновлены распространёнными вопросами о Rust с StackOverflow.
 
 {{#quiz ../quizzes/ch10-04-inventory.toml}}

@@ -1,4 +1,3 @@
-# Appendix
+# Приложение
 
-The following sections contain reference material you may find useful in your
-Rust journey.
+Следующие разделы содержат справочный материал, который может оказаться полезным в вашем пути Rust.

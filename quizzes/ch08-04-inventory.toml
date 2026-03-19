@@ -2,10 +2,10 @@
 id = "867e5d29-c1eb-44b3-99e3-bb2325b74e44"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 1:**
+**Программа 1:**
 
 ```ide
-/// Removes all the zeros in-place from a vector of integers.
+/// Удаляет все нули на месте из вектора целых чисел.
 fn remove_zeros(v: &mut Vec<i32>) {
     for (i, t) in v.iter().enumerate().rev() {
         if *t == 0 {
@@ -16,28 +16,26 @@ fn remove_zeros(v: &mut Vec<i32>) {
 }
 ```
 
-If you tried to compile this function, which of the following best describes the compiler error you would get?
+Если вы попытаетесь скомпилировать эту функцию, какое из следующих описаний лучше всего соответствует ошибке компилятора, которую вы получите?
 """
-answer.answer = "`v.remove(i)` cannot borrow `v` as mutable"
+answer.answer = "`v.remove(i)` не может заимствовать `v` как изменяемый"
 prompt.distractors = [
-  "`v` does not live long enough to call `v.remove(i)`",
-  "`t` cannot be dereferenced while `i` is live",
-  "`v.iter()` cannot be called on a mutable reference"
+  "`v` не живёт достаточно долго, чтобы вызвать `v.remove(i)`",
+  "`t` не может быть разыменован, пока `i` жив",
+  "`v.iter()` не может быть вызван для изменяемой ссылки"
 ]
 context = """
-The function `v.iter()` immutably borrows a vector `v` for the duration of the for-loop. However, `v.remove(i)` requires a mutable
-reference to `v`. Therefore `v.remove(i)` cannot borrow `v` as mutable, since that would conflict with the iterator.
+Функция `v.iter()` не изменяемо заимствует вектор `v` на время цикла for. Однако `v.remove(i)` требует изменяемую ссылку на `v`. Поэтому `v.remove(i)` не может заимствовать `v` как изменяемый, так как это конфликтовало бы с итератором.
 """
-
 
 [[questions]]
 id = "dd1bd092-ef8d-4293-a4d6-6a59b5887e98"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 1:**
+**Программа 1:**
 
 ```ide
-/// Removes all the zeros in-place from a vector of integers.
+/// Удаляет все нули на месте из вектора целых чисел.
 fn remove_zeros(v: &mut Vec<i32>) {
     for (i, t) in v.iter().enumerate().rev() {
         if *t == 0 {
@@ -48,7 +46,7 @@ fn remove_zeros(v: &mut Vec<i32>) {
 }
 ```
 
-Normally if you try to compile this function, the compiler returns the following error:
+Обычно, если вы пытаетесь скомпилировать эту функцию, компилятор возвращает следующую ошибку:
 
 ```text
 error[E0502]: cannot borrow `*v` as mutable because it is also borrowed as immutable
@@ -64,9 +62,9 @@ error[E0502]: cannot borrow `*v` as mutable because it is also borrowed as immut
   |             ^^^^^^^^^^^ mutable borrow occurs here
 ```
 
-Assume that the compiler did NOT reject this function. Which (if any) of the following programs would
-(1) pass the compiler, and (2) possibly cause undefined behavior if executed?
-Check each program that satisfies both criteria, OR check "None of these programs" if none are satisfying.
+Предположим, что компилятор НЕ отклонил эту функцию. Какая (если есть) из следующих программ
+(1) пройдёт компилятор и (2) потенциально вызовет неопределённое поведение при выполнении?
+Отметьте каждую программу, удовлетворяющую обоим критериям, ИЛИ отметьте "Ни одна из этих программ", если ни одна не удовлетворяет.
 """
 answer.answer = [
 """
@@ -90,23 +88,23 @@ let mut v = vec![1; 100];
 remove_zeros(&mut v);
 ```
 """,
-"None of these programs",
+"Ни одна из этих программ",
 ]
 context = """
-To violate memory safety, `remove_zeros` must be called with a vector that contains a zero after the first element.
-The call to `v.shrink_to_fit()` will deallocate memory owned by the vector (due to resizing), which will invalidate the
-iterator `v.iter()` which contains a pointer to the old data. Note that reading the vector `v` after calling `remove_zeros`
-is not essential to the safety violation, since the issue is internal to `remove_zeros`.
+Чтобы нарушить безопасность памяти, `remove_zeros` должен быть вызван с вектором, содержащим ноль после первого элемента.
+Вызов `v.shrink_to_fit()` освободит память, принадлежащую вектору (из-за изменения размера), что сделает недействительным
+итератор `v.iter()`, содержащий указатель на старые данные. Обратите внимание, что чтение вектора `v` после вызова `remove_zeros`
+не является существенным для нарушения безопасности, так как проблема внутренняя для `remove_zeros`.
 """
 
 [[questions]]
 id = "c7e7e1e1-2788-4dd9-9c18-436bc95b405f"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 1:**
+**Программа 1:**
 
 ```ide
-/// Removes all the zeros in-place from a vector of integers.
+/// Удаляет все нули на месте из вектора целых чисел.
 fn remove_zeros(v: &mut Vec<i32>) {
     for (i, t) in v.iter().enumerate().rev() {
         if *t == 0 {
@@ -117,10 +115,10 @@ fn remove_zeros(v: &mut Vec<i32>) {
 }
 ```
 
-Of the following fixes (highlighted in yellow), which fix best satisfies these three criteria:
-1. The fixed function passes the Rust compiler,
-2. The fixed function preserves the intention of the original code, and
-3. The fixed function does not introduce unnecessary inefficiencies
+Какое из следующих исправлений (выделено жёлтым) лучше всего удовлетворяет трём критериям:
+1. Исправленная функция проходит компилятор Rust,
+2. Исправленная функция сохраняет намерение исходного кода и
+3. Исправленная функция не вносит ненужную неэффективность
 """
 answer.answer = """
 ```ide
@@ -174,23 +172,22 @@ fn remove_zeros(v: `[Vec<i32>]`) {
 """,
 ]
 context = """
-Any strategy that requires allocating a new vector, either via `Vec::clone` or `Vec::new`, requires unnecessary additional allocation.
-Therefore the simplest strategy that works is to only iterate over the indices `0 .. v.len()` which does not borrow `v`. We do this
-in reverse order to avoid removing missing indexes.
+Любая стратегия, требующая выделения нового вектора, либо через `Vec::clone`, либо через `Vec::new`, требует ненужного дополнительного выделения памяти.
+Поэтому простейшая работающая стратегия — это только итерировать по индексам `0 .. v.len()`, что не заимствует `v`. Мы делаем это в обратном порядке, чтобы избежать удаления пропущенных индексов.
 
-Like with Problem 1, the most idiomatic strategy is actually to use a built-in function we haven't discussed,
-[`Vec::retain`](https://doc.rust-lang.org/std/vec/struct.Vec.html#method.retain). This function keeps only elements in a vector
-that pass a predicate, but does so with more memory-efficiency.
+Как и в Проблеме 1, наиболее идиоматичная стратегия — это использовать встроенную функцию, которую мы не обсуждали,
+[`Vec::retain`](https://doc.rust-lang.org/std/vec/struct.Vec.html#method.retain). Эта функция сохраняет только элементы вектора,
+которые проходят проверку, но делает это с большей эффективностью использования памяти.
 """
 
 [[questions]]
 id = "fb0e3080-7cc8-4338-948e-fae693d137c8"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 2:**
+**Программа 2:**
 
 ```ide
-/// Reverses the elements of a vector in-place
+/// Переворачивает элементы вектора на месте
 fn reverse(v: &mut Vec<String>) {
     let n = v.len();
     for i in 0 .. n / 2 {
@@ -199,28 +196,27 @@ fn reverse(v: &mut Vec<String>) {
 }
 ```
 
-If you tried to compile this program, which of the following best describes the compiler error you would get?
+Если вы попытаетесь скомпилировать эту программу, какое из следующих описаний лучше всего соответствует ошибке компилятора, которую вы получите?
 """
-answer.answer = "cannot borrow `v` as mutable twice for `v[i]` and `v[n - i - 1]`"
+answer.answer = "не может заимствовать `v` как изменяемый дважды для `v[i]` и `v[n - i - 1]`"
 prompt.distractors = [
-  "cannot borrow `v` as immutable for `v.len()` when `v` is a mutable borrow",
-  "cannot mutably borrow an element `v[i]` of a mutable vector"
+  "не может заимствовать `v` как не изменяемый для `v.len()`, когда `v` является изменяемым заимствованием",
+  "не может изменяемо заимствовать элемент `v[i]` изменяемого вектора"
 ]
 context = """
-The compiler does not consider the specific value of the indexes used to access an array, so `&mut v[i]`
-and `&mut v[n - i - 1]` are assumed to possibly refer to the same element. Therefore we get an error
-where `v` cannot be mutably borrowed twice.
+Компилятор не учитывает конкретное значение индексов, используемых для доступа к массиву, поэтому `&mut v[i]`
+и `&mut v[n - i - 1]` предполагаются как возможно ссылающиеся на один и тот же элемент. Поэтому мы получаем ошибку,
+что `v` не может быть изменяемо заимствовано дважды.
 """
-
 
 [[questions]]
 id = "4c703871-3cc3-483f-beb5-876bdbcd223b"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 2:**
+**Программа 2:**
 
 ```ide
-/// Reverses the elements of a vector in-place
+/// Переворачивает элементы вектора на месте
 fn reverse(v: &mut Vec<String>) {
     let n = v.len();
     for i in 0 .. n / 2 {
@@ -229,7 +225,7 @@ fn reverse(v: &mut Vec<String>) {
 }
 ```
 
-Normally if you try to compile this function, the compiler returns the following error:
+Обычно, если вы пытаетесь скомпилировать эту функцию, компилятор возвращает следующую ошибку:
 
 ```text
 error[E0499]: cannot borrow `*v` as mutable more than once at a time
@@ -242,11 +238,11 @@ error[E0499]: cannot borrow `*v` as mutable more than once at a time
   |         first borrow later used by call
 ```
 
-Assume that the compiler did NOT reject this function. Which (if any) of the following programs would
-(1) pass the compiler, and (2) possibly cause undefined behavior if executed?
-Check each program that satisfies both criteria, OR check "None of these programs" if none are satisfying.
+Предположим, что компилятор НЕ отклонил эту функцию. Какая (если есть) из следующих программ
+(1) пройдёт компилятор и (2) потенциально вызовет неопределённое поведение при выполнении?
+Отметьте каждую программу, удовлетворяющую обоим критериям, ИЛИ отметьте "Ни одна из этих программ", если ни одна не удовлетворяет.
 """
-answer.answer = ["None of these programs"]
+answer.answer = ["Ни одна из этих программ"]
 prompt.distractors = [
 """
 ```
@@ -271,19 +267,19 @@ println!("{:?}", v);
 """,
 ]
 context = """
-This function cannot cause a memory safety violation because `i != n - i - 1` for all `i`, so the two
-mutable references always refer to different elements. Note that the `let x = &v[0]` program would not
-compile, as Rust's borrow checker would not allow `reverse` to be called while `x` is live.
+Эта функция не может вызвать нарушение безопасности памяти, потому что `i != n - i - 1` для всех `i`, поэтому две
+изменяемые ссылки всегда ссылаются на разные элементы. Обратите внимание, что программа `let x = &v[0]` не скомпилируется,
+так как проверка заимствований Rust не позволит вызвать `reverse`, пока `x` жив.
 """
 
 [[questions]]
 id = "380fc77f-190d-4386-9e0e-f9360bbbfd98"
 type = "MultipleChoice"
 prompt.prompt = """
-**Program 2:**
+**Программа 2:**
 
 ```ide
-/// Reverses the elements of a vector in-place
+/// Переворачивает элементы вектора на месте
 fn reverse(v: &mut Vec<String>) {
     let n = v.len();
     for i in 0 .. n / 2 {
@@ -292,10 +288,10 @@ fn reverse(v: &mut Vec<String>) {
 }
 ```
 
-Of the following fixes (highlighted in yellow), which fix best satisfies these three criteria:
-1. The fixed function passes the Rust compiler,
-2. The fixed function preserves the intention of the original code, and
-3. The fixed function does not introduce unnecessary inefficiencies
+Какое из следующих исправлений (выделено жёлтым) лучше всего удовлетворяет трём критериям:
+1. Исправленная функция проходит компилятор Rust,
+2. Исправленная функция сохраняет намерение исходного кода и
+3. Исправленная функция не вносит ненужную неэффективность
 """
 answer.answer = """
 ```ide
@@ -348,9 +344,9 @@ fn reverse(v: &mut Vec<String>) {
 """,
 ]
 context = """
-In a situation where the borrow checker rejects an operation that is actually safe and has no workaround, then
-unsafe code is sometimes acceptable if it's critical to avoid allocations. 
-In this specific case, you should actually use [`Vec::swap`](https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap), which is internally implemented
-with heavily-tested `unsafe` code similar to the code above. 
-But in general, if the standard library doesn't happen to support your use case, then `unsafe` can be acceptable if used correctly.
+В ситуации, когда проверка заимствований отклоняет операцию, которая на самом деле безопасна и не имеет обходного пути, тогда
+небезопасный код иногда приемлем, если критически важно избежать выделений памяти. 
+В этом конкретном случае вы должны на самом деле использовать [`Vec::swap`](https://doc.rust-lang.org/std/vec/struct.Vec.html#method.swap), который внутренне реализован
+с тщательно протестированным `unsafe` кодом, подобным коду выше. 
+Но вообще, если стандартная библиотека не поддерживает ваш случай использования, то `unsafe` может быть приемлем, если используется правильно.
 """

@@ -4,18 +4,18 @@ type = "Tracing"
 prompt.program = """
 pub mod a {
   pub mod b {
-    pub fn f() { println!("b1"); }
+    pub fn f() { println!(\"b1\"); }
     pub mod c {
-      pub fn f() { println!("c1"); }
+      pub fn f() { println!(\"c1\"); }
     }
   }
   pub fn entry() { super::b::c::f(); }
 }
 
 pub mod b {
-  pub fn f() { println!("b2"); }
+  pub fn f() { println!(\"b2\"); }
   pub mod c {
-    pub fn f() { println!("c2"); }
+    pub fn f() { println!(\"c2\"); }
   }
 }
 
@@ -26,8 +26,8 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "c2"
 context = """
-`entry` uses the path `super::b::c::f`. `entry` is within the module `a`, so `super` refers to the parent module of `a`, which is the root crate. 
-Then the child `b` of the root is the outermost module `b`, whose child `c` contains a function `f` that prints `"c2"`.
+`entry` использует путь `super::b::c::f`. `entry` находится внутри модуля `a`, поэтому `super` ссылается на родительский модуль `a`, которым является корневой крейт.
+Затем дочерний `b` корня — это внешний модуль `b`, чей дочерний `c` содержит функцию `f`, которая выводит `\"c2\"`.
 """
 
 [[questions]]
@@ -46,12 +46,12 @@ pub mod point {
 fn main() {
   let mut p = point::Point::origin();
   p.0 += 1;
-  println!("{p:?}");
+  println!(\"{p:?}\");
 }
 """
 answer.doesCompile = false
 answer.lineNumber = 12
 context = """
-While the `Point` structure and the `origin` static method are both public, the field `i32` is not marked as pub. Therefore directly accessing `p.0` outside of
-the `point` module is not allowed. This program would compile if line 3 were changed to `pub struct Point(pub i32, pub i32)`.
+Хотя структура `Point` и статический метод `origin` являются публичными, поле `i32` не помечено как `pub`. Поэтому прямой доступ к `p.0` за пределами модуля `point` запрещён.
+Эта программа скомпилировалась бы, если бы строка 3 была изменена на `pub struct Point(pub i32, pub i32)`.
 """

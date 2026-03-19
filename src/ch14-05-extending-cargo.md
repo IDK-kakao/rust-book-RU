@@ -1,17 +1,7 @@
-## Extending Cargo with Custom Commands
+## Расширение Cargo пользовательскими командами
 
-Cargo is designed so you can extend it with new subcommands without having to
-modify it. If a binary in your `$PATH` is named `cargo-something`, you can run
-it as if it were a Cargo subcommand by running `cargo something`. Custom
-commands like this are also listed when you run `cargo --list`. Being able to
-use `cargo install` to install extensions and then run them just like the
-built-in Cargo tools is a super convenient benefit of Cargo’s design!
+Cargo спроектирован так, чтобы вы могли расширять его новыми подкомандами без необходимости его модифицировать. Если исполняемый файл в вашем `$PATH` называется `cargo-something`, вы можете запустить его как подкоманду Cargo, выполнив `cargo something`. Такие пользовательские команды также отображаются при запуске `cargo --list`. Возможность использовать `cargo install` для установки расширений и последующего запуска их точно так же, как встроенные инструменты Cargo — это невероятно удобное преимущество дизайна Cargo!
 
-## Summary
+## Краткое содержание
 
-Sharing code with Cargo and [crates.io](https://crates.io/)<!-- ignore --> is
-part of what makes the Rust ecosystem useful for many different tasks. Rust’s
-standard library is small and stable, but crates are easy to share, use, and
-improve on a timeline different from that of the language. Don’t be shy about
-sharing code that’s useful to you on [crates.io](https://crates.io/)<!-- ignore
--->; it’s likely that it will be useful to someone else as well!
+Обмен кодом через Cargo и [crates.io](https://crates.io/)<!-- ignore --> — это часть того, что делает экосистему Rust полезной для множества различных задач. Стандартная библиотека Rust небольшая и стабильная, но крейты легко делиться, использовать и улучшать по графику, независимому от графика развития языка. Не стесняйтесь делиться на [crates.io](https://crates.io/)<!-- ignore --> кодом, который полезен вам; скорее всего, он будет полезен и кому-то другому!

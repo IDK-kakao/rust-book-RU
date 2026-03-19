@@ -11,8 +11,8 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 3
 context = """
-An array can only contain elements of a single type. The syntax `[message, 100]` creates an array with two elements.
-The variable `message` is a string, and the constant `100` is a number.
+Массив может содержать элементы только одного типа. Синтаксис `[message, 100]` создаёт массив с двумя элементами.
+Переменная `message` — это строка, а константа `100` — число.
 """
 
 [[questions]]
@@ -28,6 +28,6 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "4"
 context = """
-The syntax `[x; y]` declares an array with `y` copies of the value `x`. The syntax `(a, b)` destructures `t` and binds `a` to `[1; 2]`. 
-The syntax `t.1` refers to the second element of `t`, which is `[3; 4]`.
+Синтаксис `[x; y]` объявляет массив с `y` копиями значения `x`. Синтаксис `(a, b)` деструктурирует `t` и связывает `a` с `[1; 2]`. 
+Синтаксис `t.1` ссылается на второй элемент `t`, который равен `[3; 4]`.
 """

@@ -1,21 +1,12 @@
-## Method Syntax
+## Синтаксис методов
 
-_Methods_ are similar to functions: we declare them with the `fn` keyword and a
-name, they can have parameters and a return value, and they contain some code
-that’s run when the method is called from somewhere else. Unlike functions,
-methods are defined within the context of a struct (or an enum or a trait
-object, which we cover in [Chapter 6][enums]<!-- ignore --> and [Chapter
-18][trait-objects]<!-- ignore -->, respectively), and their first parameter is
-always `self`, which represents the instance of the struct the method is being
-called on.
+_Методы_ похожи на функции: мы объявляем их с помощью ключевого слова `fn` и имени, они могут иметь параметры и возвращаемое значение, а также содержат код, который выполняется при вызове метода из другого места. В отличие от функций, методы определяются в контексте структуры (или перечисления, или объекта типажа, которые мы рассматриваем в [Главе 6][enums]<!-- ignore --> и [Главе 18][trait-objects]<!-- ignore --> соответственно), и их первый параметр всегда `self`, который представляет экземпляр структуры, для которого вызывается метод.
 
-### Defining Methods
+### Определение методов
 
-Let’s change the `area` function that has a `Rectangle` instance as a parameter
-and instead make an `area` method defined on the `Rectangle` struct, as shown
-in Listing 5-13.
+Давайте изменим функцию `area`, которая принимает экземпляр `Rectangle` в качестве параметра, и вместо этого сделаем метод `area`, определённый для структуры `Rectangle`, как показано в Листинге 5-13.
 
-<Listing number="5-13" file-name="src/main.rs" caption="Defining an `area` method on the `Rectangle` struct">
+<Listing number="5-13" file-name="src/main.rs" caption="Определение метода `area` для структуры `Rectangle`">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-13/src/main.rs}}
@@ -23,46 +14,15 @@ in Listing 5-13.
 
 </Listing>
 
-To define the function within the context of `Rectangle`, we start an `impl`
-(implementation) block for `Rectangle`. Everything within this `impl` block
-will be associated with the `Rectangle` type. Then we move the `area` function
-within the `impl` curly brackets and change the first (and in this case, only)
-parameter to be `self` in the signature and everywhere within the body. In
-`main`, where we called the `area` function and passed `rect1` as an argument,
-we can instead use _method syntax_ to call the `area` method on our `Rectangle`
-instance. The method syntax goes after an instance: we add a dot followed by
-the method name, parentheses, and any arguments.
+Чтобы определить функцию в контексте `Rectangle`, мы начинаем блок `impl` (реализации) для `Rectangle`. Всё внутри этого блока `impl` будет связано с типом `Rectangle`. Затем мы перемещаем функцию `area` внутрь фигурных скобок `impl` и меняем первый (и в данном случае единственный) параметр на `self` в сигнатуре и во всём теле. В `main`, где мы вызывали функцию `area` и передавали `rect1` в качестве аргумента, мы можем вместо этого использовать _синтаксис методов_ для вызова метода `area` на нашем экземпляре `Rectangle`. Синтаксис методов идёт после экземпляра: мы добавляем точку, затем имя метода, круглые скобки и любые аргументы.
 
-In the signature for `area`, we use `&self` instead of `rectangle: &Rectangle`.
-The `&self` is actually short for `self: &Self`. Within an `impl` block, the
-type `Self` is an alias for the type that the `impl` block is for. Methods must
-have a parameter named `self` of type `Self` for their first parameter, so Rust
-lets you abbreviate this with only the name `self` in the first parameter spot.
-Note that we still need to use the `&` in front of the `self` shorthand to
-indicate that this method borrows the `Self` instance, just as we did in
-`rectangle: &Rectangle`. Methods can take ownership of `self`, borrow `self`
-immutably, as we’ve done here, or borrow `self` mutably, just as they can any
-other parameter.
+В сигнатуре `area` мы используем `&self` вместо `rectangle: &Rectangle`. `&self` на самом деле является сокращением для `self: &Self`. Внутри блока `impl` тип `Self` является псевдонимом для типа, для которого предназначен блок `impl`. Методы должны иметь параметр с именем `self` типа `Self` в качестве своего первого параметра, поэтому Rust позволяет сократить это, используя только имя `self` в позиции первого параметра. Обратите внимание, что нам всё ещё нужно использовать `&` перед сокращением `self`, чтобы указать, что этот метод заимствует экземпляр `Self`, как мы это делали в `rectangle: &Rectangle`. Методы могут принимать владение `self`, заимствовать `self` неизменно, как мы сделали здесь, или заимствовать `self` изменяемо, как и любой другой параметр.
 
-We chose `&self` here for the same reason we used `&Rectangle` in the function
-version: we don’t want to take ownership, and we just want to read the data in
-the struct, not write to it. If we wanted to change the instance that we’ve
-called the method on as part of what the method does, we’d use `&mut self` as
-the first parameter. Having a method that takes ownership of the instance by
-using just `self` as the first parameter is rare; this technique is usually
-used when the method transforms `self` into something else and you want to
-prevent the caller from using the original instance after the transformation.
+Мы выбрали `&self` здесь по той же причине, по которой использовали `&Rectangle` в версии функции: мы не хотим принимать владение, а просто хотим прочитать данные в структуре, не записывая в неё. Если бы мы хотели изменить экземпляр, для которого вызывается метод, в рамках того, что делает метод, мы бы использовали `&mut self` в качестве первого параметра. Наличие метода, который принимает владение экземпляром, используя только `self` в качестве первого параметра, встречается редко; эта техника обычно используется, когда метод преобразует `self` во что-то ещё, и вы хотите предотвратить использование исходного экземпляра вызывающей стороной после преобразования.
 
-The main reason for using methods instead of functions, in addition to
-providing method syntax and not having to repeat the type of `self` in every
-method’s signature, is for organization. We’ve put all the things we can do
-with an instance of a type in one `impl` block rather than making future users
-of our code search for capabilities of `Rectangle` in various places in the
-library we provide.
+Основная причина использования методов вместо функций, помимо предоставления синтаксиса методов и необходимости повторять тип `self` в сигнатуре каждого метода, — это организация. Мы поместили всё, что мы можем делать с экземпляром типа, в один блок `impl`, а не заставляем будущих пользователей нашего кода искать возможности `Rectangle` в различных местах в предоставляемой нами библиотеке.
 
-Note that we can choose to give a method the same name as one of the struct’s
-fields. For example, we can define a method on `Rectangle` that is also named
-`width`:
+Обратите внимание, что мы можем дать методу то же имя, что и у одного из полей структуры. Например, мы можем определить метод для `Rectangle`, который также называется `width`:
 
 <Listing file-name="src/main.rs">
 
@@ -72,32 +32,15 @@ fields. For example, we can define a method on `Rectangle` that is also named
 
 </Listing>
 
-Here, we’re choosing to make the `width` method return `true` if the value in
-the instance’s `width` field is greater than `0` and `false` if the value is
-`0`: we can use a field within a method of the same name for any purpose. In
-`main`, when we follow `rect1.width` with parentheses, Rust knows we mean the
-method `width`. When we don’t use parentheses, Rust knows we mean the field
-`width`.
+Здесь мы выбираем, чтобы метод `width` возвращал `true`, если значение в поле `width` экземпляра больше `0`, и `false`, если значение равно `0`: мы можем использовать поле внутри метода с таким же именем для любой цели. В `main`, когда мы добавляем круглые скобки после `rect1.width`, Rust понимает, что мы имеем в виду метод `width`. Когда мы не используем круглые скобки, Rust понимает, что мы имеем в виду поле `width`.
 
-Often, but not always, when we give a method the same name as a field we want
-it to only return the value in the field and do nothing else. Methods like this
-are called _getters_, and Rust does not implement them automatically for struct
-fields as some other languages do. Getters are useful because you can make the
-field private but the method public, and thus enable read-only access to that
-field as part of the type’s public API. We will discuss what public and private
-are and how to designate a field or method as public or private in [Chapter
-7][public]<!-- ignore -->.
+Часто, но не всегда, когда мы даём методу то же имя, что и у поля, мы хотим, чтобы он просто возвращал значение в поле и ничего больше не делал. Такие методы называются _геттерами_, и Rust не реализует их автоматически для полей структур, как это делают некоторые другие языки. Геттеры полезны, потому что вы можете сделать поле приватным, а метод публичным, и таким образом обеспечить доступ только для чтения к этому полю как часть публичного API типа. Мы обсудим, что такое публичное и приватное и как обозначить поле или метод как публичный или приватный в [Главе 7][public]<!-- ignore -->.
 
-### Methods with More Parameters
+### Методы с дополнительными параметрами
 
-Let’s practice using methods by implementing a second method on the `Rectangle`
-struct. This time we want an instance of `Rectangle` to take another instance
-of `Rectangle` and return `true` if the second `Rectangle` can fit completely
-within `self` (the first `Rectangle`); otherwise, it should return `false`.
-That is, once we’ve defined the `can_hold` method, we want to be able to write
-the program shown in Listing 5-14.
+Давайте потренируемся в использовании методов, реализовав второй метод для структуры `Rectangle`. На этот раз мы хотим, чтобы экземпляр `Rectangle` принимал другой экземпляр `Rectangle` и возвращал `true`, если второй `Rectangle` может полностью поместиться внутри `self` (первого `Rectangle`); в противном случае он должен вернуть `false`. То есть, как только мы определим метод `can_hold`, мы хотим иметь возможность написать программу, показанную в Листинге 5-14.
 
-<Listing number="5-14" file-name="src/main.rs" caption="Using the as-yet-unwritten `can_hold` method">
+<Listing number="5-14" file-name="src/main.rs" caption="Использование ещё не написанного метода `can_hold`">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-14/src/main.rs}}
@@ -105,30 +48,16 @@ the program shown in Listing 5-14.
 
 </Listing>
 
-The expected output would look like the following because both dimensions of
-`rect2` are smaller than the dimensions of `rect1`, but `rect3` is wider than
-`rect1`:
+Ожидаемый вывод будет выглядеть следующим образом, потому что обе размерности `rect2` меньше размерностей `rect1`, но `rect3` шире, чем `rect1`:
 
 ```text
 Can rect1 hold rect2? true
 Can rect1 hold rect3? false
 ```
 
-We know we want to define a method, so it will be within the `impl Rectangle`
-block. The method name will be `can_hold`, and it will take an immutable borrow
-of another `Rectangle` as a parameter. We can tell what the type of the
-parameter will be by looking at the code that calls the method:
-`rect1.can_hold(&rect2)` passes in `&rect2`, which is an immutable borrow to
-`rect2`, an instance of `Rectangle`. This makes sense because we only need to
-read `rect2` (rather than write, which would mean we’d need a mutable borrow),
-and we want `main` to retain ownership of `rect2` so we can use it again after
-calling the `can_hold` method. The return value of `can_hold` will be a
-Boolean, and the implementation will check whether the width and height of
-`self` are greater than the width and height of the other `Rectangle`,
-respectively. Let’s add the new `can_hold` method to the `impl` block from
-Listing 5-13, shown in Listing 5-15.
+Мы знаем, что хотим определить метод, поэтому он будет внутри блока `impl Rectangle`. Имя метода будет `can_hold`, и он будет принимать неизменяемую ссылку на другой `Rectangle` в качестве параметра. Мы можем определить тип параметра, посмотрев на код, который вызывает метод: `rect1.can_hold(&rect2)` передаёт `&rect2`, что является неизменяемой ссылкой на `rect2`, экземпляр `Rectangle`. Это имеет смысл, потому что нам нужно только читать `rect2` (а не записывать, что означало бы необходимость изменяемой ссылки), и мы хотим, чтобы `main` сохранил владение `rect2`, чтобы мы могли использовать его снова после вызова метода `can_hold`. Возвращаемое значение `can_hold` будет логическим, а реализация проверит, что ширина и высота `self` больше, чем ширина и высота другого `Rectangle` соответственно. Давайте добавим новый метод `can_hold` в блок `impl` из Листинга 5-13, показанный в Листинге 5-15.
 
-<Listing number="5-15" file-name="src/main.rs" caption="Implementing the `can_hold` method on `Rectangle` that takes another `Rectangle` instance as a parameter">
+<Listing number="5-15" file-name="src/main.rs" caption="Реализация метода `can_hold` на `Rectangle`, который принимает другой экземпляр `Rectangle` в качестве параметра">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-15/src/main.rs:here}}
@@ -136,52 +65,30 @@ Listing 5-13, shown in Listing 5-15.
 
 </Listing>
 
-When we run this code with the `main` function in Listing 5-14, we’ll get our
-desired output. Methods can take multiple parameters that we add to the
-signature after the `self` parameter, and those parameters work just like
-parameters in functions.
+Когда мы запустим этот код с функцией `main` из Листинга 5-14, мы получим желаемый вывод. Методы могут принимать несколько параметров, которые мы добавляем в сигнатуру после параметра `self`, и эти параметры работают точно так же, как параметры в функциях.
 
 
-### Associated Functions
+### Ассоциированные функции
 
-All functions defined within an `impl` block are called _associated functions_
-because they’re associated with the type named after the `impl`. We can define
-associated functions as functions that don’t have `self` as their first parameter (and thus
-are not methods) because they don’t need an instance of the type to work with.
-We’ve already used one function like this: the `String::from` function that’s
-defined on the `String` type.
+Все функции, определённые внутри блока `impl`, называются _ассоциированными функциями_, потому что они связаны с типом, указанным после `impl`. Мы можем определить ассоциированные функции как функции, у которых нет `self` в качестве первого параметра (и, следовательно, не являются методами), потому что им не нужен экземпляр типа для работы. Мы уже использовали одну такую функцию: функция `String::from`, определённая для типа `String`.
 
-Associated functions that aren’t methods are often used for constructors that
-will return a new instance of the struct. These are often called `new`, but
-`new` isn’t a special name and isn’t built into the language. For example, we
-could choose to provide an associated function named `square` that would have
-one dimension parameter and use that as both width and height, thus making it
-easier to create a square `Rectangle` rather than having to specify the same
-value twice:
+Ассоциированные функции, которые не являются методами, часто используются для конструкторов, которые будут возвращать новый экземпляр структуры. Их часто называют `new`, но `new` — это не специальное имя и не встроено в язык. Например, мы могли бы предоставить ассоциированную функцию с именем `square`, которая бы имела один параметр размерности и использовала его как для ширины, так и для высоты, тем самым упрощая создание квадратного `Rectangle`, вместо того чтобы указывать одно и то же значение дважды:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/no-listing-03-associated-functions/src/main.rs:here}}
 ```
 
-The `Self` keywords in the return type and in the body of the function are
-aliases for the type that appears after the `impl` keyword, which in this case
-is `Rectangle`.
+Ключевые слова `Self` в возвращаемом типе и в теле функции являются псевдонимами для типа, который появляется после ключевого слова `impl`, который в данном случае — `Rectangle`.
 
-To call this associated function, we use the `::` syntax with the struct name;
-`let sq = Rectangle::square(3);` is an example. This function is namespaced by
-the struct: the `::` syntax is used for both associated functions and
-namespaces created by modules. We’ll discuss modules in [Chapter
-7][modules]<!-- ignore -->.
+Чтобы вызвать эту ассоциированную функцию, мы используем синтаксис `::` с именем структуры; `let sq = Rectangle::square(3);` — это пример. Эта функция пространства имён структуры: синтаксис `::` используется как для ассоциированных функций, так и для пространств имён, создаваемых модулями. Мы обсудим модули в [Главе 7][modules]<!-- ignore -->.
 
-### Multiple `impl` Blocks
+### Несколько блоков `impl`
 
-Each struct is allowed to have multiple `impl` blocks. For example, Listing
-5-15 is equivalent to the code shown in Listing 5-16, which has each method in
-its own `impl` block.
+Каждой структуре разрешено иметь несколько блоков `impl`. Например, Листинг 5-15 эквивалентен коду, показанному в Листинге 5-16, где каждый метод находится в своём блоке `impl`.
 
-<Listing number="5-16" caption="Rewriting Listing 5-15 using multiple `impl` blocks">
+<Listing number="5-16" caption="Переписывание Листинга 5-15 с использованием нескольких блоков `impl`">
 
 ```rust
 {{#rustdoc_include ../listings/ch05-using-structs-to-structure-related-data/listing-05-16/src/main.rs:here}}
@@ -189,13 +96,11 @@ its own `impl` block.
 
 </Listing>
 
-There’s no reason to separate these methods into multiple `impl` blocks here,
-but this is valid syntax. We’ll see a case in which multiple `impl` blocks are
-useful in Chapter 10, where we discuss generic types and traits.
+Здесь нет причины разделять эти методы на несколько блоков `impl`, но это допустимый синтаксис. Мы увидим случай, когда несколько блоков `impl` полезны, в Главе 10, где мы обсудим обобщённые типы и типажи.
 
-### Method Calls are Syntactic Sugar for Function Calls
+### Вызовы методов — это синтаксический сахар для вызовов функций
 
-Using the concepts we've discussed so far, we can now see how method calls are syntactic sugar for function calls. For example, let's say we have a rectangle struct with an `area` method and a `set_width` method:
+Используя концепции, которые мы обсудили до сих пор, мы теперь можем увидеть, как вызовы методов являются синтаксическим сахаром для вызовов функций. Например, предположим, что у нас есть структура прямоугольника с методом `area` и методом `set_width`:
 
 ```rust,ignore
 # struct Rectangle {
@@ -214,7 +119,7 @@ impl Rectangle {
 }
 ```
 
-And let's say we have a rectangle `r`. Then the method calls `r.area()` and `r.set_width(2)` are equivalent to this:
+И предположим, что у нас есть прямоугольник `r`. Тогда вызовы методов `r.area()` и `r.set_width(2)` эквивалентны этому:
 
 ```rust
 # struct Rectangle {
@@ -246,13 +151,13 @@ And let's say we have a rectangle `r`. Then the method calls `r.area()` and `r.s
 # }
 ```
 
-The method call `r.area()` becomes `Rectangle::area(&r)`. The function name is the associated function `Rectangle::area`. The function argument is the `&self` parameter. Rust automatically inserts the borrowing operator `&`.
+Вызов метода `r.area()` становится `Rectangle::area(&r)`. Имя функции — это ассоциированная функция `Rectangle::area`. Аргумент функции — это параметр `&self`. Rust автоматически вставляет оператор заимствования `&`.
 
-> *Note:* if you are familiar with C or C++, you are used to two different syntaxes for method calls: `r.area()` and `r->area()`. Rust does not have an equivalent to the arrow operator `->`. Rust will automatically reference and dereference the method receiver when you use the dot operator.
+> *Примечание:* если вы знакомы с C или C++, вы привыкли к двум разным синтаксисам для вызовов методов: `r.area()` и `r->area()`. У Rust нет эквивалента оператору стрелки `->`. Rust автоматически ссылается и разыменовывает получатель метода при использовании оператора точки.
 
-The method call `r.set_width(2)` similarly becomes `Rectangle::set_width(&mut r, 2)`. This method expects `&mut self`, so the first argument is a mutable borrow `&mut r`. The second argument is exactly the same, the number 2.
+Вызов метода `r.set_width(2)` аналогично становится `Rectangle::set_width(&mut r, 2)`. Этот метод ожидает `&mut self`, поэтому первый аргумент — изменяемая ссылка `&mut r`. Второй аргумент точно такой же, число 2.
 
-As we described in Chapter 4.2 ["Dereferencing a Pointer Accesses Its Data"](ch04-02-references-and-borrowing.html#dereferencing-a-pointer-accesses-its-data), Rust will insert as many references and dereferences as needed to make the types match up for the `self` parameter. For example, here are two equivalent calls to `area` for a mutable reference to a boxed rectangle:
+Как мы описали в Главе 4.2 ["Разыменование указателя даёт доступ к его данным"](ch04-02-references-and-borrowing.html#dereferencing-a-pointer-accesses-its-data), Rust вставит столько ссылок и разыменований, сколько нужно, чтобы типы совпали для параметра `self`. Например, вот два эквивалентных вызова `area` для изменяемой ссылки на коробчатый прямоугольник:
 
 ```rust
 # struct Rectangle {
@@ -280,14 +185,14 @@ As we described in Chapter 4.2 ["Dereferencing a Pointer Accesses Its Data"](ch0
 # }
 ```
 
-Rust will add two dereferences (once for the mutable reference, once for the box) and then one immutable borrow because `area` expects `&Rectangle`. Note that this is also a situation where a mutable reference is "downgraded" into a shared reference, like we discussed in [Chapter 4.2](ch04-02-references-and-borrowing.html#mutable-references-provide-unique-and-non-owning-access-to-data). Conversely, you would not be allowed to call `set_width` on a value of type `&Rectangle` or `&Box<Rectangle>`.
+Rust добавит два разыменования (один для изменяемой ссылки, один для коробки), а затем одну неизменяемую ссылку, потому что `area` ожидает `&Rectangle`. Обратите внимание, что это также ситуация, когда изменяемая ссылка "понижается" до общей ссылки, как мы обсуждали в [Главе 4.2](ch04-02-references-and-borrowing.html#mutable-references-provide-unique-and-non-owning-access-to-data). И наоборот, вам не будет разрешено вызвать `set_width` на значении типа `&Rectangle` или `&Box<Rectangle>`.
 
 {{#quiz ../quizzes/ch05-03-method-syntax-sec1.toml}}
 
 
-### Methods and Ownership
+### Методы и владение
 
-Like we discussed in Chapter 4.2 ["References and Borrowing"](ch04-02-references-and-borrowing.html), methods must be called on structs that have the necessary permissions. As a running example, we will use these three methods that take `&self`, `&mut self`, and `self`, respectively.
+Как мы обсуждали в Главе 4.2 ["Ссылки и заимствование"](ch04-02-references-and-borrowing.html), методы должны вызываться для структур, которые имеют необходимые права. В качестве работающего примера мы будем использовать эти три метода, которые принимают `&self`, `&mut self` и `self` соответственно.
 
 ```rust,ignore
 impl Rectangle {    
@@ -308,9 +213,9 @@ impl Rectangle {
 }
 ```
 
-#### Reads and Writes with `&self` and `&mut self`
+#### Чтение и запись с `&self` и `&mut self`
 
-If we make an owned rectangle with `let rect = Rectangle { ... }`, then `rect` has @Perm{read} and @Perm{own} permissions. With those permissions, it is permissible to call the `area` and `max` methods:
+Если мы создаём владеющий прямоугольник с `let rect = Rectangle { ... }`, то `rect` имеет права @Perm{read} и @Perm{own}. С этими правами допустимо вызвать методы `area` и `max`:
 
 ```aquascope,permissions,boundaries,stepper
 #struct Rectangle {
@@ -347,7 +252,7 @@ let max_rect = rect.max(other_rect);`{}`
 #}
 ```
 
-However, if we try to call `set_width`, we are missing the @Perm{write} permission:
+Однако, если мы попытаемся вызвать `set_width`, у нас не хватает права @Perm{write}:
 
 ```aquascope,permissions,boundaries,shouldFail
 #struct Rectangle {
@@ -381,7 +286,7 @@ rect.set_width(0);`{}`
 #}
 ```
 
-Rust will reject this program with the corresponding error:
+Rust отклонит эту программу с соответствующим сообщением об ошибке:
 
 ```text
 error[E0596]: cannot borrow `rect` as mutable, as it is not declared as mutable
@@ -394,7 +299,7 @@ error[E0596]: cannot borrow `rect` as mutable, as it is not declared as mutable
    | ^^^^^^^^^^^^^^^^^ cannot borrow as mutable
 ```
 
-We will get a similar error if we try to call `set_width` on an immutable reference to a `Rectangle`, even if the underlying rectangle is mutable:
+Мы получим аналогичную ошибку, если попытаемся вызвать `set_width` на неизменяемой ссылке на `Rectangle`, даже если базовый прямоугольник изменяем:
 
 ```aquascope,permissions,boundaries,stepper,shouldFail
 #struct Rectangle {
@@ -432,9 +337,9 @@ rect_ref.set_width(2);`{}` // but this is still not ok
 #}
 ```
 
-#### Moves with `self`
+#### Перемещения с `self`
 
-Calling a method that expects `self` will move the input struct (unless the struct implements `Copy`). For example, we cannot use a `Rectangle` after passing it to `max`:
+Вызов метода, который ожидает `self`, переместит входную структуру (если только структура не реализует `Copy`). Например, мы не можем использовать `Rectangle` после передачи его в `max`:
 
 ```aquascope,permissions,boundaries,stepper,shouldFail
 #struct Rectangle {
@@ -473,7 +378,7 @@ println!("{}", rect.area());`{}`
 #}
 ```
 
-Once we call `rect.max(..)`, we move `rect` and so lose all permissions on it. Trying to compile this program would give us the following error:
+Как только мы вызываем `rect.max(..)`, мы перемещаем `rect` и теряем все права на него. Попытка скомпилировать эту программу даст нам следующую ошибку:
 
 ```text
 error[E0382]: borrow of moved value: `rect`
@@ -488,7 +393,7 @@ error[E0382]: borrow of moved value: `rect`
    |                ^^^^^^^^^^^ value borrowed here after move
 ```
 
-A similar situation arises if we try to call a `self` method on a reference. For instance, say we tried to make a method `set_to_max` that assigns `self` to the output of `self.max(..)`:
+Аналогичная ситуация возникает, если мы пытаемся вызвать метод `self` на ссылку. Например, предположим, что мы попытались сделать метод `set_to_max`, который присваивает `self` результату `self.max(..)`:
 
 ```aquascope,permissions,boundaries,stepper,shouldFail
 #struct Rectangle {
@@ -518,7 +423,7 @@ impl Rectangle {
 }
 ```
 
-Then we can see that `self` is missing @Perm{own} permissions in the operation `self.max(..)`. Rust therefore rejects this program with the following error:
+Тогда мы можем видеть, что `self` не имеет прав @Perm{own} в операции `self.max(..)`. Поэтому Rust отклоняет эту программу со следующим сообщением об ошибке:
 
 ```text
 error[E0507]: cannot move out of `*self` which is behind a mutable reference
@@ -532,11 +437,11 @@ error[E0507]: cannot move out of `*self` which is behind a mutable reference
    |
 ```
 
-This is the same kind of error we discussed in Chapter 4.3 ["Copying vs. Moving Out of a Collection"](ch04-03-fixing-ownership-errors.html#fixing-an-unsafe-program-copying-vs-moving-out-of-a-collection).
+Это тот же тип ошибки, который мы обсуждали в Главе 4.3 ["Копирование против перемещения из коллекции"](ch04-03-fixing-ownership-errors.html#fixing-an-unsafe-program-copying-vs-moving-out-of-a-collection).
 
-#### Good Moves and Bad Moves
+#### Хорошие перемещения и плохие перемещения
 
-You might wonder: why does it matter if we move out of `*self`? In fact, for the case of `Rectangle`, it actually is safe to move out of `*self`, even though Rust doesn't let you do it. For example, if we simulate a program that calls the rejected `set_to_max`, you can see how nothing unsafe occurs:
+Вы можете спросить: почему имеет значение, перемещаем ли мы из `*self`? На самом деле, для случая `Rectangle` это безопасно перемещать из `*self`, хотя Rust не позволяет вам этого сделать. Например, если мы смоделируем программу, которая вызывает отклонённый `set_to_max`, вы можете видеть, что ничего небезопасного не происходит:
 
 ```aquascope,interpreter,shouldFail,horizontal
 #struct Rectangle {
@@ -553,7 +458,7 @@ impl Rectangle {
 #    }
 #  }
     fn set_to_max(&mut self, other: Rectangle) {
-        let max = self.max(other);`[]`
+        `[]`let max = self.max(other);`[]`
         *self = max;
     }
 }
@@ -565,8 +470,7 @@ fn main() {
 }
 ```
 
-The reason it's safe to move out of `*self` is because `Rectangle` does not own any heap data.
-In fact, we can actually get Rust to compile `set_to_max` by simply adding `#[derive(Copy, Clone)]` to the definition of `Rectangle`:
+Причина, по которой безопасно перемещать из `*self`, заключается в том, что `Rectangle` не владеет данными в куче. На самом деле, мы можем заставить Rust скомпилировать `set_to_max`, просто добавив `#[derive(Copy, Clone)]` к определению `Rectangle`:
 
 ```aquascope,permissions,boundaries,stepper
 \#[derive(Copy, Clone)]
@@ -590,11 +494,11 @@ impl Rectangle {
 }
 ```
 
-Notice that unlike before, `self.max(other)` no longer requires the @Perm{own} permission on `*self` or `other`. Remember that `self.max(other)` desugars to `Rectangle::max(*self, other)`. The dereference `*self` does not require ownership over `*self` if `Rectangle` is copyable.
+Обратите внимание, что в отличие от предыдущего случая, `self.max(other)` больше не требует права @Perm{own} на `*self` или `other`. Помните, что `self.max(other)` раскрывается в `Rectangle::max(*self, other)`. Разыменование `*self` не требует владения над `*self`, если `Rectangle` копируем.
 
-You might wonder: why doesn't Rust automatically derive `Copy` for `Rectangle`? Rust does not auto-derive `Copy` for stability across API changes. Imagine that the author of the `Rectangle` type decided to add a `name: String` field. Then all client code that relies on `Rectangle` being `Copy` would suddenly get rejected by the compiler. To avoid that issue, API authors must explicitly add `#[derive(Copy)]` to indicate that they expect their struct to always be `Copy`.
+Вы можете спросить: почему Rust не автоматически выводит `Copy` для `Rectangle`? Rust не автоматически выводит `Copy` для стабильности при изменениях API. Представьте, что автор типа `Rectangle` решил добавить поле `name: String`. Тогда весь клиентский код, который полагается на то, что `Rectangle` является `Copy`, внезапно будет отклонён компилятором. Чтобы избежать этой проблемы, авторы API должны явно добавить `#[derive(Copy)]`, чтобы указать, что они ожидают, что их структура всегда будет `Copy`.
 
-To better understand the issue, let's run a simulation. Say we added `name: String` to `Rectangle`. What would happen if Rust allowed `set_to_max` to compile?
+Чтобы лучше понять проблему, давайте запустим симуляцию. Допустим, мы добавили `name: String` в `Rectangle`. Что произойдёт, если Rust разрешит компиляцию `set_to_max`?
 
 ```aquascope,interpreter,shouldFail,horizontal
 struct Rectangle {
@@ -636,24 +540,18 @@ fn main() {
 }
 ```
 
-In this program, we call `set_to_max` with two rectangles `r1` and `r2`. `self` is a mutable reference to `r1` and `other` is a move of `r2`. After calling `self.max(other)`, the `max` method consumes ownership of both rectangles. When `max` returns, Rust deallocates both strings "r1" and "r2" in the heap. Notice the problem: at the location L2, `*self` is supposed to be readable and writable. However, `(*self).name` (actually `r1.name`) has been deallocated.
+В этой программе мы вызываем `set_to_max` с двумя прямоугольниками `r1` и `r2`. `self` — это изменяемая ссылка на `r1`, а `other` — это перемещение `r2`. После вызова `self.max(other)` метод `max` потребляет владение обоими прямоугольниками. Когда `max` возвращается, Rust освобождает обе строки "r1" и "r2" в куче. Обратите внимание на проблему: в месте L2 `*self` должен быть читаемым и записываемым. Однако `(*self).name` (фактически `r1.name`) была освобождена.
 
-Therefore when we do `*self = max`, we encounter undefined behavior. When we overwrite `*self`, Rust will implicitly drop the data previously in `*self`. To make that behavior explicit, we have added `drop(*self)`. After calling `drop(*self)`, Rust attempts to free `(*self).name` a second time. That action is a double-free, which is undefined behavior.
+Поэтому, когда мы делаем `*self = max`, мы сталкиваемся с неопределённым поведением. Когда мы перезаписываем `*self`, Rust неявно удалит данные, которые ранее были в `*self`. Чтобы сделать это поведение явным, мы добавили `drop(*self)`. После вызова `drop(*self)` Rust пытается освободить `(*self).name` во второй раз. Это действие — двойное освобождение, что является неопределённым поведением.
 
-So remember: when you see an error like "cannot move out of `*self`", that's usually because you're trying to call a `self` method on a reference like `&self` or `&mut self`. Rust is protecting you from a double-free.
+Поэтому помните: когда вы видите ошибку вроде "cannot move out of `*self`", это обычно потому, что вы пытаетесь вызвать метод `self` на ссылку, такую как `&self` или `&mut self`. Rust защищает вас от двойного освобождения.
 
 
-## Summary
+## Итоги
 
-Structs let you create custom types that are meaningful for your domain. By
-using structs, you can keep associated pieces of data connected to each other
-and name each piece to make your code clear. In `impl` blocks, you can define
-functions that are associated with your type, and methods are a kind of
-associated function that let you specify the behavior that instances of your
-structs have.
+Структуры позволяют создавать пользовательские типы, которые значимы для вашей предметной области. Используя структуры, вы можете сохранять связанные фрагменты данных вместе и называть каждый фрагмент, чтобы сделать ваш код понятным. В блоках `impl` вы можете определять функции, связанные с вашим типом, а методы — это вид ассоциированной функции, который позволяет указать поведение, которое имеют экземпляры ваших структур.
 
-But structs aren’t the only way you can create custom types: let’s turn to
-Rust’s enum feature to add another tool to your toolbox.
+Но структуры — не единственный способ создания пользовательских типов: давайте обратимся к функции перечисления Rust, чтобы добавить ещё один инструмент в ваш арсенал.
 
 {{#quiz ../quizzes/ch05-03-method-syntax-sec2.toml}}
 

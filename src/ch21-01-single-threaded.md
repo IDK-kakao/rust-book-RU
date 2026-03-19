@@ -1,28 +1,28 @@
-## Building a Single-Threaded Web Server
+## Создание однопоточного веб-сервера
 
-We’ll start by getting a single-threaded web server working. Before we begin,
-let’s look at a quick overview of the protocols involved in building web
-servers. The details of these protocols are beyond the scope of this book, but
-a brief overview will give you the information you need.
+Мы начнём с создания работающего однопоточного веб-сервера. Прежде чем начать,
+давайте кратко рассмотрим протоколы, задействованные в построении веб-серверов.
+Детали этих протоколов выходят за рамки этой книги, но краткий обзор даст вам
+необходимую информацию.
 
-The two main protocols involved in web servers are _Hypertext Transfer
-Protocol_ _(HTTP)_ and _Transmission Control Protocol_ _(TCP)_. Both protocols
-are _request-response_ protocols, meaning a _client_ initiates requests and a
-_server_ listens to the requests and provides a response to the client. The
-contents of those requests and responses are defined by the protocols.
+Два основных протокола, используемых в веб-серверах, — это _Hypertext Transfer
+Protocol_ (HTTP) и _Transmission Control Protocol_ (TCP). Оба протокола являются
+_протоколами запрос-ответ_, что означает: _клиент_ инициирует запросы, а
+_сервер_ слушает запросы и предоставляет ответ клиенту. Содержание этих запросов
+и ответов определяется протоколами.
 
-TCP is the lower-level protocol that describes the details of how information
-gets from one server to another but doesn’t specify what that information is.
-HTTP builds on top of TCP by defining the contents of the requests and
-responses. It’s technically possible to use HTTP with other protocols, but in
-the vast majority of cases, HTTP sends its data over TCP. We’ll work with the
-raw bytes of TCP and HTTP requests and responses.
+TCP — это протокол более низкого уровня, который описывает детали передачи
+информации между серверами, но не определяет, что это за информация. HTTP
+строится поверх TCP, определяя содержимое запросов и ответов. Технически
+возможно использовать HTTP с другими протоколами, но в подавляющем большинстве
+случаев HTTP отправляет свои данные через TCP. Мы будем работать с "сырыми"
+байтами TCP- и HTTP-запросов и ответов.
 
-### Listening to the TCP Connection
+### Прослушивание TCP-соединения
 
-Our web server needs to listen to a TCP connection, so that’s the first part
-we’ll work on. The standard library offers a `std::net` module that lets us do
-this. Let’s make a new project in the usual fashion:
+Нашему веб-серверу нужно прослушивать TCP-соединение, поэтому это первая часть,
+над которой мы поработаем. Стандартная библиотека предлагает модуль `std::net`,
+который позволяет это сделать. Давайте создадим новый проект обычным способом:
 
 ```console
 $ cargo new hello
@@ -30,11 +30,11 @@ $ cargo new hello
 $ cd hello
 ```
 
-Now enter the code in Listing 21-1 in _src/main.rs_ to start. This code will
-listen at the local address `127.0.0.1:7878` for incoming TCP streams. When it
-gets an incoming stream, it will print `Connection established!`.
+Теперь введите код из Листинга 21-1 в файл _src/main.rs_, чтобы начать. Этот код
+будет прослушивать локальный адрес `127.0.0.1:7878` на предмет входящих TCP-потоков.
+Когда придет входящий поток, он выведет `Connection established!`.
 
-<Listing number="21-1" file-name="src/main.rs" caption="Listening for incoming streams and printing a message when we receive a stream">
+<Listing number="21-1" file-name="src/main.rs" caption="Прослушивание входящих потоков и вывод сообщения при получении потока">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-01/src/main.rs}}
@@ -42,56 +42,56 @@ gets an incoming stream, it will print `Connection established!`.
 
 </Listing>
 
-Using `TcpListener`, we can listen for TCP connections at the address
-`127.0.0.1:7878`. In the address, the section before the colon is an IP address
-representing your computer (this is the same on every computer and doesn’t
-represent the authors’ computer specifically), and `7878` is the port. We’ve
-chosen this port for two reasons: HTTP isn’t normally accepted on this port so
-our server is unlikely to conflict with any other web server you might have
-running on your machine, and 7878 is _rust_ typed on a telephone.
+Используя `TcpListener`, мы можем прослушивать TCP-соединения по адресу
+`127.0.0.1:7878`. В адресе часть перед двоеточием — это IP-адрес, представляющий
+ваш компьютер (он одинаков на всех компьютерах и не относится конкретно к
+компьютеру автора), а `7878` — это порт. Мы выбрали этот порт по двум причинам:
+обычно HTTP не принимается на этом порту, поэтому наш сервер вряд ли конфликтовать
+с любым другим веб-сервером, который может работать на вашей машине, и 7878 —
+это слово "rust", набранное на телефоне.
 
-The `bind` function in this scenario works like the `new` function in that it
-will return a new `TcpListener` instance. The function is called `bind`
-because, in networking, connecting to a port to listen to is known as “binding
-to a port.”
+Функция `bind` в этом сценарии работает подобно функции `new`: она возвращает
+новый экземпляр `TcpListener`. Функция называется `bind`, потому что в сетевых
+технологиях подключение к порту для прослушивания известно как "привязка к порту".
 
-The `bind` function returns a `Result<T, E>`, which indicates that it’s
-possible for binding to fail. For example, connecting to port 80 requires
-administrator privileges (non-administrators can listen only on ports higher
-than 1023), so if we tried to connect to port 80 without being an
-administrator, binding wouldn’t work. Binding also wouldn’t work, for example,
-if we ran two instances of our program and so had two programs listening to the
-same port. Because we’re writing a basic server just for learning purposes, we
-won’t worry about handling these kinds of errors; instead, we use `unwrap` to
-stop the program if errors happen.
+Функция `bind` возвращает `Result<T, E>`, что указывает на возможность сбоя при
+привязке. Например, подключение к порту 80 требует прав администратора
+(неадминистраторы могут прослушивать только порты выше 1023), поэтому если мы
+попытаемся подключиться к порту 80, не будучи администратором, привязка не
+сработает. Привязка также не сработает, например, если мы запустим два экземпляра
+нашей программы и, следовательно, будем иметь две программы, прослушивающие
+один и тот же порт. Поскольку мы пишем базовый сервер только для учебных целей,
+мы не будем беспокоиться об обработке таких ошибок; вместо этого мы используем
+`unwrap`, чтобы остановить программу при возникновении ошибок.
 
-The `incoming` method on `TcpListener` returns an iterator that gives us a
-sequence of streams (more specifically, streams of type `TcpStream`). A single
-_stream_ represents an open connection between the client and the server. A
-_connection_ is the name for the full request and response process in which a
-client connects to the server, the server generates a response, and the server
-closes the connection. As such, we will read from the `TcpStream` to see what
-the client sent and then write our response to the stream to send data back to
-the client. Overall, this `for` loop will process each connection in turn and
-produce a series of streams for us to handle.
+Метод `incoming` у `TcpListener` возвращает итератор, который дает нам
+последовательность потоков (более конкретно, потоков типа `TcpStream`). Один
+_поток_ представляет собой открытое соединение между клиентом и сервером.
+_Соединение_ — это название для полного процесса запроса и ответа, в котором
+клиент подключается к серверу, сервер генерирует ответ и сервер закрывает
+соединение. Таким образом, мы будем читать из `TcpStream`, чтобы увидеть, что
+отправил клиент, а затем запишем наш ответ в поток, чтобы отправить данные
+обратно клиенту. В целом, этот цикл `for` будет обрабатывать каждое соединение
+по очереди и предоставлять нам серию потоков для обработки.
 
-For now, our handling of the stream consists of calling `unwrap` to terminate
-our program if the stream has any errors; if there aren’t any errors, the
-program prints a message. We’ll add more functionality for the success case in
-the next listing. The reason we might receive errors from the `incoming` method
-when a client connects to the server is that we’re not actually iterating over
-connections. Instead, we’re iterating over _connection attempts_. The
-connection might not be successful for a number of reasons, many of them
-operating system specific. For example, many operating systems have a limit to
-the number of simultaneous open connections they can support; new connection
-attempts beyond that number will produce an error until some of the open
-connections are closed.
+На данный момент наша обработка потока заключается в вызове `unwrap` для
+прекращения программы, если в потоке есть ошибки; если ошибок нет, программа
+выводит сообщение. Мы добавим больше функциональности для случая успеха в
+следующем листинге. Причина, по которой мы можем получать ошибки от метода
+`incoming` при подключении клиента к серверу, в том, что мы на самом деле не
+итерируем по соединениям. Вместо этого мы итерируем по _попыткам соединения_.
+Соединение может быть неуспешным по ряду причин, многие из них специфичны для
+операционной системы. Например, во многих операционных системах есть ограничение
+на количество одновременных открытых соединений, которые они могут поддерживать;
+новые попытки соединения, превышающие это число, будут вызывать ошибку, пока
+некоторые из открытых соединений не будут закрыты.
 
-Let’s try running this code! Invoke `cargo run` in the terminal and then load
-_127.0.0.1:7878_ in a web browser. The browser should show an error message
-like “Connection reset” because the server isn’t currently sending back any
-data. But when you look at your terminal, you should see several messages that
-were printed when the browser connected to the server!
+Давайте попробуем запустить этот код! Выполните `cargo run` в терминале, а затем
+загрузите _127.0.0.1:7878_ в веб-браузере. Браузер должен показать сообщение об
+ошибке, например "Connection reset", потому что сервер в данный момент не
+отправляет обратно никаких данных. Но когда вы посмотрите в ваш терминал, вы
+должны увидеть несколько сообщений, которые были выведены, когда браузер
+подключился к серверу!
 
 ```text
      Running `target/debug/hello`
@@ -100,42 +100,41 @@ Connection established!
 Connection established!
 ```
 
-Sometimes you’ll see multiple messages printed for one browser request; the
-reason might be that the browser is making a request for the page as well as a
-request for other resources, like the _favicon.ico_ icon that appears in the
-browser tab.
+Иногда вы увидите несколько сообщений, выведенных для одного запроса браузера;
+причина может быть в том, что браузер делает запрос на страницу, а также запрос
+других ресурсов, например, иконки _favicon.ico_, которая отображается на вкладке
+браузера.
 
-It could also be that the browser is trying to connect to the server multiple
-times because the server isn’t responding with any data. When `stream` goes out
-of scope and is dropped at the end of the loop, the connection is closed as
-part of the `drop` implementation. Browsers sometimes deal with closed
-connections by retrying, because the problem might be temporary.
+Это также может быть связано с тем, что браузер пытается подключиться к серверу
+несколько раз, потому что сервер не отвечает никакими данными. Когда `stream`
+выходит из области видимости и удаляется в конце цикла, соединение закрывается
+как часть реализации `drop`. Браузеры иногда справляются с закрытыми соединениями
+повторными попытками, потому что проблема может быть временной.
 
-Browsers also sometimes open multiple connections to the server without sending
-any requests, so that if they *do* later send requests, they can happen faster.
-When this happens, our server will see each connection, regardless of whether
-there are any requests over that connection. Many versions of Chrome-based
-browsers do this, for example; you can disable that optimization by using =
-private browsing mode or use a different browser.
+Браузеры также иногда открывают несколько соединений с сервером, не отправляя
+никаких запросов, чтобы, если они *позже* отправят запросы, они могли произойти
+быстрее. Когда это происходит, наш сервер увидит каждое соединение, независимо
+от того, есть ли какие-либо запросы по этому соединению. Многие версии браузеров
+на базе Chrome делают это, например; вы можете отключить эту оптимизацию,
+используя режим приватного просмотра или используя другой браузер.
 
-The important factor is that we’ve successfully gotten a handle to a TCP
-connection!
+Важный фактор в том, что мы успешно получили дескриптор TCP-соединения!
 
-Remember to stop the program by pressing <kbd>ctrl</kbd>-<kbd>c</kbd> when
-you’re done running a particular version of the code. Then restart the program
-by invoking the `cargo run` command after you’ve made each set of code changes
-to make sure you’re running the newest code.
+Не забудьте остановить программу, нажав <kbd>ctrl</kbd>-<kbd>c</kbd>, когда вы
+закончите работать с определенной версией кода. Затем перезапустите программу,
+выполнив команду `cargo run` после того, как вы внесли каждый набор изменений в
+код, чтобы убедиться, что запускаете самый новый код.
 
-### Reading the Request
+### Чтение запроса
 
-Let’s implement the functionality to read the request from the browser! To
-separate the concerns of first getting a connection and then taking some action
-with the connection, we’ll start a new function for processing connections. In
-this new `handle_connection` function, we’ll read data from the TCP stream and
-print it so we can see the data being sent from the browser. Change the code to
-look like Listing 21-2.
+Давайте реализуем функциональность для чтения запроса из браузера! Чтобы
+разделить заботы о сначала получении соединения, а затем выполнении некоторых
+действий с соединением, мы начнем новую функцию для обработки соединений. В этой
+новой функции `handle_connection` мы будем читать данные из TCP-потока и выводить
+их, чтобы увидеть данные, отправляемые из браузера. Измените код, чтобы он
+выглядел как в Листинге 21-2.
 
-<Listing number="21-2" file-name="src/main.rs" caption="Reading from the `TcpStream` and printing the data">
+<Listing number="21-2" file-name="src/main.rs" caption="Чтение из `TcpStream` и вывод данных">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-02/src/main.rs}}
@@ -143,38 +142,38 @@ look like Listing 21-2.
 
 </Listing>
 
-We bring `std::io::prelude` and `std::io::BufReader` into scope to get access
-to traits and types that let us read from and write to the stream. In the `for`
-loop in the `main` function, instead of printing a message that says we made a
-connection, we now call the new `handle_connection` function and pass the
-`stream` to it.
+Мы подключаем `std::io::prelude` и `std::io::BufReader` в область видимости,
+чтобы получить доступ к типаж и типам, которые позволяют нам читать из потока и
+писать в него. В цикле `for` в функции `main`, вместо вывода сообщения о том, что
+мы установили соединение, мы теперь вызываем новую функцию `handle_connection` и
+передаем в нее `stream`.
 
-In the `handle_connection` function, we create a new `BufReader` instance that
-wraps a reference to the `stream`. The `BufReader` adds buffering by managing calls
-to the `std::io::Read` trait methods for us.
+В функции `handle_connection` мы создаем новый экземпляр `BufReader`, который
+оборачивает ссылку на `stream`. `BufReader` добавляет буферизацию, управляя
+вызовами методов типажа `std::io::Read` за нас.
 
-We create a variable named `http_request` to collect the lines of the request
-the browser sends to our server. We indicate that we want to collect these
-lines in a vector by adding the `Vec<_>` type annotation.
+Мы создаем переменную с именем `http_request` для сбора строк запроса, который
+браузер отправляет нашему серверу. Мы указываем, что хотим собрать эти строки в
+вектор, добавив аннотацию типа `Vec<_>`.
 
-`BufReader` implements the `std::io::BufRead` trait, which provides the `lines`
-method. The `lines` method returns an iterator of `Result<String,
-std::io::Error>` by splitting the stream of data whenever it sees a newline
-byte. To get each `String`, we map and `unwrap` each `Result`. The `Result`
-might be an error if the data isn’t valid UTF-8 or if there was a problem
-reading from the stream. Again, a production program should handle these errors
-more gracefully, but we’re choosing to stop the program in the error case for
-simplicity.
+`BufReader` реализует типаж `std::io::BufRead`, который предоставляет метод
+`lines`. Метод `lines` возвращает итератор `Result<String, std::io::Error>`,
+разделяя поток данных каждый раз, когда видит байт новой строки. Чтобы получить
+каждую `String`, мы отображаем (`map`) и раскрываем (`unwrap`) каждый `Result`.
+`Result` может быть ошибкой, если данные не являются допустимым UTF-8 или если
+возникла проблема при чтении из потока. Опять же, рабочая программа должна
+обрабатывать эти ошибки более изящно, но мы выбираем остановку программы в случае
+ошибки для простоты.
 
-The browser signals the end of an HTTP request by sending two newline
-characters in a row, so to get one request from the stream, we take lines until
-we get a line that is the empty string. Once we’ve collected the lines into the
-vector, we’re printing them out using pretty debug formatting so we can take a
-look at the instructions the web browser is sending to our server.
+Браузер сигнализирует о конце HTTP-запроса, отправляя два символа новой строки
+подряд, поэтому чтобы получить один запрос из потока, мы берем строки до тех пор,
+пока не получим строку, которая является пустой строкой. После того как мы собрали
+строки в вектор, мы выводим их, используя форматирование для отладки, чтобы мы
+могли посмотреть инструкции, которые веб-браузер отправляет нашему серверу.
 
-Let’s try this code! Start the program and make a request in a web browser
-again. Note that we’ll still get an error page in the browser, but our
-program’s output in the terminal will now look similar to this:
+Давайте попробуем этот код! Запустите программу и сделайте запрос в веб-браузере
+снова. Обратите внимание, что мы все еще получим страницу ошибки в браузере, но
+вывод нашей программы в терминале теперь будет выглядеть примерно так:
 
 ```console
 $ cargo run
@@ -199,19 +198,18 @@ Request: [
 ]
 ```
 
-Depending on your browser, you might get slightly different output. Now that
-we’re printing the request data, we can see why we get multiple connections
-from one browser request by looking at the path after `GET` in the first line
-of the request. If the repeated connections are all requesting _/_, we know the
-browser is trying to fetch _/_ repeatedly because it’s not getting a response
-from our program.
+В зависимости от вашего браузера вывод может немного отличаться. Теперь, когда мы
+выводим данные запроса, мы можем понять, почему получаем несколько соединений от
+одного запроса браузера, посмотрев на путь после `GET` в первой строке запроса.
+Если повторяющиеся соединения все запрашивают _/_, мы знаем, что браузер пытается
+загружать _/_ повторно, потому что не получает ответ от нашей программы.
 
-Let’s break down this request data to understand what the browser is asking of
-our program.
+Давайте разберем эти данные запроса, чтобы понять, что браузер просит нашу
+программу сделать.
 
-### A Closer Look at an HTTP Request
+### Более пристальный взгляд на HTTP-запрос
 
-HTTP is a text-based protocol, and a request takes this format:
+HTTP — это текстовый протокол, и запрос имеет следующий формат:
 
 ```text
 Method Request-URI HTTP-Version CRLF
@@ -219,41 +217,42 @@ headers CRLF
 message-body
 ```
 
-The first line is the _request line_ that holds information about what the
-client is requesting. The first part of the request line indicates the _method_
-being used, such as `GET` or `POST`, which describes how the client is making
-this request. Our client used a `GET` request, which means it is asking for
-information.
+Первая строка — это _строка запроса_, которая содержит информацию о том, что
+запрашивает клиент. Первая часть строки запроса указывает _метод_, используемый,
+например `GET` или `POST`, который описывает, как клиент делает этот запрос.
+Наш клиент использовал запрос `GET`, что означает, что он запрашивает информацию.
 
-The next part of the request line is _/_, which indicates the _uniform resource
-identifier_ _(URI)_ the client is requesting: a URI is almost, but not quite,
-the same as a _uniform resource locator_ _(URL)_. The difference between URIs
-and URLs isn’t important for our purposes in this chapter, but the HTTP spec
-uses the term URI, so we can just mentally substitute _URL_ for _URI_ here.
+Следующая часть строки запроса — это _/_, которая указывает _унифицированный
+идентификатор ресурса_ (URI), который запрашивает клиент: URI почти, но не совсем,
+то же самое, что _унифицированный локатор ресурса_ (URL). Разница между URI и URL
+не важна для наших целей в этой главе, но спецификация HTTP использует термин
+URI, поэтому мы можем мысленно заменить _URL_ на _URI_ здесь.
 
-The last part is the HTTP version the client uses, and then the request line
-ends in a CRLF sequence. (CRLF stands for _carriage return_ and _line feed_,
-which are terms from the typewriter days!) The CRLF sequence can also be
-written as `\r\n`, where `\r` is a carriage return and `\n` is a line feed. The
-_CRLF sequence_ separates the request line from the rest of the request data.
-Note that when the CRLF is printed, we see a new line start rather than `\r\n`.
+Последняя часть — это версия HTTP, которую использует клиент, а затем строка
+запроса заканчивается последовательностью CRLF. (CRLF означает _возврат каретки_
+и _перевод строки_, термины из эпохи печатных машинок!) Последовательность CRLF
+также может быть записана как `\r\n`, где `\r` — это возврат каретки, а `\n` —
+перевод строки. _Последовательность CRLF_ отделяет строку запроса от остальных
+данных запроса. Обратите внимание, что когда CRLF выводится, мы видим начало новой
+строки, а не `\r\n`.
 
-Looking at the request line data we received from running our program so far,
-we see that `GET` is the method, _/_ is the request URI, and `HTTP/1.1` is the
-version.
+Глядя на данные строки запроса, которые мы получили от запуска нашей программы до
+сих пор, мы видим, что `GET` — это метод, _/_ — это запрашиваемый URI, а
+`HTTP/1.1` — это версия.
 
-After the request line, the remaining lines starting from `Host:` onward are
-headers. `GET` requests have no body.
+После строки запроса оставшиеся строки, начиная с `Host:` и далее, — это заголовки.
+Запросы `GET` не имеют тела.
 
-Try making a request from a different browser or asking for a different
-address, such as _127.0.0.1:7878/test_, to see how the request data changes.
+Попробуйте сделать запрос из другого браузера или запросите другой адрес, например
+_127.0.0.1:7878/test_, чтобы увидеть, как изменяются данные запроса.
 
-Now that we know what the browser is asking for, let’s send back some data!
+Теперь, когда мы знаем, что просит браузер, давайте отправим обратно какие-нибудь
+данные!
 
-### Writing a Response
+### Написание ответа
 
-We’re going to implement sending data in response to a client request.
-Responses have the following format:
+Мы собираемся реализовать отправку данных в ответ на запрос клиента. Ответы имеют
+следующий формат:
 
 ```text
 HTTP-Version Status-Code Reason-Phrase CRLF
@@ -261,26 +260,25 @@ headers CRLF
 message-body
 ```
 
-The first line is a _status line_ that contains the HTTP version used in the
-response, a numeric status code that summarizes the result of the request, and
-a reason phrase that provides a text description of the status code. After the
-CRLF sequence are any headers, another CRLF sequence, and the body of the
-response.
+Первая строка — это _строка состояния_, которая содержит версию HTTP,
+используемую в ответе, числовой код состояния, обобщающий результат запроса, и
+фразу причины, которая предоставляет текстовое описание кода состояния. После
+последовательности CRLF идут любые заголовки, еще одна последовательность CRLF и
+тело ответа.
 
-Here is an example response that uses HTTP version 1.1, and has a status code of
-200, an OK reason phrase, no headers, and no body:
+Вот пример ответа, который использует HTTP версии 1.1 и имеет код состояния 200,
+фразу причины `OK`, без заголовков и без тела:
 
 ```text
 HTTP/1.1 200 OK\r\n\r\n
 ```
 
-The status code 200 is the standard success response. The text is a tiny
-successful HTTP response. Let’s write this to the stream as our response to a
-successful request! From the `handle_connection` function, remove the
-`println!` that was printing the request data and replace it with the code in
-Listing 21-3.
+Код состояния 200 — это стандартный ответ об успехе. Текст — это крошечный
+успешный HTTP-ответ. Давайте запишем это в поток как наш ответ на успешный
+запрос! Из функции `handle_connection` удалите `println!`, который выводил данные
+запроса, и замените его кодом из Листинга 21-3.
 
-<Listing number="21-3" file-name="src/main.rs" caption="Writing a tiny successful HTTP response to the stream">
+<Listing number="21-3" file-name="src/main.rs" caption="Запись крошечного успешного HTTP-ответа в поток">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-03/src/main.rs:here}}
@@ -288,27 +286,28 @@ Listing 21-3.
 
 </Listing>
 
-The first new line defines the `response` variable that holds the success
-message’s data. Then we call `as_bytes` on our `response` to convert the string
-data to bytes. The `write_all` method on `stream` takes a `&[u8]` and sends
-those bytes directly down the connection. Because the `write_all` operation
-could fail, we use `unwrap` on any error result as before. Again, in a real
-application you would add error handling here.
+Первая новая строка определяет переменную `response`, которая содержит данные
+сообщения об успехе. Затем мы вызываем `as_bytes` для нашей `response`, чтобы
+преобразовать строковые данные в байты. Метод `write_all` на `stream` принимает
+`&[u8]` и отправляет эти байты напрямую по соединению. Поскольку операция
+`write_all` может завершиться неудачей, мы используем `unwrap` на любом результате
+ошибки, как и раньше. Опять же, в реальном приложении вы бы добавили обработку
+ошибок здесь.
 
-With these changes, let’s run our code and make a request. We’re no longer
-printing any data to the terminal, so we won’t see any output other than the
-output from Cargo. When you load _127.0.0.1:7878_ in a web browser, you should
-get a blank page instead of an error. You’ve just handcoded receiving an HTTP
-request and sending a response!
+С этими изменениями давайте запустим наш код и сделаем запрос. Мы больше не
+выводим никакие данные в терминал, поэтому мы не увидим никакого вывода, кроме
+вывода от Cargo. Когда вы загрузите _127.0.0.1:7878_ в веб-браузере, вы должны
+получить пустую страницу вместо ошибки. Вы только что вручную закодировали
+получение HTTP-запроса и отправку ответа!
 
-### Returning Real HTML
+### Возврат реального HTML
 
-Let’s implement the functionality for returning more than a blank page. Create
-the new file _hello.html_ in the root of your project directory, not in the
-_src_ directory. You can input any HTML you want; Listing 21-4 shows one
-possibility.
+Давайте реализуем функциональность для возврата большего, чем пустая страница.
+Создайте новый файл _hello.html_ в корневой директории вашего проекта, не в
+директории _src_. Вы можете ввести любой HTML, который хотите; Листинг 21-4
+показывает один из возможных вариантов.
 
-<Listing number="21-4" file-name="hello.html" caption="A sample HTML file to return in a response">
+<Listing number="21-4" file-name="hello.html" caption="Пример HTML-файла для возврата в ответе">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-05/hello.html}}
@@ -316,12 +315,12 @@ possibility.
 
 </Listing>
 
-This is a minimal HTML5 document with a heading and some text. To return this
-from the server when a request is received, we’ll modify `handle_connection` as
-shown in Listing 21-5 to read the HTML file, add it to the response as a body,
-and send it.
+Это минимальный документ HTML5 с заголовком и некоторым текстом. Чтобы вернуть
+его с сервера при получении запроса, мы изменим `handle_connection`, как показано
+в Листинге 21-5, чтобы прочитать HTML-файл, добавить его в ответ в качестве тела
+и отправить.
 
-<Listing number="21-5" file-name="src/main.rs" caption="Sending the contents of *hello.html* as the body of the response">
+<Listing number="21-5" file-name="src/main.rs" caption="Отправка содержимого *hello.html* в качестве тела ответа">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-05/src/main.rs:here}}
@@ -329,38 +328,38 @@ and send it.
 
 </Listing>
 
-We’ve added `fs` to the `use` statement to bring the standard library’s
-filesystem module into scope. The code for reading the contents of a file to a
-string should look familiar; we used it when we read the contents of a file for
-our I/O project in Listing 12-4.
+Мы добавили `fs` в инструкцию `use`, чтобы подключить модуль файловой системы
+стандартной библиотеки в область видимости. Код для чтения содержимого файла в
+строку должен выглядеть знакомо; мы использовали его, когда читали содержимое
+файла для нашего проекта ввода-вывода в Листинге 12-4.
 
-Next, we use `format!` to add the file’s contents as the body of the success
-response. To ensure a valid HTTP response, we add the `Content-Length` header
-which is set to the size of our response body, in this case the size of
-`hello.html`.
+Затем мы используем `format!`, чтобы добавить содержимое файла в качестве тела
+успешного ответа. Чтобы обеспечить допустимый HTTP-ответ, мы добавляем заголовок
+`Content-Length`, который установлен в размер нашего тела ответа, в данном случае
+размер `hello.html`.
 
-Run this code with `cargo run` and load _127.0.0.1:7878_ in your browser; you
-should see your HTML rendered!
+Запустите этот код с помощью `cargo run` и загрузите _127.0.0.1:7878_ в вашем
+браузере; вы должны увидеть ваш HTML, отрендеренный!
 
-Currently, we’re ignoring the request data in `http_request` and just sending
-back the contents of the HTML file unconditionally. That means if you try
-requesting _127.0.0.1:7878/something-else_ in your browser, you’ll still get
-back this same HTML response. At the moment, our server is very limited and
-does not do what most web servers do. We want to customize our responses
-depending on the request and only send back the HTML file for a well-formed
-request to _/_.
+В настоящее время мы игнорируем данные запроса в `http_request` и просто
+отправляем обратно содержимое HTML-файла безоговорочно. Это означает, что если вы
+попробуете запросить _127.0.0.1:7878/something-else_ в браузере, вы все равно
+получите обратно этот же HTML-ответ. В данный момент наш сервер очень ограничен и
+не делает то, что делают большинство веб-серверов. Мы хотим настраивать наши
+ответы в зависимости от запроса и отправлять HTML-файл только для корректно
+сформированного запроса к _/_ .
 
-### Validating the Request and Selectively Responding
+### Проверка запроса и выборочный ответ
 
-Right now, our web server will return the HTML in the file no matter what the
-client requested. Let’s add functionality to check that the browser is
-requesting _/_ before returning the HTML file and return an error if the
-browser requests anything else. For this we need to modify `handle_connection`,
-as shown in Listing 21-6. This new code checks the content of the request
-received against what we know a request for _/_ looks like and adds `if` and
-`else` blocks to treat requests differently.
+Сейчас наш веб-сервер будет возвращать HTML из файла независимо от того, что
+запросил клиент. Давайте добавим функциональность для проверки того, что браузер
+запрашивает _/_, прежде чем возвращать HTML-файл, и возвращать ошибку, если
+браузер запрашивает что-либо еще. Для этого нам нужно изменить `handle_connection`,
+как показано в Листинге 21-6. Этот новый код проверяет содержимое полученного
+запроса против того, как выглядит запрос GET к пути _/_, и добавляет блоки `if`
+и `else` для разной обработки запросов.
 
-<Listing number="21-6" file-name="src/main.rs" caption="Handling requests to */* differently from other requests">
+<Listing number="21-6" file-name="src/main.rs" caption="Обработка запросов к */* иначе, чем другие запросы">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-06/src/main.rs:here}}
@@ -368,32 +367,31 @@ received against what we know a request for _/_ looks like and adds `if` and
 
 </Listing>
 
-We’re only going to be looking at the first line of the HTTP request, so rather
-than reading the entire request into a vector, we’re calling `next` to get the
-first item from the iterator. The first `unwrap` takes care of the `Option` and
-stops the program if the iterator has no items. The second `unwrap` handles the
-`Result` and has the same effect as the `unwrap` that was in the `map` added in
-Listing 21-2.
+Мы будем смотреть только на первую строку HTTP-запроса, поэтому вместо чтения
+весь запрос в вектор мы вызываем `next`, чтобы получить первый элемент из
+итератора. Первый `unwrap` заботится об `Option` и останавливает программу, если
+итератор не имеет элементов. Второй `unwrap` обрабатывает `Result` и имеет тот же
+эффект, что и `unwrap`, который был добавлен в `map` в Листинге 21-2.
 
-Next, we check the `request_line` to see if it equals the request line of a GET
-request to the _/_ path. If it does, the `if` block returns the contents of our
-HTML file.
+Затем мы проверяем `request_line`, чтобы увидеть, равна ли она строке запроса
+GET-запроса к пути _/_. Если это так, блок `if` возвращает содержимое нашего
+HTML-файла.
 
-If the `request_line` does _not_ equal the GET request to the _/_ path, it
-means we’ve received some other request. We’ll add code to the `else` block in
-a moment to respond to all other requests.
+Если `request_line` **не равна** GET-запросу к пути _/_, это означает, что мы
+получили какой-то другой запрос. Мы добавим код в блок `else` в ближайшее время,
+чтобы отвечать на все остальные запросы.
 
-Run this code now and request _127.0.0.1:7878_; you should get the HTML in
-_hello.html_. If you make any other request, such as
-_127.0.0.1:7878/something-else_, you’ll get a connection error like those you
-saw when running the code in Listing 21-1 and Listing 21-2.
+Запустите этот код сейчас и запросите _127.0.0.1:7878_; вы должны получить HTML
+из файла _hello.html_. Если вы сделаете любой другой запрос, например
+_127.0.0.1:7878/foo_, вы получите ошибку соединения, такую как те, которые вы
+видели при запуске кода в Листинге 21-1 и Листинге 21-2.
 
-Now let’s add the code in Listing 21-7 to the `else` block to return a response
-with the status code 404, which signals that the content for the request was
-not found. We’ll also return some HTML for a page to render in the browser
-indicating the response to the end user.
+Теперь давайте добавим код из Листинга 21-7 в блок `else`, чтобы вернуть ответ с
+кодом состояния 404, который сигнализирует, что содержимое для запроса не было
+найдено. Мы также вернем некоторый HTML для страницы, которая отобразится в
+браузере, указывая ответ конечному пользователю.
 
-<Listing number="21-7" file-name="src/main.rs" caption="Responding with status code 404 and an error page if anything other than */* was requested">
+<Listing number="21-7" file-name="src/main.rs" caption="Ответ с кодом состояния 404 и страницей ошибки, если запрошено что-либо кроме */*">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-07/src/main.rs:here}}
@@ -401,13 +399,13 @@ indicating the response to the end user.
 
 </Listing>
 
-Here, our response has a status line with status code 404 and the reason phrase
-`NOT FOUND`. The body of the response will be the HTML in the file _404.html_.
-You’ll need to create a _404.html_ file next to _hello.html_ for the error
-page; again feel free to use any HTML you want or use the example HTML in
-Listing 21-8.
+Здесь наш ответ имеет строку состояния с кодом 404 и фразой причины `NOT FOUND`.
+Тело ответа будет HTML из файла _404.html_. Вам нужно будет создать файл
+_404.html_ рядом с _hello.html_ для страницы ошибки; снова чувствуйте себя
+свободно использовать любой HTML, который хотите, или использовать пример HTML в
+Листинге 21-8.
 
-<Listing number="21-8" file-name="404.html" caption="Sample content for the page to send back with any 404 response">
+<Listing number="21-8" file-name="404.html" caption="Пример содержимого для страницы, отправляемой с любым ответом 404">
 
 ```html
 {{#include ../listings/ch21-web-server/listing-21-07/404.html}}
@@ -415,22 +413,21 @@ Listing 21-8.
 
 </Listing>
 
-With these changes, run your server again. Requesting _127.0.0.1:7878_ should
-return the contents of _hello.html_, and any other request, like
-_127.0.0.1:7878/foo_, should return the error HTML from _404.html_.
+С этими изменениями запустите ваш сервер снова. Запрос _127.0.0.1:7878_ должен
+возвращать содержимое _hello.html_, а любой другой запрос, например
+_127.0.0.1:7878/foo_, должен возвращать HTML ошибки из _404.html_.
 
-### A Touch of Refactoring
+### Немного рефакторинга
 
-At the moment, the `if` and `else` blocks have a lot of repetition: they’re both
-reading files and writing the contents of the files to the stream. The only
-differences are the status line and the filename. Let’s make the code more
-concise by pulling out those differences into separate `if` and `else` lines
-that will assign the values of the status line and the filename to variables; we
-can then use those variables unconditionally in the code to read the file and
-write the response. Listing 21-9 shows the resultant code after replacing the
-large `if` and `else` blocks.
+В данный момент блоки `if` и `else` имеют много повторений: они оба читают файлы
+и записывают содержимое файлов в поток. Единственные различия — это строка
+состояния и имя файла. Давайте сделаем код более лаконичным, вынеся эти различия
+в отдельные строки `if` и `else`, которые назначат значения строки состояния и
+имени файла переменным; затем мы можем использовать эти переменные безоговорочно
+в коде для чтения файла и записи ответа. Листинг 21-9 показывает полученный код
+после замены больших блоков `if` и `else`.
 
-<Listing number="21-9" file-name="src/main.rs" caption="Refactoring the `if` and `else` blocks to contain only the code that differs between the two cases">
+<Listing number="21-9" file-name="src/main.rs" caption="Рефакторинг блоков `if` и `else` для содержания только кода, который отличается между двумя случаями">
 
 ```rust,no_run
 {{#rustdoc_include ../listings/ch21-web-server/listing-21-09/src/main.rs:here}}
@@ -438,23 +435,22 @@ large `if` and `else` blocks.
 
 </Listing>
 
-Now the `if` and `else` blocks only return the appropriate values for the
-status line and filename in a tuple; we then use destructuring to assign these
-two values to `status_line` and `filename` using a pattern in the `let`
-statement, as discussed in Chapter 19.
+Теперь блоки `if` и `else` возвращают только соответствующие значения для строки
+состояния и имени файла в кортеже; затем мы используем деструктуризацию, чтобы
+назначить эти два значения `status_line` и `filename`, используя шаблон в
+инструкции `let`, как обсуждалось в Главе 19.
 
-The previously duplicated code is now outside the `if` and `else` blocks and
-uses the `status_line` and `filename` variables. This makes it easier to see
-the difference between the two cases, and it means we have only one place to
-update the code if we want to change how the file reading and response writing
-work. The behavior of the code in Listing 21-9 will be the same as that in
-Listing 21-7.
+Ранее дублировавшийся код теперь находится вне блоков `if` и `else` и использует
+переменные `status_line` и `filename`. Это облегчает визуализацию различий между
+двумя случаями, и это означает, что у нас есть только одно место для обновления
+кода, если мы хотим изменить то, как работают чтение файла и запись ответа.
+Поведение кода в Листинге 21-9 будет таким же, как в Листинге 21-7.
 
-Awesome! We now have a simple web server in approximately 40 lines of Rust code
-that responds to one request with a page of content and responds to all other
-requests with a 404 response.
+Отлично! У нас теперь простой веб-сервер примерно в 40 строках кода Rust, который
+отвечает на один запрос страницей с контентом и отвечает на все остальные запросы
+ответом 404.
 
-Currently, our server runs in a single thread, meaning it can only serve one
-request at a time. Let’s examine how that can be a problem by simulating some
-slow requests. Then we’ll fix it so our server can handle multiple requests at
-once.
+В настоящее время наш сервер работает в одном потоке, что означает, что он может
+обслуживать только один запрос за раз. Давайте рассмотрим, как это может быть
+проблемой, смоделировав некоторые медленные запросы. Затем мы исправим это, чтобы
+наш сервер мог обрабатывать несколько запросов одновременно.

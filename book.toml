@@ -2,8 +2,8 @@
 # in `nostarch/book.toml`!
 
 [book]
-title = "The Rust Programming Language"
-authors = ["Steve Klabnik", "Carol Nichols", "Contributions from the Rust Community"]
+title = "Язык программирования Rust"
+authors = ["Steve Klabnik", "Carol Nichols", "Contributions from the Rust Community", "Перевод: Kakao"]
 
 [output.html]
 additional-css = [
@@ -21,7 +21,7 @@ additional-js = [
   "js-extensions/packages/feedback/dist/index.js",
 ]
 
-git-repository-url = "https://github.com/cognitive-engineering-lab/rust-book"
+git-repository-url = "https://github.com/IDK-kakao/rust-book-RU"
 
 [preprocessor.quiz]
 fullscreen = true

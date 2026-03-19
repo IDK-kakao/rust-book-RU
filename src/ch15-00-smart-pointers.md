@@ -1,53 +1,21 @@
-# Smart Pointers
+# Умные указатели
 
-A _pointer_ is a general concept for a variable that contains an address in
-memory. This address refers to, or “points at,” some other data. The most
-common kind of pointer in Rust is a reference, which you learned about in
-Chapter 4. References are indicated by the `&` symbol and borrow the value they
-point to. They don’t have any special capabilities other than referring to
-data, and they have no overhead.
+_Указатель_ — это общее понятие для переменной, содержащей адрес в памяти. Этот адрес указывает на, или "указывает на", некоторые другие данные. Наиболее распространённым видом указателя в Rust является ссылка, о которой вы узнали в Главе 4. Ссылки обозначаются символом `&` и заимствуют значение, на которое указывают. У них нет никаких особых возможностей, кроме ссылки на данные, и они не имеют накладных расходов.
 
-_Smart pointers_, on the other hand, are data structures that act like a
-pointer but also have additional metadata and capabilities. The concept of
-smart pointers isn’t unique to Rust: smart pointers originated in C++ and exist
-in other languages as well. Rust has a variety of smart pointers defined in the
-standard library that provide functionality beyond that provided by references.
-To explore the general concept, we’ll look at a couple of different examples of
-smart pointers, including a _reference counting_ smart pointer type. This
-pointer enables you to allow data to have multiple owners by keeping track of
-the number of owners and, when no owners remain, cleaning up the data.
+_Умные указатели_, с другой стороны, — это структуры данных, которые действуют как указатель, но также имеют дополнительную метаданные и возможности. Концепция умных указателей не уникальна для Rust: умные указатели появились в C++ и существуют в других языках. В Rust есть множество умных указателей, определённых в стандартной библиотеке, которые предоставляют функциональность, выходящую за рамки возможностей ссылок. Чтобы изучить общую концепцию, мы рассмотрим несколько различных примеров умных указателей, включая типаж _управления счётчиком ссылок_. Этот указатель позволяет данным иметь нескольких владельцев, отслеживая количество владельцев и очищая данные, когда владельцев не остаётся.
 
-Rust, with its concept of ownership and borrowing, has an additional difference
-between references and smart pointers: while references only borrow data, in
-many cases smart pointers _own_ the data they point to.
+Rust, с его концепцией владения и заимствования, имеет дополнительное различие между ссылками и умными указателями: в то время как ссылки только заимствуют данные, во многих случаях умные указатели _владеют_ данными, на которые они указывают.
 
-Though we didn’t call them as such at the time, we’ve already encountered a few
-smart pointers in this book, including `String` and `Vec<T>` in Chapter 8. Both
-of these types count as smart pointers because they own some memory and allow
-you to manipulate it. They also have metadata and extra capabilities or
-guarantees. `String`, for example, stores its capacity as metadata and has the
-extra ability to ensure its data will always be valid UTF-8.
+Хотя мы не называли их таковыми в то время, мы уже встречали несколько умных указателей в этой книге, включая `String` и `Vec<T>` в Главе 8. Оба этих типа считаются умными указателями, потому что они владеют некоторой памятью и позволяют вам управлять ею. Они также имеют метаданные и дополнительные возможности или гарантии. `String`, например, хранит свою ёмкость как метаданные и имеет дополнительную возможность гарантировать, что его данные всегда будут действительными UTF-8.
 
-Smart pointers are usually implemented using structs. Unlike an ordinary
-struct, smart pointers implement the `Deref` and `Drop` traits. The `Deref`
-trait allows an instance of the smart pointer struct to behave like a reference
-so you can write your code to work with either references or smart pointers.
-The `Drop` trait allows you to customize the code that’s run when an instance
-of the smart pointer goes out of scope. In this chapter, we’ll discuss both of
-these traits and demonstrate why they’re important to smart pointers.
+Умные указатели обычно реализуются с использованием структур. В отличие от обычной структуры, умные указатели реализуют типажи `Deref` и `Drop`. Типаж `Deref` позволяет экземпляру структуры умного указателя вести себя как ссылка, чтобы вы могли писать код, работающий как со ссылками, так и с умными указателями. Типаж `Drop` позволяет вам настроить код, который выполняется, когда экземпляр умного указателя выходит из области видимости. В этой главе мы обсудим оба этих типажа и продемонстрируем, почему они важны для умных указателей.
 
-Given that the smart pointer pattern is a general design pattern used
-frequently in Rust, this chapter won’t cover every existing smart pointer. Many
-libraries have their own smart pointers, and you can even write your own. We’ll
-cover the most common smart pointers in the standard library:
+Учитывая, что шаблон умного указателя является общим шаблоном проектирования, часто используемым в Rust, эта глава не охватит каждый существующий умный указатель. Многие библиотеки имеют свои собственные умные указатели, и вы даже можете написать свои собственные. Мы рассмотрим наиболее распространённые умные указатели в стандартной библиотеке:
 
-- `Box<T>`, for allocating values on the heap
-- `Rc<T>`, a reference counting type that enables multiple ownership
-- `Ref<T>` and `RefMut<T>`, accessed through `RefCell<T>`, a type that enforces
-  the borrowing rules at runtime instead of compile time
+- `Box<T>`, для размещения значений в куче
+- `Rc<T>`, типаж управления счётчиком ссылок, который позволяет множественное владение
+- `Ref<T>` и `RefMut<T>`, доступные через `RefCell<T>`, тип, который обеспечивает соблюдение правил заимствования во время выполнения, а не на этапе компиляции
 
-In addition, we’ll cover the _interior mutability_ pattern where an immutable
-type exposes an API for mutating an interior value. We’ll also discuss
-_reference cycles_: how they can leak memory and how to prevent them.
+Кроме того, мы рассмотрим шаблон _внутренней изменяемости_, при котором неизменяемый тип предоставляет API для изменения внутреннего значения. Мы также обсудим _циклы ссылок_: как они могут приводить к утечке памяти и как их предотвратить.
 
-Let’s dive in!
+Давайте начнём!

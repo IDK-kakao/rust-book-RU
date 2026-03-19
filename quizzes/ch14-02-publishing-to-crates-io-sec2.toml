@@ -2,35 +2,35 @@
 id = "7e4eeb62-55c2-443b-a8cc-fba060501245"
 type = "MultipleChoice"
 prompt.prompt = """
-Say you are publishing a library `foobar v0.1.0`. After running `cargo publish`, you realize there is a bug in one
-of your functions. Which of the following best describes how to overwrite the published crate at the same `v0.1.0` version?
+Предположим, вы публикуете библиотеку `foobar v0.1.0`. После запуска `cargo publish` вы обнаруживаете ошибку в одной
+из ваших функций. Что из перечисленного наилучшим образом описывает, как перезаписать опубликованный крейт на той же версии `v0.1.0`?
 """
-answer.answer = "It is impossible to overwrite a published crate at a given version"
+answer.answer = "Невозможно перезаписать опубликованный крейт на заданную версию"
 prompt.distractors = [
-    "Add the flag `--overwrite-published` to the `cargo publish` command",
-    "Login to Crates.io and delete `v0.1.0` of the published crate",   
-    "Run `cargo yank` and then run `cargo publish`"
+    "Добавить флаг `--overwrite-published` к команде `cargo publish`",
+    "Войти на Crates.io и удалить `v0.1.0` опубликованного крейта",   
+    "Запустить `cargo yank`, а затем запустить `cargo publish`"
 ]
 context = """
-Crates.io does not allow overwriting of published versions. The best option in these situations is to yank the buggy version
-and then publish a new version such as `v0.1.1`.
+Crates.io не позволяет перезаписывать опубликованные версии. Лучшим вариантом в такой ситуации является замена (yank) ошибочной версии
+и последующая публикация новой версии, например `v0.1.1`.
 """
 
 [[questions]]
 id = "84ac16a8-2460-4baf-8913-06da6e3603e6"
 type = "MultipleChoice"
 prompt.prompt = """
-Which of the following steps is NOT required to publish a crate to Crates.io?
+Какой из перечисленных шагов НЕ требуется для публикации крейта на Crates.io?
 """
-answer.answer = "Adding documentation to each public function in the crate"
+answer.answer = "Добавление документации к каждой публичной функции в крейте"
 prompt.distractors = [
-    "Adding a license to the `[package]` section of `Cargo.toml`",    
-    "Registering and logging in to Crates.io",
-    "Selecting a crate name that is not registered on Crates.io"
+    "Добавление лицензии в раздел `[package]` файла `Cargo.toml`",    
+    "Регистрация и вход в систему на Crates.io",
+    "Выбор имени крейта, которое не зарегистрировано на Crates.io"
 ]
 context = """
-Adding documentation to public functions is certainly recommended, but not required by default. Note that if you
-want Rust to treat undocumented code as an error, you can add the following statement at the root of your library:
+Добавление документации к публичным функциям, безусловно, рекомендуется, но по умолчанию не требуется. Обратите внимание, что если
+вы хотите, чтобы Rust считал недокументированный код ошибкой, вы можете добавить следующее объявление в корень вашей библиотеки:
 
 ```
 #![deny(missing_docs)]

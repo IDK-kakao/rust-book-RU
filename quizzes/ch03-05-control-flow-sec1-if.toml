@@ -2,14 +2,14 @@
 id = "5ae11501-25d9-4b94-8e88-aa1c2122779f"
 type = "MultipleChoice"
 prompt.prompt = """
-True/false: executing these two pieces of code results in the same value for `x`.
+Истина/Ложь: выполнение этих двух фрагментов кода даёт одинаковое значение для `x`.
 
-Snippet 1:
+Фрагмент 1:
 ```
 let x = if cond { 1 } else { 2 };
 ```
 
-Snippet 2:
+Фрагмент 2:
 ```
 let x;
 if cond {
@@ -19,16 +19,16 @@ if cond {
 }
 ```
 
-(Note: both of these snippets compile!)
+(Примечание: оба фрагмента компилируются!)
 """
-answer.answer = "True"
-prompt.distractors = [ "False" ]
+answer.answer = "Истина"
+prompt.distractors = [ "Ложь" ]
 context = """
-The first if-expression is a more concise way of representing the behavior of the second if-statement.
+Первое if-выражение — это более лаконичный способ представить поведение второго if-оператора.
 
-Note that Rust **does not** require `x` to be initially declared with `let mut` in the second snippet.
-This is because Rust can determine that `x` is only ever assigned once, since only one branch of the 
-if-statement will ever execute.
+Обратите внимание, что Rust **не требует** объявлять `x` изначально с `let mut` во втором фрагменте.
+Это потому, что Rust может определить, что `x` присваивается только один раз, поскольку выполняется только одна ветвь 
+if-оператора.
 """
 
 [[questions]]
@@ -44,5 +44,5 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 3
 context = """
-The condition to an if-expression must be a boolean. Rust does not have a concept of "truthy" or "falsy" values.
+Условие в if-выражении должно быть логическим значением. Rust не имеет понятий "истинно" или "ложно" для небулевых значений.
 """

@@ -1,23 +1,11 @@
-# Common Programming Concepts
+# Основные концепции программирования
 
-This chapter covers concepts that appear in almost every programming language
-and how they work in Rust. Many programming languages have much in common at
-their core. None of the concepts presented in this chapter are unique to Rust,
-but we’ll discuss them in the context of Rust and explain the conventions
-around using these concepts.
+В этой главе рассматриваются концепции, которые встречаются почти в каждом языке программирования, и то, как они работают в Rust. У многих языков программирования схожая основа. Ни одна из представленных здесь концепций не уникальна для Rust, но мы обсудим их в контексте Rust и объясним соглашения по использованию этих концепций.
 
-Specifically, you’ll learn about variables, basic types, functions, comments,
-and control flow. These foundations will be in every Rust program, and learning
-them early will give you a strong core to start from.
+В частности, вы узнаете о переменных, базовых типах, функциях, комментариях и управляющих конструкциях. Эти основы будут в каждой программе на Rust, и их изучение на раннем этапе даст вам прочный фундамент для старта.
 
-> #### Keywords
+> #### Ключевые слова
 >
-> The Rust language has a set of _keywords_ that are reserved for use by the
-> language only, much as in other languages. Keep in mind that you cannot use
-> these words as names of variables or functions. Most of the keywords have
-> special meanings, and you’ll be using them to do various tasks in your Rust
-> programs; a few have no current functionality associated with them but have
-> been reserved for functionality that might be added to Rust in the future. You
-> can find a list of the keywords in [Appendix A][appendix_a]<!-- ignore -->.
+> У языка Rust есть набор _ключевых слов_, зарезервированных исключительно для использования языком, как и в других языках. Имейте в виду, что вы не можете использовать эти слова в качестве имён переменных или функций. У большинства ключевых слов есть особое значение, и вы будете использовать их для выполнения различных задач в своих программах на Rust; у нескольких нет текущей функциональности, но они зарезервированы для возможного добавления в Rust в будущем. Список ключевых слов можно найти в [Приложении А][appendix_a]<!-- ignore -->.
 
 [appendix_a]: appendix-01-keywords.md

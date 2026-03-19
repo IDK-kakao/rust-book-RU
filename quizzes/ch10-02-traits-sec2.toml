@@ -15,17 +15,16 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 7
 context = """
-Because `displayable` returns `impl Display`, then we only know that `s2` is *some* type that implements `Display`, 
-not that it is a `String` which has a `push_str` method. Therefore we cannot call `s2.push_str(..)`. If the return
-type of `displayable` was `-> T`, then this program would compile.
+Поскольку `displayable` возвращает `impl Display`, мы знаем лишь, что `s2` — *некоторый* тип, реализующий типаж `Display`,
+а не что это `String`, у которого есть метод `push_str`. Поэтому мы не можем вызвать `s2.push_str(..)`. Если бы возвращаемый
+тип `displayable` был `-> T`, то эта программа скомпилировалась бы.
 """
-
 
 [[questions]]
 id = "8b35f91c-ced2-4b8f-bf1c-90550f2b744b"
 type = "MultipleChoice"
 prompt.prompt = """
-What is the smallest set of trait bounds on `T` needed to make this function type-check?
+Каков наименьший набор ограничений типажа на `T`, необходимый для того, чтобы эта функция прошла проверку типов?
 ```
 fn f<T: /* ??? */>(t: &T) {
   let t2 = t.clone();
@@ -34,7 +33,7 @@ fn f<T: /* ??? */>(t: &T) {
 ```
 """
 answer.answer = "`Clone + Display`"
-prompt.distractors = [ "(no bounds)", "`Clone`", "`Clone + Display + Debug`" ]
+prompt.distractors = [ "(без ограничений)", "`Clone`", "`Clone + Display + Debug`" ]
 context = """
-Because `clone` is called and the `{}` display brackets are used in a formatter, then `T` must be `Clone` and `Display`.
+Поскольку вызывается `clone` и в форматтере используются фигурные скобки `{}`, то `T` должен быть `Clone` и `Display`.
 """

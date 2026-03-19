@@ -2,7 +2,7 @@
 id = "1665d1ef-961f-4451-a988-ec46121531f9"
 type = "MultipleChoice"
 prompt.prompt = """
-Which call to this `find_until` function will cause a runtime panic?
+Какой вызов этой функции `find_until` вызовет панику во время выполнения?
 
 ```
 fn find_until(v: &Vec<i32>, n: i32, til: usize) -> Option<usize> {
@@ -22,8 +22,8 @@ prompt.distractors = [
   "`find_until(&vec![1, 2, 3], 1, 4)`"
 ]
 context = """
-If `til = 4`, then for a vector of length 3, the for-loop will attempt to index the vector with `i = 3`, which is out of bounds.
-This function does not panic if `n = 1` because it returns before reaching the out-of-bounds index.
+Если `til = 4`, то для вектора длины 3 цикл `for` попытается получить доступ к элементу вектора по индексу `i = 3`, что выходит за границы.
+Эта функция не паникует, если `n = 1`, потому что она возвращает значение, прежде чем достичь индекса вне границ.
 """
 
 [[questions]]
@@ -42,7 +42,7 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 6
 context = """
-`Vec::push` moves its argument, so `s` is not usable after calling `v.push(s)`. Therefore calling `println!("original: {}", s)` is not ownership-safe.
+Метод `Vec::push` перемещает свой аргумент, поэтому `s` становится недоступным после вызова `v.push(s)`. Следовательно, вызов `println!("original: {}", s)` не является безопасным по владению.
 """
 
 [[questions]]
@@ -59,7 +59,7 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 3
 context = """
-Non-copyable types cannot be moved out of a vector by indexing. Only methods such as `Vec::remove` permit moving out of a vector. See Section 4.3 
-["Copying vs. Moving Out of a Collection"](ch04-03-fixing-ownership-errors.html#fixing-an-unsafe-program-copying-vs-moving-out-of-a-collection)
-for a deeper explanation of why.
+Некопируемые типы нельзя переместить из вектора с помощью индексации. Только такие методы, как `Vec::remove`, позволяют переместить значение из вектора. В разделе 4.3 
+["Копирование против перемещения из коллекции"](ch04-03-fixing-ownership-errors.html#fixing-an-unsafe-program-copying-vs-moving-out-of-a-collection)
+приведено более глубокое объяснение, почему это так.
 """

@@ -1,13 +1,8 @@
-## Reading a File
+## Чтение файла
 
-Now we’ll add functionality to read the file specified in the `file_path`
-argument. First we need a sample file to test it with: we’ll use a file with a
-small amount of text over multiple lines with some repeated words. Listing 12-3
-has an Emily Dickinson poem that will work well! Create a file called
-_poem.txt_ at the root level of your project, and enter the poem “I’m Nobody!
-Who are you?”
+Теперь добавим функциональность для чтения файла, указанного в аргументе `file_path`. Сначала нам понадобится пример файла для тестирования: возьмём файл с небольшим количеством текста на нескольких строках, содержащий повторяющиеся слова. В листинге 12-3 представлено стихотворение Эмили Дикинсон, которое отлично подойдёт! Создайте файл с именем _poem.txt_ в корневой папке вашего проекта и введите стихотворение «I’m Nobody! Who are you?».
 
-<Listing number="12-3" file-name="poem.txt" caption="A poem by Emily Dickinson makes a good test case.">
+<Listing number="12-3" file-name="poem.txt" caption="Стихотворение Эмили Дикинсон служит хорошим тестовым примером.">
 
 ```text
 {{#include ../listings/ch12-an-io-project/listing-12-03/poem.txt}}
@@ -15,10 +10,9 @@ Who are you?”
 
 </Listing>
 
-With the text in place, edit _src/main.rs_ and add code to read the file, as
-shown in Listing 12-4.
+Когда текст будет готов, отредактируйте _src/main.rs_ и добавьте код для чтения файла, как показано в листинге 12-4.
 
-<Listing number="12-4" file-name="src/main.rs" caption="Reading the contents of the file specified by the second argument">
+<Listing number="12-4" file-name="src/main.rs" caption="Чтение содержимого файла, указанного вторым аргументом">
 
 ```rust,should_panic,noplayground
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-04/src/main.rs:here}}
@@ -26,31 +20,16 @@ shown in Listing 12-4.
 
 </Listing>
 
-First we bring in a relevant part of the standard library with a `use`
-statement: we need `std::fs` to handle files.
+Сначала мы подключаем соответствующую часть стандартной библиотеки с помощью инструкции `use`: нам нужен `std::fs` для работы с файлами.
 
-In `main`, the new statement `fs::read_to_string` takes the `file_path`, opens
-that file, and returns a value of type `std::io::Result<String>` that contains
-the file’s contents.
+В `main` новая инструкция `fs::read_to_string` принимает `file_path`, открывает этот файл и возвращает значение типа `std::io::Result<String>`, содержащее содержимое файла.
 
-After that, we again add a temporary `println!` statement that prints the value
-of `contents` after the file is read, so we can check that the program is
-working so far.
+После этого мы снова добавляем временную инструкцию `println!`, которая выводит значение `contents` после чтения файла, чтобы проверить, работает ли программа на данном этапе.
 
-Let’s run this code with any string as the first command line argument (because
-we haven’t implemented the searching part yet) and the _poem.txt_ file as the
-second argument:
+Запустим этот код с любой строкой в качестве первого аргумента командной строки (поскольку мы ещё не реализовали часть поиска) и файлом _poem.txt_ в качестве второго аргумента:
 
 ```console
 {{#rustdoc_include ../listings/ch12-an-io-project/listing-12-04/output.txt}}
 ```
 
-Great! The code read and then printed the contents of the file. But the code
-has a few flaws. At the moment, the `main` function has multiple
-responsibilities: generally, functions are clearer and easier to maintain if
-each function is responsible for only one idea. The other problem is that we’re
-not handling errors as well as we could. The program is still small, so these
-flaws aren’t a big problem, but as the program grows, it will be harder to fix
-them cleanly. It’s a good practice to begin refactoring early on when
-developing a program because it’s much easier to refactor smaller amounts of
-code. We’ll do that next.
+Отлично! Код прочитал и затем вывел содержимое файла. Но у кода есть несколько недостатков. На данный момент функция `main` выполняет несколько обязанностей: обычно функции становятся понятнее и легче в поддержке, если каждая функция отвечает только за одну идею. Другая проблема — мы не обрабатываем ошибки так эффективно, как могли бы. Программа пока небольшая, так что эти недостатки не являются большой проблемой, но по мере роста программы исправлять их будет сложнее. При разработке программы хорошей практикой является начало рефакторинга на ранних этапах, так как рефакторить меньшие объёмы кода гораздо проще. Мы сделаем это дальше.

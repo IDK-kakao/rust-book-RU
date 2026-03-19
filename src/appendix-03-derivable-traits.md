@@ -1,185 +1,90 @@
-## Appendix C: Derivable Traits
+## Приложение C: Типажи, для которых можно использовать `derive`
 
-In various places in the book, we’ve discussed the `derive` attribute, which
-you can apply to a struct or enum definition. The `derive` attribute generates
-code that will implement a trait with its own default implementation on the
-type you’ve annotated with the `derive` syntax.
+В разных местах книги мы обсуждали атрибут `derive`, который можно применять к определению структуры или перечисления. Атрибут `derive` генерирует код, реализующий типаж с использованием его стандартной реализации для типа, который вы пометили с помощью синтаксиса `derive`.
 
-In this appendix, we provide a reference of all the traits in the standard
-library that you can use with `derive`. Each section covers:
+В этом приложении мы приводим справочник по всем типажам стандартной библиотеки, которые можно использовать с `derive`. Каждый раздел охватывает:
 
-- What operators and methods deriving this trait will enable
-- What the implementation of the trait provided by `derive` does
-- What implementing the trait signifies about the type
-- The conditions in which you’re allowed or not allowed to implement the trait
-- Examples of operations that require the trait
+- Какие операторы и методы станут доступны при использовании этого типажа
+- Что делает реализация типажа, предоставляемая `derive`
+- Что означает реализация типажа для данного типа
+- Условия, при которых реализация типажа разрешена или запрещена
+- Примеры операций, требующих наличия типажа
 
-If you want different behavior from that provided by the `derive` attribute,
-consult the [standard library documentation](../std/index.html)<!-- ignore -->
-for each trait for details on how to manually implement them.
+Если вам нужно поведение, отличное от того, которое предоставляет атрибут `derive`, обратитесь к [документации стандартной библиотеки](../std/index.html)<!-- ignore --> для каждого типажа, чтобы узнать, как реализовать его вручную.
 
-The traits listed here are the only ones defined by the standard library that
-can be implemented on your types using `derive`. Other traits defined in the
-standard library don’t have sensible default behavior, so it’s up to you to
-implement them in the way that makes sense for what you’re trying to accomplish.
+Перечисленные здесь типажи — единственные, определённые стандартной библиотекой, которые можно реализовать для ваших типов с помощью `derive`. Другие типажи, определённые в стандартной библиотеке, не имеют разумного поведения по умолчанию, поэтому реализация их зависит от вас и должна соответствовать вашим задачам.
 
-An example of a trait that can’t be derived is `Display`, which handles
-formatting for end users. You should always consider the appropriate way to
-display a type to an end user. What parts of the type should an end user be
-allowed to see? What parts would they find relevant? What format of the data
-would be most relevant to them? The Rust compiler doesn’t have this insight, so
-it can’t provide appropriate default behavior for you.
+Примером типажа, который нельзя получить через `derive`, является `Display`, который отвечает за форматирование для конечных пользователей. Вы всегда должны задумываться о подходящем способе отображения типа для конечного пользователя. Какие части типа пользователь должен видеть? Какие части будут для него релевантны? В каком формате данные будут наиболее полезны? У компилятора Rust нет такого понимания, поэтому он не может предоставить вам подходящее поведение по умолчанию.
 
-The list of derivable traits provided in this appendix is not comprehensive:
-libraries can implement `derive` for their own traits, making the list of
-traits you can use `derive` with truly open-ended. Implementing `derive`
-involves using a procedural macro, which is covered in the
-[“Macros”][macros]<!-- ignore --> section of Chapter 20.
+Список типажей, которые можно получить через `derive` в этом приложении, не является исчерпывающим: библиотеки могут реализовывать `derive` для своих собственных типажей, поэтому список типажей, с которыми можно использовать `derive`, по сути открыт. Реализация `derive` предполагает использование процедурного макроса, который рассматривается в разделе [“Макросы”][macros]<!-- ignore --> главы 20.
 
-### `Debug` for Programmer Output
+### `Debug` для вывода, предназначенного для программистов
 
-The `Debug` trait enables debug formatting in format strings, which you
-indicate by adding `:?` within `{}` placeholders.
+Типаж `Debug` включает форматирование для отладки в строках формата, которое указывается добавлением `:?` внутри заполнителей `{}`.
 
-The `Debug` trait allows you to print instances of a type for debugging
-purposes, so you and other programmers using your type can inspect an instance
-at a particular point in a program’s execution.
+Типаж `Debug` позволяет выводить экземпляры типа для целей отладки, чтобы вы и другие программисты, использующие ваш тип, могли inspecting экземпляр в определённой точке выполнения программы.
 
-The `Debug` trait is required, for example, in the use of the `assert_eq!`
-macro. This macro prints the values of instances given as arguments if the
-equality assertion fails so programmers can see why the two instances weren’t
-equal.
+Типаж `Debug` требуется, например, при использовании макроса `assert_eq!`. Этот макрос выводит значения экземпляров, переданных в качестве аргументов, если проверка на равенство завершилась неудачей, чтобы программисты могли понять, почему два экземпляра не равны.
 
-### `PartialEq` and `Eq` for Equality Comparisons
+### `PartialEq` и `Eq` для сравнений на равенство
 
-The `PartialEq` trait allows you to compare instances of a type to check for
-equality and enables use of the `==` and `!=` operators.
+Типаж `PartialEq` позволяет сравнивать экземпляры типа для проверки на равенство и включает использование операторов `==` и `!=`.
 
-Deriving `PartialEq` implements the `eq` method. When `PartialEq` is derived on
-structs, two instances are equal only if _all_ fields are equal, and the
-instances are not equal if any fields are not equal. When derived on enums,
-each variant is equal to itself and not equal to the other variants.
+Получение `PartialEq` через `derive` реализует метод `eq`. Когда `PartialEq` применяется к структурам, два экземпляра равны только если _все_ поля равны, и экземпляры не равны, если какие-либо поля не равны. При применении к перечислениям каждый вариант равен сам себе и не равен другим вариантам.
 
-The `PartialEq` trait is required, for example, with the use of the
-`assert_eq!` macro, which needs to be able to compare two instances of a type
-for equality.
+Типаж `PartialEq` требуется, например, при использовании макроса `assert_eq!`, которому нужно уметь сравнивать два экземпляра типа на равенство.
 
-The `Eq` trait has no methods. Its purpose is to signal that for every value of
-the annotated type, the value is equal to itself. The `Eq` trait can only be
-applied to types that also implement `PartialEq`, although not all types that
-implement `PartialEq` can implement `Eq`. One example of this is floating point
-number types: the implementation of floating point numbers states that two
-instances of the not-a-number (`NaN`) value are not equal to each other.
+Типаж `Eq` не имеет методов. Его цель — сигнализировать, что для любого значения аннотированного типа это значение равно самому себе. Типаж `Eq` можно применять только к типам, которые также реализуют `PartialEq`, хотя не все типы, реализующие `PartialEq`, могут реализовать `Eq`. Одним из примеров являются типы чисел с плавающей запятой: реализация чисел с плавающей запятой гласит, что два экземпляра значения «не число» (`NaN`) не равны друг другу.
 
-An example of when `Eq` is required is for keys in a `HashMap<K, V>` so the
-`HashMap<K, V>` can tell whether two keys are the same.
+Примером, когда требуется `Eq`, являются ключи в `HashMap<K, V>`, чтобы `HashMap<K, V>` мог определять, одинаковы ли два ключа.
 
-### `PartialOrd` and `Ord` for Ordering Comparisons
+### `PartialOrd` и `Ord` для сравнений на порядок
 
-The `PartialOrd` trait allows you to compare instances of a type for sorting
-purposes. A type that implements `PartialOrd` can be used with the `<`, `>`,
-`<=`, and `>=` operators. You can only apply the `PartialOrd` trait to types
-that also implement `PartialEq`.
+Типаж `PartialOrd` позволяет сравнивать экземпляры типа для целей сортировки. Тип, реализующий `PartialOrd`, можно использовать с операторами `<`, `>`, `<=` и `>=`. Типаж `PartialOrd` можно применять только к типам, которые также реализуют `PartialEq`.
 
-Deriving `PartialOrd` implements the `partial_cmp` method, which returns an
-`Option<Ordering>` that will be `None` when the values given don’t produce an
-ordering. An example of a value that doesn’t produce an ordering, even though
-most values of that type can be compared, is the not-a-number (`NaN`) floating
-point value. Calling `partial_cmp` with any floating-point number and the `NaN`
-floating-point value will return `None`.
+Получение `PartialOrd` через `derive` реализует метод `partial_cmp`, который возвращает `Option<Ordering>`, который будет `None`, когда переданные значения не образуют порядок. Примером значения, не образующего порядок, даже если большинство значений этого типа можно сравнить, является значение «не число» (`NaN`) для чисел с плавающей запятой. Вызов `partial_cmp` с любым числом с плавающей запятой и значением `NaN` для чисел с плавающей запятой вернёт `None`.
 
-When derived on structs, `PartialOrd` compares two instances by comparing the
-value in each field in the order in which the fields appear in the struct
-definition. When derived on enums, variants of the enum declared earlier in the
-enum definition are considered less than the variants listed later.
+При применении к структурам `PartialOrd` сравнивает два экземпляра, сравнивая значение каждого поля в порядке, в котором поля определены в структуре. При применении к перечислениям варианты перечисления, объявленные раньше в определении перечисления, считаются меньшими, чем варианты, перечисленные позже.
 
-The `PartialOrd` trait is required, for example, for the `gen_range` method
-from the `rand` crate that generates a random value in the range specified by a
-range expression.
+Типаж `PartialOrd` требуется, например, для метода `gen_range` из крейта `rand`, который генерирует случайное значение в диапазоне, заданном выражением диапазона.
 
-The `Ord` trait allows you to know that for any two values of the annotated
-type, a valid ordering will exist. The `Ord` trait implements the `cmp` method,
-which returns an `Ordering` rather than an `Option<Ordering>` because a valid
-ordering will always be possible. You can only apply the `Ord` trait to types
-that also implement `PartialOrd` and `Eq` (and `Eq` requires `PartialEq`). When
-derived on structs and enums, `cmp` behaves the same way as the derived
-implementation for `partial_cmp` does with `PartialOrd`.
+Типаж `Ord` позволяет знать, что для любых двух значений аннотированного типа всегда существует допустимый порядок. Типаж `Ord` реализует метод `cmp`, который возвращает `Ordering` вместо `Option<Ordering>`, поскольку допустимый порядок всегда возможен. Типаж `Ord` можно применять только к типам, которые также реализуют `PartialOrd` и `Eq` (а `Eq` требует `PartialEq`). При получении через `derive` для структур и перечислений `cmp` ведёт себя так же, как реализация `partial_cmp` для `PartialOrd`.
 
-An example of when `Ord` is required is when storing values in a `BTreeSet<T>`,
-a data structure that stores data based on the sort order of the values.
+Примером, когда требуется `Ord`, является хранение значений в `BTreeSet<T>`, структуре данных, которая хранит данные на основе порядка сортировки значений.
 
-### `Clone` and `Copy` for Duplicating Values
+### `Clone` и `Copy` для дублирования значений
 
-The `Clone` trait allows you to explicitly create a deep copy of a value, and
-the duplication process might involve running arbitrary code and copying heap
-data. See [Variables and Data Interacting with
-Clone”][variables-and-data-interacting-with-clone]<!-- ignore --> in Chapter 4
-for more information on `Clone`.
+Типаж `Clone` позволяет явно создавать глубокую копию значения, и процесс дублирования может включать выполнение произвольного кода и копирование данных в куче. Подробнее о `Clone` см. в разделе [“Переменные и данные: взаимодействие с `Clone`”][variables-and-data-interacting-with-clone]<!-- ignore --> в главе 4.
 
-Deriving `Clone` implements the `clone` method, which when implemented for the
-whole type, calls `clone` on each of the parts of the type. This means all the
-fields or values in the type must also implement `Clone` to derive `Clone`.
+Получение `Clone` через `derive` реализует метод `clone`, который при реализации для всего типа вызывает `clone` для каждой части типа. Это означает, что все поля или значения в типе также должны реализовывать `Clone`, чтобы можно было получить `Clone` через `derive`.
 
-An example of when `Clone` is required is when calling the `to_vec` method on a
-slice. The slice doesn’t own the type instances it contains, but the vector
-returned from `to_vec` will need to own its instances, so `to_vec` calls
-`clone` on each item. Thus the type stored in the slice must implement `Clone`.
+Примером, когда требуется `Clone`, является вызов метода `to_vec` на срезе. Срез не владеет экземплярами типа, которые он содержит, но вектор, возвращаемый из `to_vec`, должен владеть своими экземплярами, поэтому `to_vec` вызывает `clone` для каждого элемента. Следовательно, тип, хранящийся в срезе, должен реализовывать `Clone`.
 
-The `Copy` trait allows you to duplicate a value by only copying bits stored on
-the stack; no arbitrary code is necessary. See [“Stack-Only Data:
-Copy”][stack-only-data-copy]<!-- ignore --> in Chapter 4 for more information on
-`Copy`.
+Типаж `Copy` позволяет дублировать значение путём простого копирования битов, хранящихся в стеке; произвольный код не требуется. Подробнее о `Copy` см. в разделе [“Данные только в стеке: `Copy`”][stack-only-data-copy]<!-- ignore --> в главе 4.
 
-The `Copy` trait doesn’t define any methods to prevent programmers from
-overloading those methods and violating the assumption that no arbitrary code
-is being run. That way, all programmers can assume that copying a value will be
-very fast.
+Типаж `Copy` не определяет никаких методов, чтобы предотвратить перегрузку этих методов программистами и нарушение предположения о том, что не выполняется произвольный код. Таким образом, все программисты могут предполагать, что копирование значения будет очень быстрым.
 
-You can derive `Copy` on any type whose parts all implement `Copy`. A type that
-implements `Copy` must also implement `Clone`, because a type that implements
-`Copy` has a trivial implementation of `Clone` that performs the same task as
-`Copy`.
+Типаж `Copy` можно получить через `derive` для любого типа, все части которого реализуют `Copy`. Тип, реализующий `Copy`, должен также реализовывать `Clone`, поскольку тип, реализующий `Copy`, имеет тривиальную реализацию `Clone`, которая выполняет ту же задачу, что и `Copy`.
 
-The `Copy` trait is rarely required; types that implement `Copy` have
-optimizations available, meaning you don’t have to call `clone`, which makes
-the code more concise.
+Типаж `Copy` требуется редко; типы, реализующие `Copy`, имеют доступные оптимизации, что означает, что вам не нужно вызывать `clone`, что делает код более лаконичным.
 
-Everything possible with `Copy` you can also accomplish with `Clone`, but the
-code might be slower or have to use `clone` in places.
+Всё, что возможно с `Copy`, можно также выполнить с `Clone`, но код может быть медленнее или должен использовать `clone` в определённых местах.
 
-### `Hash` for Mapping a Value to a Value of Fixed Size
+### `Hash` для отображения значения в значение фиксированного размера
 
-The `Hash` trait allows you to take an instance of a type of arbitrary size and
-map that instance to a value of fixed size using a hash function. Deriving
-`Hash` implements the `hash` method. The derived implementation of the `hash`
-method combines the result of calling `hash` on each of the parts of the type,
-meaning all fields or values must also implement `Hash` to derive `Hash`.
+Типаж `Hash` позволяет взять экземпляр типа произвольного размера и отобразить этот экземпляр в значение фиксированного размера с помощью хэш-функции. Получение `Hash` через `derive` реализует метод `hash`. Реализация метода `hash`, полученная через `derive`, комбинирует результат вызова `hash` для каждой части типа, что означает, что все поля или значения должны также реализовывать `Hash`, чтобы можно было получить `Hash` через `derive`.
 
-An example of when `Hash` is required is in storing keys in a `HashMap<K, V>`
-to store data efficiently.
+Примером, когда требуется `Hash`, является хранение ключей в `HashMap<K, V>` для эффективного хранения данных.
 
-### `Default` for Default Values
+### `Default` для значений по умолчанию
 
-The `Default` trait allows you to create a default value for a type. Deriving
-`Default` implements the `default` function. The derived implementation of the
-`default` function calls the `default` function on each part of the type,
-meaning all fields or values in the type must also implement `Default` to
-derive `Default`.
+Типаж `Default` позволяет создать значение по умолчанию для типа. Получение `Default` через `derive` реализует функцию `default`. Реализация функции `default`, полученная через `derive`, вызывает функцию `default` для каждой части типа, что означает, что все поля или значения в типе должны также реализовывать `Default`, чтобы можно было получить `Default` через `derive`.
 
-The `Default::default` function is commonly used in combination with the struct
-update syntax discussed in [“Creating Instances from Other Instances with Struct
-Update
-Syntax”][creating-instances-from-other-instances-with-struct-update-syntax]<!--
-ignore --> in Chapter 5. You can customize a few fields of a struct and then set
-and use a default value for the rest of the fields by using
-`..Default::default()`.
+Функция `Default::default` обычно используется в сочетании с синтаксисом обновления структуры, рассмотренным в разделе [“Создание экземпляров из других экземпляров с помощью синтаксиса обновления структуры”][creating-instances-from-other-instances-with-struct-update-syntax]<!-- ignore --> в главе 5. Вы можете настроить несколько полей структуры, а затем установить и использовать значение по умолчанию для остальных полей, используя `..Default::default()`.
 
-The `Default` trait is required when you use the method `unwrap_or_default` on
-`Option<T>` instances, for example. If the `Option<T>` is `None`, the method
-`unwrap_or_default` will return the result of `Default::default` for the type
-`T` stored in the `Option<T>`.
+Типаж `Default` требуется, когда вы используете метод `unwrap_or_default` для экземпляров `Option<T>`, например. Если `Option<T>` равен `None`, метод `unwrap_or_default` вернёт результат `Default::default` для типа `T`, хранящегося в `Option<T>`.
 
-[creating-instances-from-other-instances-with-struct-update-syntax]: ch05-01-defining-structs.html#creating-instances-from-other-instances-with-struct-update-syntax
-[stack-only-data-copy]: ch04-01-what-is-ownership.html#stack-only-data-copy
 [variables-and-data-interacting-with-clone]: ch04-01-what-is-ownership.html#variables-and-data-interacting-with-clone
+[stack-only-data-copy]: ch04-01-what-is-ownership.html#stack-only-data-copy
+[creating-instances-from-other-instances-with-struct-update-syntax]: ch05-01-defining-structs.html#creating-instances-from-other-instances-with-struct-update-syntax
 [macros]: ch20-05-macros.html#macros

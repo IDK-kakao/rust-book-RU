@@ -1,7 +1,3 @@
-# Understanding Ownership
+# Понимание владения
 
-Ownership is Rust’s most unique feature and has deep implications for the rest
-of the language. It enables Rust to make memory safety guarantees without
-needing a garbage collector, so it’s important to understand how ownership
-works. In this chapter, we’ll talk about ownership as well as several related
-features: borrowing, slices, and how Rust lays data out in memory.
+Владение — самая уникальная особенность Rust и имеет глубокие последствия для остальной части языка. Оно позволяет Rust гарантировать безопасность памяти без необходимости в сборщике мусора, поэтому важно понять, как работает владение. В этой главе мы поговорим о владении, а также о нескольких связанных с ним возможностях: заимствовании, срезах и о том, как Rust размещает данные в памяти.

@@ -1,5 +1,5 @@
-# End of Experiment
+# Конец эксперимента
 
-Thank you for participating in our experiment! We hope you got something useful from our additions. Your participation will help make Rust better for everyone.
+Спасибо за участие в нашем эксперименте! Надеемся, вы нашли что-то полезное в наших дополнениях. Ваше участие поможет сделать Rust лучше для всех.
 
-You can follow [@tonofcrates](https://mastodon.social/@tonofcrates) on Mastodon if you want to hear about future updates to this experiment.
+Вы можете подписаться на [@tonofcrates](https://mastodon.social/@tonofcrates) в Mastodon, если хотите узнавать о будущих обновлениях этого эксперимента.

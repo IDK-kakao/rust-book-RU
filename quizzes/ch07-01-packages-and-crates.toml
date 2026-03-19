@@ -2,19 +2,19 @@
 id = "904a0808-22d1-45e5-9611-cf143babbc41"
 type = "MultipleChoice"
 prompt.prompt = """
-Which is the correct order, where "A > B" means "A contains B"?
+Каков правильный порядок, где "A > B" означает "A содержит B"?
 """
-answer.answer = "package > crate > module"
-prompt.distractors = [ "module > crate > package", "crate > package > module" ]
+answer.answer = "пакет > крейт > модуль"
+prompt.distractors = [ "модуль > крейт > пакет", "крейт > пакет > модуль" ]
 context = """
-A package is the top-level organizational unit, containing crates. A crate contains modules.
+Пакет — это верхнеуровневая организационная единица, содержащая крейты. Крейт содержит модули.
 """
 
 [[questions]]
 id = "d45c7cbe-6089-40b9-843c-fbb9ff48ca49"
 type = "ShortAnswer"
 prompt.prompt = """
-Imagine you see a Rust package `foobar` with the following files:
+Представьте, что вы видите пакет Rust `foobar` со следующими файлами:
 
 ```text
 foobar
@@ -28,10 +28,9 @@ foobar
         └── alt.rs
 ```
 
-How many crates does this package contain? Write your answer as a digit, e.g. 0, 1, and so on.
+Сколько крейтов содержит этот пакет? Запишите ответ в виде цифры, например 0, 1 и так далее.
 """
 answer.answer = "3"
 context = """ 
-`main.rs` produces a binary crate, `lib.rs` produces a library crate, and `bin/alt.rs` produces a binary crate. The `util.rs` would presumably be used as a module within
-one of these crates, but it is not a special filename recognized by Rust, so it would not be its own crate. `build.rs` is a build script.
+`main.rs` создаёт бинарный крейт, `lib.rs` создаёт библиотечный крейт, а `bin/alt.rs` создаёт бинарный крейт. `util.rs` предположительно используется как модуль в одном из этих крейтов, но это не специальное имя файла, распознаваемое Rust, поэтому он не будет отдельным крейтом. `build.rs` — это скрипт сборки.
 """

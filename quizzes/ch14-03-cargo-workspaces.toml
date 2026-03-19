@@ -2,7 +2,7 @@
 id = "20846719-fe7b-48b8-abfd-9c5f1174472f"
 type = "MultipleChoice"
 prompt.prompt = """
-Consider a workspace with the following structure:
+Рассмотрим рабочее пространство со следующей структурой:
 
 ```
 ├── Cargo.lock
@@ -16,7 +16,7 @@ Consider a workspace with the following structure:
         └── Cargo.toml
 ```
 
-With the following content in each file:
+С следующим содержимым в каждом файле:
 
 ```
 // crates/b/lib.rs
@@ -29,7 +29,7 @@ pub fn f() {}
 b = {path = "../b"}
 ```
 
-Which of the following is the correct path to refer to `f` inside of `a/lib.rs`?
+Какой из следующих путей является правильным для обращения к `f` внутри `a/lib.rs`?
 """
 answer.answer = "`b::f`"
 prompt.distractors = [
@@ -38,14 +38,14 @@ prompt.distractors = [
     "`super::b::f`",
 ]
 context = """
-From the perspective of `a`, `b` is an external crate like any other, so you don't use a prefix to access its items.
+С точки зрения `a`, `b` является внешним крейтом, как и любой другой, поэтому вы не используете префикс для доступа к его элементам.
 """
 
 [[questions]]
 id = "bc8a69b2-d9a8-4438-8657-391c3fda5ed9"
 type = "ShortAnswer"
 prompt.prompt = """
-Consider a workspace with three packages `a`, `b`, and `c`. Their respective manifests are:
+Рассмотрим рабочее пространство с тремя пакетами `a`, `b` и `c`. Их соответствующие манифесты:
 
 ```toml
 # a/Cargo.toml
@@ -61,11 +61,11 @@ rand = "0.7.3"
 rand = "0.8.5"
 ```
 
-How many different versions of `rand` will be used when compiling all packages in the workspace? 
-Write your answer as a digit, e.g. 0, 1, so on.
+Сколько различных версий `rand` будет использоваться при компиляции всех пакетов в рабочем пространстве? 
+Укажите ответ цифрой, например, 0, 1 и т.д.
 """
 answer.answer = "2"
 context = """
-According to the rules of semantic versioning, `a` and `c` will both share the latest patch of the minor version `0.8`.
-`b` will use the latest patch of the minor version `0.7`. So two versions in total will be used.
+Согласно правилам семантического версионирования, `a` и `c` будут использовать последний патч минор-версии `0.8`.
+`b` будет использовать последний патч минор-версии `0.7`. Таким образом, всего будет использоваться две версии.
 """

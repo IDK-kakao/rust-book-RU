@@ -1,32 +1,32 @@
-# The Rust Programming Language
+# Язык программирования Rust
 
 ![Build Status](https://github.com/rust-lang/book/workflows/CI/badge.svg)
 
-This repository contains the source of "The Rust Programming Language" book, specifically an experimental branch that supports interactive features like quizzes.
+> Если вы обнаружили ошибки в переводе, опечатки или неточности, пожалуйста, откройте [issue](../../issues) в этом репозитории.
 
-**If you discovered an issue in at <https://rust-book.cs.brown.edu/>, PLEASE report the issue on THIS REPOSITORY and not elsewhere.**
+Этот репозиторий содержит русский перевод книги "The Rust Programming Language", а именно экспериментальной ветки, которая поддерживает интерактивные функции, такие как викторины.
 
-[The book is available in dead-tree form from No Starch Press][nostarch].
+**Переводчик:** Kakao
+
+**Оригинальный репозиторий:** [cognitive-engineering-lab/rust-book](https://github.com/cognitive-engineering-lab/rust-book)
+
+[Книга доступна в печатном виде от издательства No Starch Press][nostarch] (на английском языке).
 
 [nostarch]: https://nostarch.com/rust-programming-language-2nd-edition
 
-You can also read the book for free online. Please see the book as shipped with
-the latest [stable], [beta], or [nightly] Rust releases. Be aware that issues
-in those versions may have been fixed in this repository already, as those
-releases are updated less frequently.
+Вы также можете читать книгу бесплатно онлайн. Смотрите книгу, поставляемую с последними релизами Rust: [stable], [beta] или [nightly]. Обратите внимание, что проблемы в этих версиях могли быть уже исправлены в этом репозитории, так как эти релизы обновляются реже.
 
 [stable]: https://doc.rust-lang.org/stable/book/
 [beta]: https://doc.rust-lang.org/beta/book/
 [nightly]: https://doc.rust-lang.org/nightly/book/
 
-See the [releases] to download just the code of all the code listings that appear in the book.
+Смотрите [releases] для загрузки кода всех примеров, которые появляются в книге.
 
 [releases]: https://github.com/rust-lang/book/releases
 
-## Requirements
+## Требования
 
-Building the book requires [mdBook], ideally the same version that
-rust-lang/rust uses in [this file][rust-mdbook]. To get it:
+Для сборки книги требуется [mdBook], в идеале та же версия, которую использует rust-lang/rust в [этом файле][rust-mdbook]. Чтобы установить:
 
 [mdBook]: https://github.com/rust-lang/mdBook
 [rust-mdbook]: https://github.com/rust-lang/rust/blob/master/src/tools/rustbook/Cargo.toml
@@ -35,38 +35,35 @@ rust-lang/rust uses in [this file][rust-mdbook]. To get it:
 $ cargo install mdbook --locked --version <version_num>
 ```
 
-This fork also requires a few mdBook preprocessors to support our experimental extensions. Follow the installation instructions at each link below.
+Этот форк также требует несколько препроцессоров mdBook для поддержки экспериментальных расширений. Следуйте инструкциям по установке по каждой ссылке ниже.
 
 * `mdbook-aquascope`: <https://github.com/cognitive-engineering-lab/aquascope#installation>
 * `mdbook-quiz`: <https://github.com/cognitive-engineering-lab/mdbook-quiz#installation>
 
-You should install the same version of each preprocessor [used in CI](https://github.com/cognitive-engineering-lab/rust-book/blob/main/.github/workflows/main.yml).
+Вы должны установить ту же версию каждого препроцессора, [используемую в CI](https://github.com/cognitive-engineering-lab/rust-book/blob/main/.github/workflows/main.yml).
 
-Finally, you need [pnpm](https://pnpm.io/installation).
+Наконец, вам нужен [pnpm](https://pnpm.io/installation).
 
-The book also uses two mdbook plugins which are part of this repository. If you
-do not install them, you will see warnings when building and the output will not
-look right, but you *will* still be able to build the book. To use the plugins,
-you should run:
+Книга также использует два плагина mdbook, которые являются частью этого репозитория. Если вы их не установите, вы увидите предупреждения при сборке, и вывод будет выглядеть неправильно, но вы *всё равно* сможете собрать книгу. Чтобы использовать плагины, выполните:
 
 ```bash
 $ cargo install --locked --path packages/mdbook-trpl-listing
 $ cargo install --locked --path packages/mdbook-trpl-note
 ```
 
-## Building
+## Сборка
 
-### With cargo-make
+### С cargo-make
 
-If you have [`cargo-make`] installed, then run:
+Если у вас установлен [`cargo-make`], выполните:
 
 ```bash
 $ cargo make build
 ```
 
-### Without cargo-make
+### Без cargo-make
 
-First, build the Javascript extensions.
+Сначала соберите JavaScript-расширения.
 
 ```bash
 $ cd js-extensions
@@ -74,16 +71,15 @@ $ pnpm init-repo
 $ cd ..
 ```
 
-Then to build the book, type:
+Затем для сборки книги введите:
 
 ```bash
 $ mdbook build
 ```
 
-### Output
+### Результат
 
-The output will be in the `book` subdirectory. To check it out, open it in
-your web browser.
+Результат будет в подкаталоге `book`. Чтобы посмотреть, откройте его в веб-браузере.
 
 _Firefox:_
 ```bash
@@ -101,49 +97,32 @@ $ Start-Process "chrome.exe" .\book\index.html  # Windows (PowerShell)
 $ start chrome.exe .\book\index.html            # Windows (Cmd)
 ```
 
-To run the tests:
+Для запуска тестов:
 
 ```bash
 $ cd packages/trpl
 $ mdbook test --library-path packages/trpl/target/debug/deps
 ```
 
-## Contributing
+## Участие в проекте
 
-We'd love your help! Please see [CONTRIBUTING.md][contrib] to learn about the
-kinds of contributions we're looking for.
+Мы будем рады вашей помощи! Пожалуйста, смотрите [CONTRIBUTING.md][contrib], чтобы узнать о типах вклада, которые мы ищем.
 
 [contrib]: https://github.com/rust-lang/book/blob/main/CONTRIBUTING.md
 
-Because the book is [printed][nostarch], and because we want
-to keep the online version of the book close to the print version when
-possible, it may take longer than you're used to for us to address your issue
-or pull request.
+Поскольку книга [издана в печатном виде][nostarch], и поскольку мы хотим сохранить онлайн-версию книги близкой к печатной версии, когда это возможно, может потребоваться больше времени, чем вы привыкли, чтобы мы рассмотрели вашу проблему или pull request.
 
-So far, we've been doing a larger revision to coincide with [Rust
-Editions](https://doc.rust-lang.org/edition-guide/). Between those larger
-revisions, we will only be correcting errors. If your issue or pull request
-isn't strictly fixing an error, it might sit until the next time that we're
-working on a large revision: expect on the order of months or years. Thank you
-for your patience!
+До сих пор мы проводили крупные ревизии, совпадающие с [изданиями Rust](https://doc.rust-lang.org/edition-guide/). Между этими крупными ревизиями мы будем только исправлять ошибки. Если ваша проблема или pull request не является строго исправлением ошибки, она может ожидать до следующего раза, когда мы будем работать над крупной ревизией: ожидайте порядка месяцев или лет. Спасибо за ваше терпение!
 
-### Translations
+### Переводы
 
-We'd love help translating the book! See the [Translations] label to join in
-efforts that are currently in progress. Open a new issue to start working on
-a new language! We're waiting on [mdbook support] for multiple languages
-before we merge any in, but feel free to start!
+Мы будем рады помощи в переводе книги! Смотрите метку [Translations], чтобы присоединиться к усилиям, которые в настоящее время ведутся. Откройте новую проблему, чтобы начать работу над новым языком! Мы ждём [поддержки mdbook] для нескольких языков, прежде чем мы объединим какие-либо переводы, но не стесняйтесь начинать!
 
 [Translations]: https://github.com/rust-lang/book/issues?q=is%3Aopen+is%3Aissue+label%3ATranslations
 [mdbook support]: https://github.com/rust-lang/mdBook/issues/5
 
-## Spellchecking
+## Проверка орфографии
 
-To scan source files for spelling errors, you can use the `spellcheck.sh`
-script available in the `ci` directory. It needs a dictionary of valid words,
-which is provided in `ci/dictionary.txt`. If the script produces a false
-positive (say, you used the word `BTreeMap` which the script considers invalid),
-you need to add this word to `ci/dictionary.txt` (keep the sorted order for
-consistency).
+Для сканирования исходных файлов на орфографические ошибки вы можете использовать скрипт `spellcheck.sh`, доступный в каталоге `ci`. Ему нужен словарь допустимых слов, который предоставлен в `ci/dictionary.txt`. Если скрипт выдаёт ложное срабатывание (скажем, вы использовали слово `BTreeMap`, которое скрипт считает недопустимым), вам нужно добавить это слово в `ci/dictionary.txt` (сохраняйте отсортированный порядок для согласованности).
 
 [`cargo-make`]: https://github.com/sagiegurari/cargo-make

@@ -1,6 +1,6 @@
 [[questions]]
 id = "8282968d-b1d3-42b4-b128-f97b951db4c6"
-type = "Tracing"
+type = "Трассировка"
 prompt.program = """
 struct Example(i32);
 impl Drop for Example {
@@ -18,14 +18,14 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 11
 context = """
-An owned value cannot be dropped twice, so it is a compiler error to call a drop the second time.
+Владеемое значение не может быть уничтожено дважды, поэтому вызов drop второй раз является ошибкой компиляции.
 """
 
 [[questions]]
 id = "b9121273-1c1e-4e99-9cff-a23f845aaeeb"
-type = "MultipleChoice"
+type = "Множественный выбор"
 prompt.prompt = """
-Consider this snippet that allocates a string:
+Рассмотрим этот фрагмент кода, который выделяет строку:
 
 ```rust
 fn main() {
@@ -34,13 +34,12 @@ fn main() {
 }
 ```
 
-Which of the following are valid operations to fill in the underscore that would cause `s` to be dropped?
+Какие из следующих операций являются допустимыми для заполнения пропуска, которые приведут к уничтожению `s`?
 """
 answer.answer = ["`drop(s);`", "`(|_| ())(s);`", "`{ s };`"]
 prompt.distractors = [
     "`s.drop();`",    
 ]
 context = """
-Any use of `s` that moves it and discards the result will cause `s` to be dropped. However, `s.drop()` cannot be
-called directly.
+Любое использование `s`, которое перемещает его и отбрасывает результат, приведет к уничтожению `s`. Однако `s.drop()` нельзя вызвать напрямую.
 """

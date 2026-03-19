@@ -1,48 +1,20 @@
-# Managing Growing Projects with Packages, Crates, and Modules
+# Управление растущими проектами с помощью пакетов, крейтов и модулей
 
-As you write large programs, organizing your code will become increasingly
-important. By grouping related functionality and separating code with distinct
-features, you’ll clarify where to find code that implements a particular
-feature and where to go to change how a feature works.
+По мере написания больших программ организация кода становится всё важнее. Группируя связанную функциональность и разделяя код по отдельным возможностям, вы проясните, где искать реализацию конкретной функции и куда обращаться, чтобы изменить её работу.
 
-The programs we’ve written so far have been in one module in one file. As a
-project grows, you should organize code by splitting it into multiple modules
-and then multiple files. A package can contain multiple binary crates and
-optionally one library crate. As a package grows, you can extract parts into
-separate crates that become external dependencies. This chapter covers all
-these techniques. For very large projects comprising a set of interrelated
-packages that evolve together, Cargo provides _workspaces_, which we’ll cover
-in [“Cargo Workspaces”][workspaces]<!-- ignore --> in Chapter 14.
+Все программы, которые мы писали до сих пор, находились в одном модуле в одном файле. По мере роста проекта следует организовать код, разделив его на несколько модулей, а затем и на несколько файлов. Пакет может содержать несколько бинарных крейтов и, опционально, один библиотечный крейт. По мере роста пакета вы можете выделить части в отдельные крейты, которые станут внешними зависимостями. В этой главе рассматриваются все эти техники. Для очень больших проектов, состоящих из набора взаимосвязанных пакетов, развивающихся вместе, Cargo предоставляет _рабочие пространства_ (workspaces), которые мы рассмотрим в главе 14 в разделе ["Cargo Workspaces"][workspaces]<!-- ignore -->.
 
-We’ll also discuss encapsulating implementation details, which lets you reuse
-code at a higher level: once you’ve implemented an operation, other code can
-call your code via its public interface without having to know how the
-implementation works. The way you write code defines which parts are public for
-other code to use and which parts are private implementation details that you
-reserve the right to change. This is another way to limit the amount of detail
-you have to keep in your head.
+Мы также обсудим инкапсуляцию деталей реализации, которая позволяет повторно использовать код на более высоком уровне: как только вы реализовали операцию, другой код может вызывать ваш код через его публичный интерфейс, не зная, как работает реализация. То, как вы пишете код, определяет, какие части являются публичными для использования другим кодом, а какие — приватными деталями реализации, которые вы оставляете за собой право изменять. Это ещё один способ ограничить количество деталей, которые нужно держать в голове.
 
-A related concept is scope: the nested context in which code is written has a
-set of names that are defined as “in scope.” When reading, writing, and
-compiling code, programmers and compilers need to know whether a particular
-name at a particular spot refers to a variable, function, struct, enum, module,
-constant, or other item and what that item means. You can create scopes and
-change which names are in or out of scope. You can’t have two items with the
-same name in the same scope; tools are available to resolve name conflicts.
+Смежным понятием является область видимости (scope): вложенный контекст, в котором написан код, имеет набор имён, определённых как "находящиеся в области видимости". При чтении, написании и компиляции кода программистам и компиляторам нужно знать, относится ли конкретное имя в конкретном месте к переменной, функции, структуре, перечислению, модулю, константе или другому элементу и что означает этот элемент. Вы можете создавать области видимости и изменять, какие имена находятся внутри или вне них. В одной области видимости нельзя иметь два элемента с одинаковым именем; существуют инструменты для разрешения конфликтов имён.
 
-Rust has a number of features that allow you to manage your code’s
-organization, including which details are exposed, which details are private,
-and what names are in each scope in your programs. These features, sometimes
-collectively referred to as the _module system_, include:
+В Rust есть ряд возможностей, позволяющих управлять организацией кода, включая то, какие детали раскрываются, какие детали являются приватными и какие имена находятся в каждой области видимости ваших программ. Эти возможности, иногда совместно называемые _системой модулей_, включают:
 
-* **Packages**: A Cargo feature that lets you build, test, and share crates
-* **Crates**: A tree of modules that produces a library or executable
-* **Modules and use**: Let you control the organization, scope, and privacy of
-paths
-* **Paths**: A way of naming an item, such as a struct, function, or module
+* **Пакеты**: Возможность Cargo, позволяющая собирать, тестировать и делиться крейтами
+* **Крейты**: Дерево модулей, которое производит библиотеку или исполняемый файл
+* **Модули и `use`**: Позволяют управлять организацией, областью видимости и приватностью путей
+* **Пути**: Способ именования элемента, такого как структура, функция или модуль
 
-In this chapter, we’ll cover all these features, discuss how they interact, and
-explain how to use them to manage scope. By the end, you should have a solid
-understanding of the module system and be able to work with scopes like a pro!
+В этой главе мы рассмотрим все эти возможности, обсудим, как они взаимодействуют, и объясним, как использовать их для управления областью видимости. К концу вы должны будете иметь прочное понимание системы модулей и сможете работать с областями видимости как профессионал!
 
 [workspaces]: ch14-03-cargo-workspaces.html

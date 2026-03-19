@@ -1,7 +1,7 @@
 [[questions]]
 type = "MultipleChoice"
 prompt.prompt = """
-Consider the following function:
+Рассмотрим следующую функцию:
 
 ```rust
 async fn print_letters() {
@@ -14,24 +14,24 @@ async fn print_letters() {
 }
 ```
 
-Which of the following strings can possibly be printed after running `print_letters().await`?
+Какие из следующих строк могут быть выведены после выполнения `print_letters().await`?
 """
 prompt.distractors = ["`ABC`", "`BCA`", "`ACB`"]
 answer.answer = ["`CBA`"]
 context = """
-This program has deterministic behavior. The prints do not execute until the async blocks are awaited.
-The blocks are awaited in the order `c`/`b`/`a`, so the program will only print `CBA`.
+Эта программа обладает детерминированным поведением. Выводы не выполняются, пока асинхронные блоки не будут ожидаемы (await).
+Блоки ожидаются в порядке `c`/`b`/`a`, поэтому программа выведет только `CBA`.
 """
 id = "8f62c158-525a-43a2-aa6a-0cc106cada10"
 
 [[questions]]
 type = "MultipleChoice"
 prompt.prompt = """
-Say you are given a helper function `wait_all(a, b)` with the following behavior:
-* `wait_all` guarantees that `a` and `b` are executed to completion.
-* `wait_all` makes no guarantees regarding fairness or initial execution order.
+Предположим, что у вас есть вспомогательная функция `wait_all(a, b)` со следующим поведением:
+* `wait_all` гарантирует, что `a` и `b` будут выполнены до завершения.
+* `wait_all` не даёт гарантий относительно справедливости или начального порядка выполнения.
 
-Then given the following code:
+Тогда, учитывая следующий код:
 
 ```rust
 async fn print_letters() {
@@ -49,24 +49,24 @@ async fn print_letters() {
 }
 ```
 
-Which of the following strings can possibly be printed after running `print_letters().await`?
+Какие из следующих строк могут быть выведены после выполнения `print_letters().await`?
 """
 prompt.distractors = ["`DABC`"]
 answer.answer = [
   "`ABCD`", "`CADB`", "`ACBD`"
 ]
 context = """
-The hypothetical `wait_all` primitive is like `join` but with fewer guarantees. Given only the spec in this problem, any interleaving of the
-two futures is valid. The only invalid output is one that inverts program execution order, i.e., `DABC` which would have `D` printed before `C`.
+Гипотетический примитив `wait_all` похож на `join`, но даёт меньше гарантий. Учитывая только спецификацию из этой задачи, любая интерливинг (перемежение) двух фьючерсов является допустимым. Единственный недопустимый вывод — это тот, который инвертирует порядок выполнения программы, т.е. `DABC`, где `D` выводится перед `C`.
 """
 id = "4b28f13e-9781-4d29-b886-7639fa527f36"
 
 [[questions]]
 type = "MultipleChoice"
 prompt.prompt = """
-Say you are given a message-passing channel `channel()` which is non-blocking and *bounded*, 
-meaning `send` returns a future that completes once there is capacity in the channel.
-Assume you also have a function `join(a, b)` which *fairly* waits on both its arguments to completion. Then given this async code:
+Предположим, что у вас есть канал обмена сообщениями `channel()`, который является неблокирующим и *ограниченным* (bounded), 
+что означает, что `send` возвращает фьючерс, который завершается, когда в канале появится место.
+Предположим также, что у вас есть функция `join(a, b)`, которая *справедливо* ожидает завершения обоих своих аргументов.
+Тогда, учитывая этот асинхронный код:
 
 ```rust
 let (tx, mut rx) = channel(16);
@@ -76,15 +76,15 @@ let (n, _) = join(recv_fut, send_fut).await;
 println!("{}", n.unwrap());
 ```
 
-What will happen as a result of executing this code?
+Что произойдет в результате выполнения этого кода?
 """
 prompt.distractors = [
-  "The program prints `0` and loops forever",
-  "The program prints nothing and loops forever",
-  "The program panics"
+  "Программа выведет `0` и зациклится навсегда",
+  "Программа ничего не выведет и зациклится навсегда",
+  "Программа паникует"
 ]
-answer.answer = "The program prints `0` and exits"
+answer.answer = "Программа выведет `0` и завершится"
 context = """
-Because the channel is non-blocking, we can create a receive future before sending without looping forever.
+Поскольку канал неблокирующий, мы можем создать будущее на приём (recv future) перед отправкой, не зацикливаясь навсегда.
 """
 id = "e23b7c48-3780-44e7-8ea4-df35032548a1"

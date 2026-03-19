@@ -1,12 +1,8 @@
-## Concise Control Flow with `if let` and `let else`
+## Краткий контроль потока выполнения с `if let` и `let else`
 
-The `if let` syntax lets you combine `if` and `let` into a less verbose way to
-handle values that match one pattern while ignoring the rest. Consider the
-program in Listing 6-6 that matches on an `Option<u8>` value in the
-`config_max` variable but only wants to execute code if the value is the `Some`
-variant.
+Синтаксис `if let` позволяет объединить `if` и `let` в более краткий способ обработки значений, которые соответствуют одному образцу, игнорируя остальные. Рассмотрим программу из Листинга 6-6, которая сопоставляет значение `Option<u8>` в переменной `config_max`, но хочет выполнить код только если значение является вариантом `Some`.
 
-<Listing number="6-6" caption="A `match` that only cares about executing code when the value is `Some`">
+<Listing number="6-6" caption="`match`, который выполняет код только когда значение равно `Some`">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-06/src/main.rs:here}}
@@ -14,70 +10,43 @@ variant.
 
 </Listing>
 
-If the value is `Some`, we print out the value in the `Some` variant by binding
-the value to the variable `max` in the pattern. We don’t want to do anything
-with the `None` value. To satisfy the `match` expression, we have to add `_ =>
-()` after processing just one variant, which is annoying boilerplate code to
-add.
+Если значение равно `Some`, мы выводим значение варианта `Some`, привязывая его к переменной `max` в образце. Мы не хотим ничего делать со значением `None`. Чтобы удовлетворить выражению `match`, нам нужно добавить `_ => ()` после обработки только одного варианта, что является утомительным шаблонным кодом.
 
-Instead, we could write this in a shorter way using `if let`. The following
-code behaves the same as the `match` in Listing 6-6:
+Вместо этого мы можем написать это короче, используя `if let`. Следующий код ведёт себя так же, как `match` в Листинге 6-6:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-12-if-let/src/main.rs:here}}
 ```
 
-The syntax `if let` takes a pattern and an expression separated by an equal
-sign. It works the same way as a `match`, where the expression is given to the
-`match` and the pattern is its first arm. In this case, the pattern is
-`Some(max)`, and the `max` binds to the value inside the `Some`. We can then
-use `max` in the body of the `if let` block in the same way we used `max` in
-the corresponding `match` arm. The code in the `if let` block only runs if the
-value matches the pattern.
+Синтаксис `if let` принимает образец и выражение, разделённые знаком равенства. Он работает так же, как `match`, где выражение передаётся в `match`, а образец — это его первая ветвь. В этом случае образец — `Some(max)`, и `max` привязывается к значению внутри `Some`. Затем мы можем использовать `max` в теле блока `if let` так же, как использовали `max` в соответствующей ветви `match`. Код в блоке `if let` выполняется только если значение соответствует образцу.
 
-Using `if let` means less typing, less indentation, and less boilerplate code.
-However, you lose the exhaustive checking `match` enforces that ensures you
-aren’t forgetting to handle any cases. Choosing between `match` and `if let`
-depends on what you’re doing in your particular situation and whether gaining
-conciseness is an appropriate trade-off for losing exhaustive checking.
+Использование `if let` означает меньше набора текста, меньше отступов и меньше шаблонного кода. Однако вы теряете исчерпывающую проверку, которую обеспечивает `match`, гарантирующую, что вы не забываете обработать какие-либо случаи. Выбор между `match` и `if let` зависит от того, что вы делаете в вашей конкретной ситуации и является ли получение краткости подходящим компромиссом для потери исчерпывающей проверки.
 
-In other words, you can think of `if let` as syntax sugar for a `match` that
-runs code when the value matches one pattern and then ignores all other values.
+Другими словами, вы можете думать об `if let` как о синтаксическом сахаре для `match`, который выполняет код, когда значение соответствует одному образцу, а затем игнорирует все остальные значения.
 
-We can include an `else` with an `if let`. The block of code that goes with the
-`else` is the same as the block of code that would go with the `_` case in the
-`match` expression that is equivalent to the `if let` and `else`. Recall the
-`Coin` enum definition in Listing 6-4, where the `Quarter` variant also held a
-`UsState` value. If we wanted to count all non-quarter coins we see while also
-announcing the state of the quarters, we could do that with a `match`
-expression, like this:
+Мы можем добавить `else` к `if let`. Блок кода, связанный с `else`, такой же, как блок кода, который был бы с вариантом `_` в выражении `match`, эквивалентном `if let` и `else`. Вспомните определение перечисления `Coin` в Листинге 6-4, где вариант `Quarter` также содержал значение `UsState`. Если бы мы хотели посчитать все монеты, не являющиеся четвертью, которые мы видим, одновременно объявляя штат четвертей, мы могли бы сделать это с выражением `match`, вот так:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-13-count-and-announce-match/src/main.rs:here}}
 ```
 
-Or we could use an `if let` and `else` expression, like this:
+Или мы могли бы использовать выражение `if let` и `else`, вот так:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/no-listing-14-count-and-announce-if-let-else/src/main.rs:here}}
 ```
 
-## Staying on the “Happy Path” with `let...else`
+## Оставаться на «счастливом пути» с `let...else`
 
-The common pattern is to perform some computation when a value is present and
-return a default value otherwise. Continuing on with our example of coins with a
-`UsState` value, if we wanted to say something funny depending on how old the
-state on the quarter was, we might introduce a method on `UsState` to check the
-age of a state, like so:
+Общая закономерность — выполнить некоторые вычисления, когда значение присутствует, и вернуть значение по умолчанию в противном случае. Продолжая наш пример с монетами, имеющими значение `UsState`, если бы мы хотели сказать что-то забавное в зависимости от того, как давно существовал штат на четверти, мы могли бы добавить метод в `UsState` для проверки возраста штата, вот так:
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-07/src/main.rs:state}}
 ```
 
-Then we might use `if let` to match on the type of coin, introducing a `state`
-variable within the body of the condition, as in Listing 6-7.
+Затем мы могли бы использовать `if let` для сопоставления с типом монеты, вводя переменную `state` в теле условия, как в Листинге 6-7.
 
-<Listing number="6-7" caption="Checking whether a state existed in 1900 by using conditionals nested inside an `if let`.">
+<Listing number="6-7" caption="Проверка существования штата в 1900 году с использованием вложенных условных операторов внутри `if let`.">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-07/src/main.rs:describe}}
@@ -85,14 +54,9 @@ variable within the body of the condition, as in Listing 6-7.
 
 </Listing>
 
-That gets the job done, but it has pushed the work into the body of the `if
-let` statement, and if the work to be done is more complicated, it might be
-hard to follow exactly how the top-level branches relate. We could also take
-advantage of the fact that expressions produce a value either to produce the
-`state` from the `if let` or to return early, as in Listing 6-8. (You could do
-similar with a `match`, too.)
+Это решает задачу, но переносит работу в тело оператора `if let`, и если работа, которую нужно выполнить, более сложная, может быть трудно понять, как именно связаны верхние ветви. Мы также могли бы воспользоваться тем, что выражения производят значение, либо чтобы получить `state` из `if let`, либо чтобы вернуться досрочно, как в Листинге 6-8. (Вы могли бы сделать подобное и с `match`.)
 
-<Listing number="6-8" caption="Using `if let` to produce a value or return early.">
+<Listing number="6-8" caption="Использование `if let` для получения значения или досрочного возврата.">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-08/src/main.rs:describe}}
@@ -100,20 +64,13 @@ similar with a `match`, too.)
 
 </Listing>
 
-This is a bit annoying to follow in its own way, though! One branch of the `if
-let` produces a value, and the other one returns from the function entirely.
+Но и это не очень удобно для понимания! Одна ветвь `if let` производит значение, а другая полностью возвращается из функции.
 
-To make this common pattern nicer to express, Rust has `let...else`. The
-`let...else` syntax takes a pattern on the left side and an expression on the
-right, very similar to `if let`, but it does not have an `if` branch, only an
-`else` branch. If the pattern matches, it will bind the value from the pattern
-in the outer scope. If the pattern does _not_ match, the program will flow into
-the `else` arm, which must return from the function.
+Чтобы сделать эту общую закономерность приятнее для выражения, в Rust есть `let...else`. Синтаксис `let...else` принимает образец слева и выражение справа, очень похоже на `if let`, но у него нет ветви `if`, только ветвь `else`. Если образец совпадает, он привяжет значение из образца во внешней области видимости. Если образец **не** совпадает, выполнение программы перейдёт в ветвь `else`, которая должна вернуться из функции.
 
-In Listing 6-9, you can see how Listing 6-8 looks when using `let...else` in
-place of `if let`.
+В Листинге 6-9 вы можете увидеть, как выглядит Листинг 6-8 при использовании `let...else` вместо `if let`.
 
-<Listing number="6-9" caption="Using `let...else` to clarify the flow through the function.">
+<Listing number="6-9" caption="Использование `let...else` для прояснения потока выполнения через функцию.">
 
 ```rust
 {{#rustdoc_include ../listings/ch06-enums-and-pattern-matching/listing-06-09/src/main.rs:describe}}
@@ -121,29 +78,16 @@ place of `if let`.
 
 </Listing>
 
-Notice that it stays “on the happy path” in the main body of the function this
-way, without having significantly different control flow for two branches the
-way the `if let` did.
+Обратите внимание, что таким образом мы остаёмся на «счастливом пути» в основном теле функции, без значительно различающегося контроля потока для двух ветвей, как это делал `if let`.
 
-If you have a situation in which your program has logic that is too verbose to
-express using a `match`, remember that `if let` and `let...else` are in your
-Rust toolbox as well.
+Если у вас есть ситуация, в которой программа имеет логику, слишком громоздкую для выражения с помощью `match`, помните, что `if let` и `let...else` также есть в вашем наборе инструментов Rust.
 
 {{#quiz ../quizzes/ch06-03-if-let.toml}}
 
-## Summary
+## Резюме
 
-We’ve now covered how to use enums to create custom types that can be one of a
-set of enumerated values. We’ve shown how the standard library’s `Option<T>`
-type helps you use the type system to prevent errors. When enum values have
-data inside them, you can use `match` or `if let` to extract and use those
-values, depending on how many cases you need to handle.
+Мы теперь рассмотрели, как использовать перечисления для создания пользовательских типов, которые могут быть одним из набора перечисленных значений. Мы показали, как тип `Option<T>` из стандартной библиотеки помогает использовать систему типов для предотвращения ошибок. Когда значения перечисления содержат данные внутри, вы можете использовать `match` или `if let` для извлечения и использования этих значений, в зависимости от того, сколько случаев нужно обработать.
 
-Your Rust programs can now express concepts in your domain using structs and
-enums. Creating custom types to use in your API ensures type safety: the
-compiler will make certain your functions only get values of the type each
-function expects.
+Ваши программы на Rust теперь могут выражать концепции в вашей предметной области, используя структуры и перечисления. Создание пользовательских типов для использования в вашем API обеспечивает безопасность типов: компилятор будет уверен, что ваши функции получают только значения того типа, который ожидает каждая функция.
 
-In order to provide a well-organized API to your users that is straightforward
-to use and only exposes exactly what your users will need, let’s now turn to
-Rust’s modules.
+Чтобы предоставить хорошо организованный API вашим пользователям, который прост в использовании и раскрывает только то, что вашим пользователям действительно понадобится, теперь давайте обратимся к модулям Rust.

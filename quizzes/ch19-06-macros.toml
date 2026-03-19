@@ -20,48 +20,48 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 11
 context = """
-The `manylet` macro syntactically duplicates the expression `e` as a binding to each
-variable on the left-hand side of the equals. However, because `s` is an owned string, 
-then the first binding to `x` moves `s`, and the second binding to `y` is invalid.
+Макрос `manylet` синтаксически дублирует выражение `e` в качестве привязки для каждой
+переменной в левой части знака равенства. Однако, поскольку `s` является владеемой строкой,
+первая привязка к `x` перемещает `s`, а вторая привязка к `y` является некорректной.
 """
 
 [[questions]]
 id = "f4f664ef-4b0b-43ac-ba90-5051a4ef89fb"
 type = "MultipleChoice"
 prompt.prompt = """
-Which of the following are valid reasons for implementing a macro as a
-procedural macro instead of a declarative macro?
+Какие из перечисленных являются действительными причинами реализации макроса как
+процедурного макроса вместо декларативного?
 """
 answer.answer = [
-    "You want to integrate with Rust's derive system",
-    "Your macro requires nontrivial analysis of the macro user's syntax",
+    "Вы хотите интегрироваться с системой derive Rust",
+    "Ваш макрос требует нетривиальный анализа синтаксиса пользователя макроса",
 ]
 prompt.distractors = [
-  "You want to generate variable-length sequences of code",
-  "Your macro requires an entire item as input, not just an expression"
+  "Вы хотите генерировать последовательности кода переменной длины",
+  "Ваш макрос требует весь элемент на входе, а не только выражение"
 ]
 context = """
-Procedural macros are the only way to create a custom derive. Procedural macros
-are also useful when you need code to analyze the macro user's syntax &mdash; declarative
-macros only permit shuffling around the input, not e.g. computing its size.
+Процедурные макросы — единственный способ создать пользовательский derive. Процедурные макросы
+также полезны, когда вам нужно, чтобы код анализировал синтаксис пользователя макроса — декларативные
+макросы позволяют только перемещать входные данные, а не, например, вычислять их размер.
 
-Declarative macros can generate variable-length sequences of code, and can wrap/produce
-items and not just expressions.
+Декларативные макросы могут генерировать последовательности кода переменной длины и могут оборачивать/создавать
+элементы, а не только выражения.
 """
 
 [[questions]]
 id = "4c7dce03-99c6-41e3-8482-ccf4e30974ff"
 type = "MultipleChoice"
 prompt.prompt = """
-Which of the following best describes the input to a procedural macro? 
+Что лучше всего описывает входные данные процедурного макроса? 
 """
-answer.answer = "The input is a sequence of tokens"
+answer.answer = "Входными данными является последовательность токенов"
 prompt.distractors = [
-  "The input is a typed control-flow graph",
-   "The input is an abstract syntax tree",
-  "The input is a byte-string"
+  "Входными данными является типизированный граф потока управления",
+   "Входными данными является абстрактное синтаксическое дерево",
+  "Входными данными является байтовая строка"
 ]
 context = """
-Procedural macros take as input (and produce as output) token streams.
-You can use crates like `syn` to convert tokens to syntax trees.
+Процедурные макросы принимают в качестве входных (и производят в качестве выходных) потоки токенов.
+Вы можете использовать крейты, такие как `syn`, чтобы преобразовать токены в синтаксические деревья.
 """

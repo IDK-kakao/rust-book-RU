@@ -1,45 +1,24 @@
-# An I/O Project: Building a Command Line Program
+# Проект ввода-вывода: создание программы командной строки
 
-This chapter is a recap of the many skills you’ve learned so far and an
-exploration of a few more standard library features. We’ll build a command line
-tool that interacts with file and command line input/output to practice some of
-the Rust concepts you now have under your belt.
+Эта глава — это повторение многих навыков, которые вы освоили, а также изучение некоторых дополнительных возможностей стандартной библиотеки. Мы создадим инструмент командной строки, который взаимодействует с файлами и вводом-выводом командной строки, чтобы потренировать концепции Rust, которые вы теперь знаете.
 
-> **Note:** there are no quizzes in this chapter, since it is just supposed to be a hands-on walkthrough.
+> **Примечание:** в этой главе нет викторин, так как она представляет собой пошаговое практическое руководство.
 
-Rust’s speed, safety, single binary output, and cross-platform support make it
-an ideal language for creating command line tools, so for our project, we’ll
-make our own version of the classic command line search tool `grep`
-(**g**lobally search a **r**egular **e**xpression and **p**rint). In the
-simplest use case, `grep` searches a specified file for a specified string. To
-do so, `grep` takes as its arguments a file path and a string. Then it reads
-the file, finds lines in that file that contain the string argument, and prints
-those lines.
+Скорость, безопасность, вывод в виде одного бинарного файла и кроссплатформенная поддержка делают Rust идеальным языком для создания инструментов командной строки. Поэтому в нашем проекте мы создадим свою версию классического инструмента поиска в командной строке `grep` (**g**lobally search a **r**egular **e**xpression and **p**rint — глобальный поиск по регулярному выражению с выводом). В простейшем случае `grep` ищет в указанном файле заданную строку. Для этого `grep` принимает в качестве аргументов путь к файлу и строку. Затем он читает файл, находит в нём строки, содержащие указанную строку, и выводит эти строки.
 
-Along the way, we’ll show how to make our command line tool use the terminal
-features that many other command line tools use. We’ll read the value of an
-environment variable to allow the user to configure the behavior of our tool.
-We’ll also print error messages to the standard error console stream (`stderr`)
-instead of standard output (`stdout`) so that, for example, the user can
-redirect successful output to a file while still seeing error messages onscreen.
+По ходу работы мы покажем, как заставить наш инструмент командной строки использовать возможности терминала, которые используют многие другие инструменты. Мы будем считывать значение переменной окружения, чтобы позволить пользователю настроить поведение нашего инструмента. Мы также будем выводить сообщения об ошибках в поток стандартной ошибки (`stderr`), а не в стандартный вывод (`stdout`). Это позволит, например, пользователю перенаправить успешный вывод в файл, продолжая видеть сообщения об ошибках на экране.
 
-One Rust community member, Andrew Gallant, has already created a fully
-featured, very fast version of `grep`, called `ripgrep`. By comparison, our
-version will be fairly simple, but this chapter will give you some of the
-background knowledge you need to understand a real-world project such as
-`ripgrep`.
+Один из участников сообщества Rust, Эндрю Галлант, уже создал полнофункциональную, очень быструю версию `grep` под названием `ripgrep`. В сравнении с ней наша версия будет довольно простой, но эта глава даст вам базовые знания, необходимые для понимания реального проекта, такого как `ripgrep`.
 
-Our `grep` project will combine a number of concepts you’ve learned so far:
+Наш проект `grep` объединит несколько концепций, которые вы уже изучили:
 
-- Organizing code ([Chapter 7][ch7]<!-- ignore -->)
-- Using vectors and strings ([Chapter 8][ch8]<!-- ignore -->)
-- Handling errors ([Chapter 9][ch9]<!-- ignore -->)
-- Using traits and lifetimes where appropriate ([Chapter 10][ch10]<!-- ignore -->)
-- Writing tests ([Chapter 11][ch11]<!-- ignore -->)
+- Организация кода ([Глава 7][ch7]<!-- ignore -->)
+- Использование векторов и строк ([Глава 8][ch8]<!-- ignore -->)
+- Обработка ошибок ([Глава 9][ch9]<!-- ignore -->)
+- Использование типажей и времен жизни там, где это уместно ([Глава 10][ch10]<!-- ignore -->)
+- Написание тестов ([Глава 11][ch11]<!-- ignore -->)
 
-We’ll also briefly introduce closures, iterators, and trait objects, which
-[Chapter 13][ch13]<!-- ignore --> and [Chapter 18][ch18]<!-- ignore --> will
-cover in detail.
+Мы также кратко познакомимся с замыканиями, итераторами и объектами типажей, которые будут подробно рассмотрены в [Главе 13][ch13]<!-- ignore --> и [Главе 18][ch18]<!-- ignore -->.
 
 [ch7]: ch07-00-managing-growing-projects-with-packages-crates-and-modules.html
 [ch8]: ch08-00-common-collections.html

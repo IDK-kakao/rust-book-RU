@@ -1,72 +1,22 @@
-## Using Trait Objects That Allow for Values of Different Types
+## Использование объектов типажа, допускающих значения разных типов
 
-In Chapter 8, we mentioned that one limitation of vectors is that they can
-store elements of only one type. We created a workaround in Listing 8-9 where
-we defined a `SpreadsheetCell` enum that had variants to hold integers, floats,
-and text. This meant we could store different types of data in each cell and
-still have a vector that represented a row of cells. This is a perfectly good
-solution when our interchangeable items are a fixed set of types that we know
-when our code is compiled.
+В главе 8 мы упоминали, что одним из ограничений векторов является возможность хранения элементов только одного типа. Мы создали обходной путь в Листинге 8-9, где определили перечисление `SpreadsheetCell` с вариантами для хранения целых чисел, чисел с плавающей точкой и текста. Это позволило хранить в каждой ячейке данные разных типов и при этом иметь вектор, представляющий строку ячеек. Это отличное решение, когда наши взаимозаменяемые элементы — это фиксированный набор типов, известный на этапе компиляции.
 
-However, sometimes we want our library user to be able to extend the set of
-types that are valid in a particular situation. To show how we might achieve
-this, we’ll create an example graphical user interface (GUI) tool that iterates
-through a list of items, calling a `draw` method on each one to draw it to the
-screen—a common technique for GUI tools. We’ll create a library crate called
-`gui` that contains the structure of a GUI library. This crate might include
-some types for people to use, such as `Button` or `TextField`. In addition,
-`gui` users will want to create their own types that can be drawn: for
-instance, one programmer might add an `Image` and another might add a
-`SelectBox`.
+Однако иногда мы хотим, чтобы пользователь нашей библиотеки мог расширять набор типов, допустимых в конкретной ситуации. Чтобы показать, как этого добиться, мы создадим пример инструмента графического интерфейса (GUI), который перебирает список элементов, вызывая метод `draw` у каждого для отрисовки на экране — распространённая техника для GUI-инструментов. Мы создадим библиотечный крейт `gui`, содержащий структуру GUI-библиотеки. Этот крейт может включать некоторые типы для использования, такие как `Button` или `TextField`. Кроме того, пользователи `gui` захотят создавать свои собственные типы, которые можно отрисовывать: например, один программист может добавить `Image`, а другой — `SelectBox`.
 
-We won’t implement a full-fledged GUI library for this example but will show
-how the pieces would fit together. At the time of writing the library, we can’t
-know and define all the types other programmers might want to create. But we do
-know that `gui` needs to keep track of many values of different types, and it
-needs to call a `draw` method on each of these differently typed values. It
-doesn’t need to know exactly what will happen when we call the `draw` method,
-just that the value will have that method available for us to call.
+Мы не будем реализовывать полноценную GUI-библиотеку для этого примера, но покажем, как части будут сочетаться. На момент написания библиотеки мы не можем знать и определять все типы, которые другие программисты могут захотеть создать. Но мы знаем, что `gui` нужно отслеживать множество значений разных типов и вызывать метод `draw` для каждого из этих значений разного типа. Ей не нужно знать точно, что произойдёт при вызове `draw`, только то, что у значения будет доступен этот метод для вызова.
 
-To do this in a language with inheritance, we might define a class named
-`Component` that has a method named `draw` on it. The other classes, such as
-`Button`, `Image`, and `SelectBox`, would inherit from `Component` and thus
-inherit the `draw` method. They could each override the `draw` method to define
-their custom behavior, but the framework could treat all of the types as if
-they were `Component` instances and call `draw` on them. But because Rust
-doesn’t have inheritance, we need another way to structure the `gui` library to
-allow users to extend it with new types.
+Чтобы сделать это в языке с наследованием, мы могли бы определить класс с именем `Component`, имеющий метод `draw`. Другие классы, такие как `Button`, `Image` и `SelectBox`, наследовали бы от `Component` и, следовательно, наследовали бы метод `draw`. Они могли бы каждый переопределять метод `draw` для определения своего пользовательского поведения, но фреймворк мог бы обращаться со всеми типами как с экземплярами `Component` и вызывать у них `draw`. Но поскольку Rust не имеет наследования, нам нужен другой способ структурировать библиотеку `gui`, чтобы позволить пользователям расширять её новыми типами.
 
-### Defining a Trait for Common Behavior
+### Определение типажа для общего поведения
 
-To implement the behavior we want `gui` to have, we’ll define a trait named
-`Draw` that will have one method named `draw`. Then we can define a vector that
-takes a trait object. A _trait object_ points to both an instance of a type
-implementing our specified trait and a table used to look up trait methods on
-that type at runtime. We create a trait object by specifying some sort of
-pointer, such as an `&` reference or a `Box<T>` smart pointer, then the `dyn`
-keyword, and then specifying the relevant trait. (We’ll talk about the reason
-trait objects must use a pointer in [“Dynamically Sized Types and the `Sized`
-Trait”][dynamically-sized]<!-- ignore --> in Chapter 20.) We can use trait
-objects in place of a generic or concrete type. Wherever we use a trait object,
-Rust’s type system will ensure at compile time that any value used in that
-context will implement the trait object’s trait. Consequently, we don’t need to
-know all the possible types at compile time.
+Чтобы реализовать желаемое поведение для `gui`, мы определим типаж с именем `Draw`, который будет иметь один метод `draw`. Затем мы можем определить вектор, принимающий объект типажа. **Объект типажа** указывает как на экземпляр типа, реализующего наш указанный типаж, так и на таблицу для поиска методов типажа в этом типе во время выполнения. Мы создаём объект типажа, указав некоторый указатель, такой как ссылка `&` или умный указатель `Box<T>`, затем ключевое слово `dyn` и затем указав соответствующий типаж. (Мы поговорим о причине, по которой объекты типажа должны использовать указатель, в разделе «Динамически типизированные типы и типаж `Sized`» в главе 20.) Мы можем использовать объекты типажа вместо обобщённого или конкретного типа. Везде, где мы используем объект типажа, система типов Rust гарантирует на этапе компиляции, что любое значение, используемое в этом контексте, будет реализовывать типаж объекта типажа. Следовательно, нам не нужно знать все возможные типы на этапе компиляции.
 
-We’ve mentioned that, in Rust, we refrain from calling structs and enums
-“objects” to distinguish them from other languages’ objects. In a struct or
-enum, the data in the struct fields and the behavior in `impl` blocks are
-separated, whereas in other languages, the data and behavior combined into one
-concept is often labeled an object. However, trait objects _are_ more like
-objects in other languages in the sense that they combine data and behavior.
-But trait objects differ from traditional objects in that we can’t add data to
-a trait object. Trait objects aren’t as generally useful as objects in other
-languages: their specific purpose is to allow abstraction across common
-behavior.
+Мы упоминали, что в Rust мы воздерживаемся от названия структур и перечислений «объектами», чтобы отличать их от объектов в других языках. В структуре или перечислении данные в полях структуры и поведение в блоках `impl` разделены, тогда как в других языках данные и поведение, объединённые в одну концепцию, часто называются объектом. Однако объекты типажа **действительно** больше похожи на объекты в других языках в том смысле, что они объединяют данные и поведение. Но объекты типажа отличаются от традиционных объектов тем, что мы не можем добавлять данные в объект типажа. Объекты типажа не так универсальны, как объекты в других языках: их конкретная цель — разрешить абстракцию через общее поведение.
 
-Listing 18-3 shows how to define a trait named `Draw` with one method named
-`draw`.
+Листинг 18-3 показывает, как определить типаж `Draw` с одним методом `draw`.
 
-<Listing number="18-3" file-name="src/lib.rs" caption="Definition of the `Draw` trait">
+<Listing number="18-3" file-name="src/lib.rs" caption="Определение типажа `Draw`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-03/src/lib.rs}}
@@ -74,13 +24,9 @@ Listing 18-3 shows how to define a trait named `Draw` with one method named
 
 </Listing>
 
-This syntax should look familiar from our discussions on how to define traits
-in Chapter 10. Next comes some new syntax: Listing 18-4 defines a struct named
-`Screen` that holds a vector named `components`. This vector is of type
-`Box<dyn Draw>`, which is a trait object; it’s a stand-in for any type inside
-a `Box` that implements the `Draw` trait.
+Этот синтаксис должен быть знаком из наших обсуждений по определению типажей в главе 10. Далее идёт новый синтаксис: Листинг 18-4 определяет структуру `Screen`, которая содержит вектор `components`. Этот вектор имеет тип `Box<dyn Draw>`, что является объектом типажа; это заместитель для любого типа внутри `Box`, реализующего типаж `Draw`.
 
-<Listing number="18-4" file-name="src/lib.rs" caption="Definition of the `Screen` struct with a `components` field holding a vector of trait objects that implement the `Draw` trait">
+<Listing number="18-4" file-name="src/lib.rs" caption="Определение структуры `Screen` с полем `components`, содержащим вектор объектов типажа, реализующих типаж `Draw`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-04/src/lib.rs:here}}
@@ -88,10 +34,9 @@ a `Box` that implements the `Draw` trait.
 
 </Listing>
 
-On the `Screen` struct, we’ll define a method named `run` that will call the
-`draw` method on each of its `components`, as shown in Listing 18-5.
+В структуре `Screen` мы определим метод `run`, который будет вызывать метод `draw` для каждого из своих `components`, как показано в Листинге 18-5.
 
-<Listing number="18-5" file-name="src/lib.rs" caption="A `run` method on `Screen` that calls the `draw` method on each component">
+<Listing number="18-5" file-name="src/lib.rs" caption="Метод `run` в `Screen`, который вызывает метод `draw` для каждого компонента">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-05/src/lib.rs:here}}
@@ -99,14 +44,9 @@ On the `Screen` struct, we’ll define a method named `run` that will call the
 
 </Listing>
 
-This works differently from defining a struct that uses a generic type
-parameter with trait bounds. A generic type parameter can be substituted with
-only one concrete type at a time, whereas trait objects allow for multiple
-concrete types to fill in for the trait object at runtime. For example, we
-could have defined the `Screen` struct using a generic type and a trait bound
-as in Listing 18-6:
+Это работает иначе, чем определение структуры, использующей параметр обобщённого типа с ограничениями типажа. Параметр обобщённого типа может быть заменён только одним конкретным типом за раз, тогда как объекты типажа допускают несколько конкретных типов для заполнения объекта типажа во время выполнения. Например, мы могли бы определить структуру `Screen`, используя обобщённый тип и ограничение типажа, как в Листинге 18-6:
 
-<Listing number="18-6" file-name="src/lib.rs" caption="An alternate implementation of the `Screen` struct and its `run` method using generics and trait bounds">
+<Listing number="18-6" file-name="src/lib.rs" caption="Альтернативная реализация структуры `Screen` и её метода `run` с использованием обобщений и ограничений типажа">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-06/src/lib.rs:here}}
@@ -114,25 +54,15 @@ as in Listing 18-6:
 
 </Listing>
 
-This restricts us to a `Screen` instance that has a list of components all of
-type `Button` or all of type `TextField`. If you’ll only ever have homogeneous
-collections, using generics and trait bounds is preferable because the
-definitions will be monomorphized at compile time to use the concrete types.
+Это ограничивает нас экземпляром `Screen`, который имеет список компонентов, все из которых имеют тип `Button` или все имеют тип `TextField`. Если у вас всегда будут только однородные коллекции, использование обобщений и ограничений типажа предпочтительнее, потому что определения будут мономорфизированы на этапе компиляции для использования конкретных типов.
 
-On the other hand, with the method using trait objects, one `Screen` instance
-can hold a `Vec<T>` that contains a `Box<Button>` as well as a
-`Box<TextField>`. Let’s look at how this works, and then we’ll talk about the
-runtime performance implications.
+С другой стороны, с методом, использующим объекты типажа, один экземпляр `Screen` может содержать `Vec<T>`, который включает `Box<Button>` и `Box<TextField>`. Давайте посмотрим, как это работает, а затем обсудим последствия для производительности во время выполнения.
 
-### Implementing the Trait
+### Реализация типажа
 
-Now we’ll add some types that implement the `Draw` trait. We’ll provide the
-`Button` type. Again, actually implementing a GUI library is beyond the scope
-of this book, so the `draw` method won’t have any useful implementation in its
-body. To imagine what the implementation might look like, a `Button` struct
-might have fields for `width`, `height`, and `label`, as shown in Listing 18-7:
+Теперь добавим некоторые типы, реализующие типаж `Draw`. Мы предоставим тип `Button`. Опять же, фактическая реализация полноценной GUI-библиотеки выходит за рамки этой книги, поэтому метод `draw` не будет иметь полезной реализации в своём теле. Чтобы представить, как могла бы выглядеть реализация, структура `Button` может иметь поля `width`, `height` и `label`, как показано в Листинге 18-7:
 
-<Listing number="18-7" file-name="src/lib.rs" caption="A `Button` struct that implements the `Draw` trait">
+<Listing number="18-7" file-name="src/lib.rs" caption="Структура `Button`, реализующая типаж `Draw`">
 
 ```rust,noplayground
 {{#rustdoc_include ../listings/ch18-oop/listing-18-07/src/lib.rs:here}}
@@ -140,21 +70,11 @@ might have fields for `width`, `height`, and `label`, as shown in Listing 18-7:
 
 </Listing>
 
-The `width`, `height`, and `label` fields on `Button` will differ from the
-fields on other components; for example, a `TextField` type might have those
-same fields plus a `placeholder` field. Each of the types we want to draw on
-the screen will implement the `Draw` trait but will use different code in the
-`draw` method to define how to draw that particular type, as `Button` has here
-(without the actual GUI code, as mentioned). The `Button` type, for instance,
-might have an additional `impl` block containing methods related to what
-happens when a user clicks the button. These kinds of methods won’t apply to
-types like `TextField`.
+Поля `width`, `height` и `label` в `Button` будут отличаться от полей в других компонентах; например, тип `TextField` может иметь те же самые поля плюс поле `placeholder`. Каждый из типов, которые мы хотим отрисовывать на экране, будет реализовывать типаж `Draw`, но будет использовать разный код в методе `draw` для определения, как отрисовывать этот конкретный тип, как это сделал `Button` (без фактического GUI-кода, как упоминалось). Тип `Button`, например, может иметь дополнительный блок `impl`, содержащий методы, связанные с тем, что происходит, когда пользователь нажимает кнопку. Такие методы не будут применяться к типам вроде `TextField`.
 
-If someone using our library decides to implement a `SelectBox` struct that has
-`width`, `height`, and `options` fields, they would implement the `Draw` trait
-on the `SelectBox` type as well, as shown in Listing 18-8.
+Если кто-то, использующий нашу библиотеку, решит реализовать структуру `SelectBox` с полями `width`, `height` и `options`, он также реализует типаж `Draw` для типа `SelectBox`, как показано в Листинге 18-8.
 
-<Listing number="18-8" file-name="src/main.rs" caption="Another crate using `gui` and implementing the `Draw` trait on a `SelectBox` struct">
+<Listing number="18-8" file-name="src/main.rs" caption="Другой крейт, использующий `gui` и реализующий типаж `Draw` для структуры `SelectBox`">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch18-oop/listing-18-08/src/main.rs:here}}
@@ -162,15 +82,11 @@ on the `SelectBox` type as well, as shown in Listing 18-8.
 
 </Listing>
 
-### Using the Trait
+### Использование типажа
 
-Our library’s user can now write their `main` function to create a `Screen`
-instance. To the `Screen` instance, they can add a `SelectBox` and a `Button`
-by putting each in a `Box<T>` to become a trait object. They can then call the
-`run` method on the `Screen` instance, which will call `draw` on each of the
-components. Listing 18-9 shows this implementation:
+Теперь пользователь нашей библиотеки может написать свою функцию `main` для создания экземпляра `Screen`. В экземпляр `Screen` он может добавить `SelectBox` и `Button`, поместив каждый в `Box<T>` для превращения в объект типажа. Затем он может вызвать метод `run` на экземпляре `Screen`, который вызовет `draw` для каждого компонента. Листинг 18-9 показывает эту реализацию:
 
-<Listing number="18-9" file-name="src/main.rs" caption="Using trait objects to store values of different types that implement the same trait">
+<Listing number="18-9" file-name="src/main.rs" caption="Использование объектов типажа для хранения значений разных типов, реализующих один и тот же типаж">
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch18-oop/listing-18-09/src/main.rs:here}}
@@ -178,32 +94,15 @@ components. Listing 18-9 shows this implementation:
 
 </Listing>
 
-When we wrote the library, we didn’t know that someone might add the
-`SelectBox` type, but our `Screen` implementation was able to operate on the
-new type and draw it because `SelectBox` implements the `Draw` trait, which
-means it implements the `draw` method.
+Когда мы писали библиотеку, мы не знали, что кто-то может добавить тип `SelectBox`, но наша реализация `Screen` смогла работать с новым типом и отрисовывать его, потому что `SelectBox` реализует типаж `Draw`, что означает, что он реализует метод `draw`.
 
-This concept—of being concerned only with the messages a value responds to
-rather than the value’s concrete type—is similar to the concept of _duck
-typing_ in dynamically typed languages: if it walks like a duck and quacks
-like a duck, then it must be a duck! In the implementation of `run` on `Screen`
-in Listing 18-5, `run` doesn’t need to know what the concrete type of each
-component is. It doesn’t check whether a component is an instance of a `Button`
-or a `SelectBox`, it just calls the `draw` method on the component. By
-specifying `Box<dyn Draw>` as the type of the values in the `components`
-vector, we’ve defined `Screen` to need values that we can call the `draw`
-method on.
+Эта концепция — быть сосредоточенным только на сообщениях, на которые отвечает значение, а не на конкретном типе значения — похожа на концепцию **утиной типизации** в динамически типизированных языках: если оно ходит как утка и крякает как утка, то оно должно быть уткой! В реализации `run` для `Screen` в Листинге 18-5 `run` не нужно знать конкретный тип каждого компонента. Она не проверяет, является ли компонент экземпляром `Button` или `SelectBox`, она просто вызывает метод `draw` для компонента. Указав `Box<dyn Draw>` как тип значений в векторе `components`, мы определили, что `Screen` нуждаются в значениях, для которых мы можем вызвать метод `draw`.
 
-The advantage of using trait objects and Rust’s type system to write code
-similar to code using duck typing is that we never have to check whether a
-value implements a particular method at runtime or worry about getting errors
-if a value doesn’t implement a method but we call it anyway. Rust won’t compile
-our code if the values don’t implement the traits that the trait objects need.
+Преимущество использования объектов типажа и системы типов Rust для написания кода, похожего на код с утиной типизацией, в том, что нам никогда не нужно проверять во время выполнения, реализует ли значение particular метод, или беспокоиться о получении ошибок, если значение не реализует метод, но мы всё равно вызываем его. Rust не скомпилирует наш код, если значения не реализуют типажи, требуемые объектами типажа.
 
-For example, Listing 18-10 shows what happens if we try to create a `Screen`
-with a `String` as a component.
+Например, Листинг 18-10 показывает, что произойдёт, если мы попытаемся создать `Screen` с `String` в качестве компонента.
 
-<Listing number="18-10" file-name="src/main.rs" caption="Attempting to use a type that doesn’t implement the trait object’s trait">
+<Listing number="18-10" file-name="src/main.rs" caption="Попытка использовать тип, который не реализует типаж объекта типажа">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch18-oop/listing-18-10/src/main.rs}}
@@ -211,24 +110,19 @@ with a `String` as a component.
 
 </Listing>
 
-We’ll get this error because `String` doesn’t implement the `Draw` trait:
+Мы получим эту ошибку, потому что `String` не реализует типаж `Draw`:
 
 ```console
 {{#include ../listings/ch18-oop/listing-18-10/output.txt}}
 ```
 
-This error lets us know that either we’re passing something to `Screen` that we
-didn’t mean to pass and so should pass a different type, or we should implement
-`Draw` on `String` so that `Screen` is able to call `draw` on it.
+Эта ошибка сообщает нам, что либо мы передаём в `Screen` что-то, что не хотели передавать, и поэтому должны передать другой тип, либо мы должны реализовать `Draw` для `String`, чтобы `Screen` мог вызвать `draw` для него.
 
 <!-- BEGIN INTERVENTION: cce62358-5291-4eb3-84d6-fbc570873ee3 -->
 
-### Trait Objects and Type Inference
+### Объекты типажа и вывод типов
 
-One downside to using trait objects is how they interact with type inference. 
-For example, consider type inference for `Vec<T>`. When `T` is not a trait object,
-Rust just needs to know the type of a single element in the vector to infer `T`. So
-an empty vector causes a type inference error:
+Один из недостатков использования объектов типажа — как они взаимодействуют с выводом типов. Например, рассмотрим вывод типов для `Vec<T>`. Когда `T` не является объектом типажа, Rustу просто нужно знать тип одного элемента в векторе, чтобы вывести `T`. Поэтому пустой вектор вызывает ошибку вывода типов:
 
 ```rust,ignore,does_not_compile
 # fn main() {
@@ -237,7 +131,7 @@ let v = vec![];
 # }
 ```
 
-But adding an element enables Rust to infer the type of the vector:
+Но добавление элемента позволяет Rust вывести тип вектора:
 
 ```rust,ignore
 # fn main() {
@@ -246,8 +140,7 @@ let v = vec!["Hello world"];
 # }
 ```
 
-Type inference is trickier for trait objects. For example, say we tried to factor 
-the `components` array in Listing 17-9 into a separate variable, like this:
+Вывод типов сложнее для объектов типажа. Например, скажем, мы попытались вынести массив `components` в Листинге 17-9 в отдельную переменную, вот так:
 
 ```rust,ignore,does_not_compile
 fn main() {
@@ -260,10 +153,9 @@ fn main() {
 }
 ```
 
-<span class="caption">Listing 17-11: Factoring the components array causes a type error</span>
+<span class="caption">Листинг 17-11: Вынос массива components вызывает ошибку типа</span>
 
-This refactor causes the program to no longer compile! The compiler rejects this program with
-the following error:
+Этот рефакторинг заставляет программу больше не компилироваться! Компилятор отвергает эту программу со следующей ошибкой:
 
 ```text
 error[E0308]: mismatched types
@@ -280,11 +172,7 @@ error[E0308]: mismatched types
     | |_____^ expected `SelectBox`, found `Button`
 ```
 
-In Listing 17-09, the compiler understands that the `components` vector must have the type
-`Vec<Box<dyn Draw>>` because that's specified in the `Screen` struct definition. But in Listing 17-11,
-the compiler loses that information at the point where `components` is defined. To fix the issue, you
-have to give a hint to the type inference algorithm. That can either be via an explicit cast on
-any element of the vector, like this:
+В Листинге 17-09 компилятор понимает, что вектор `components` должен иметь тип `Vec<Box<dyn Draw>>`, потому что это указано в определении структуры `Screen`. Но в Листинге 17-11 компилятор теряет эту информацию в точке, где определяется `components`. Чтобы исправить проблему, вы должны дать подсказку алгоритму вывода типов. Это может быть либо через явное приведение любого элемента вектора, вот так:
 
 ```rust,ignore
   let components = vec![
@@ -293,7 +181,7 @@ any element of the vector, like this:
   ];
 ```
 
-Or it can be via a type annotation on the let-binding, like this:
+Либо через аннотацию типа для привязки let, вот так:
 
 ```rust,ignore
   let components: Vec<Box<dyn Draw>> = vec![
@@ -302,37 +190,16 @@ Or it can be via a type annotation on the let-binding, like this:
   ];
 ```
 
-In general, it is good to be aware that using trait objects can cause a worse developer experience for
-API clients in the case of type inference.
+В целом, стоит знать, что использование объектов типажа может ухудшить опыт разработки для клиентов API в случае вывода типов.
 
 <!-- END INTERVENTION: cce62358-5291-4eb3-84d6-fbc570873ee3 -->
 
 
-### Trait Objects Perform Dynamic Dispatch
+### Объекты типажа выполняют динамическое диспетчеризацию
 
-Recall in [“Performance of Code Using
-Generics”][performance-of-code-using-generics]<!-- ignore --> in Chapter 10 our
-discussion on the monomorphization process performed on generics by the
-compiler: the compiler generates nongeneric implementations of functions and
-methods for each concrete type that we use in place of a generic type parameter.
-The code that results from monomorphization is doing _static dispatch_, which is
-when the compiler knows what method you’re calling at compile time. This is
-opposed to _dynamic dispatch_, which is when the compiler can’t tell at compile
-time which method you’re calling. In dynamic dispatch cases, the compiler emits
-code that at runtime will figure out which method to call.
+Вспомните из нашего обсуждения **производительности кода с использованием обобщений** в главе 10 о процессе мономорфизации, выполняемом компилятором: компилятор генерирует необобщённые реализации функций и методов для каждого конкретного типа, который мы используем вместо параметра обобщённого типа. Код, получающийся в результате мономорфизации, выполняет **статическую диспетчеризацию**, когда компилятор знает, какой метод вы вызываете на этапе компиляции. Это противоположно **динамической диспетчеризации**, когда компилятор не может сказать на этапе компиляции, какой метод вы вызываете. В случаях динамической диспетчеризации компилятор генерирует код, который во время выполнения определит, какой метод вызвать.
 
-When we use trait objects, Rust must use dynamic dispatch. The compiler doesn’t
-know all the types that might be used with the code that’s using trait objects,
-so it doesn’t know which method implemented on which type to call. Instead, at
-runtime, Rust uses the pointers inside the trait object to know which method to
-call. This lookup incurs a runtime cost that doesn’t occur with static dispatch.
-Dynamic dispatch also prevents the compiler from choosing to inline a method’s
-code, which in turn prevents some optimizations, and Rust has some rules, called
-_dyn compatibility_, about where you can and cannot use dynamic dispatch. Those
-rules are beyond the scope of this discussion, but  you can read more about them
-[in the reference][dyn-compatibility]. However, we did get extra flexibility in
-the code that we wrote in Listing 18-5 and were able to support in Listing 18-9,
-so it’s a trade-off to consider.
+Когда мы используем объекты типажа, Rust должен использовать динамическую диспетчеризацию. Компилятор не знает все типы, которые могут использоваться с кодом, использующим объекты типажа, поэтому он не знает, какой метод, реализованный на каком типе, вызывать. Вместо этого во время выполнения Rust использует указатели внутри объекта типажа, чтобы знать, какой метод вызвать. Этот поиск несёт затраты во время выполнения, которых нет со статической диспетчеризацией. Динамическая диспетчеризация также мешает компилятору выбирать встраивание кода метода, что, в свою очередь, мешает некоторым оптимизациям, и у Rust есть правила, называемые **совместимостью dyn**, о том, где можно и нельзя использовать динамическую диспетчеризацию. Эти правила выходят за рамки этого обсуждения, но вы можете прочитать о них больше [в справочнике][dyn-compatibility]. Однако мы получили дополнительную гибкость в коде, который мы написали в Листинге 18-5, и смогли поддержать в Листинге 18-9, так что это компромисс, который стоит учитывать.
 
 {{#quiz ../quizzes/ch17-02-trait-objects.toml}}
 

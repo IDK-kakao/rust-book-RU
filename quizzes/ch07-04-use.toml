@@ -1,23 +1,22 @@
 [[questions]]
 id = "a162c2c8-aadf-4963-a997-02a1035f2459"
 type = "MultipleChoice"
-prompt.prompt = "Which of the following statements best describes the function of the `use` keyword?"
-answer.answer = "`use` reduces the verbosity of referring to items in the used path"
+prompt.prompt = "Какое из следующих утверждений наилучшим образом описывает функцию ключевого слова `use`?"
+answer.answer = "`use` уменьшает многословность при обращении к элементам в используемом пути"
 prompt.distractors = [
-  "`use` copies the contents of an item from one module to another",
-  "`use` allows access to items that circumvents normal privacy rules",
-  "`use` indicates to the compiler that an item will be used and should be optimized"
+  "`use` копирует содержимое элемента из одного модуля в другой",
+  "`use` позволяет получать доступ к элементам, обходя обычные правила приватности",
+  "`use` указывает компилятору, что элемент будет использован и должен быть оптимизирован"
 ]
 context = """
-`use` allows references to items in the used path that are shorter than without the `use`, reducing the verbosity of reference.
+`use` позволяет ссылаться на элементы в используемом пути более коротко, чем без `use`, уменьшая многословность ссылки.
 """
-
 
 [[questions]]
 id = "eccc2099-9880-4628-8474-f1d55e2a4a4a"
 type = "ShortAnswer"
 prompt.prompt = """
-Consider this module and `use` statement:
+Рассмотрим этот модуль и оператор `use`:
 
 ```
 pub mod parent {
@@ -34,11 +33,11 @@ fn main() {
 }
 ```
 
-Inside `main`, what is the total number of paths that can refer to `a`, `b`, or `c` (not including those that use `self`, `super`, or `crate`)?
-Write your answer as a digit such as 0 or 1. For example, if the only two valid paths were `a` and `parent::b`, then the answer would be 2.
+Внутри `main`, каково общее количество путей, которые могут ссылаться на `a`, `b` или `c` (не включая те, которые используют `self`, `super` или `crate`)?
+Запишите ответ в виде цифры, например 0 или 1. Например, если единственными двумя допустимыми путями были `a` и `parent::b`, то ответом было бы 2.
 """
 answer.answer = "5"
 context = """
-There are two paths to `a`: `parent::a` and `a`. There are no paths to `b`, because it is private. There are three paths to `c`:
+Существует два пути к `a`: `parent::a` и `a`. Пути к `b` нет, потому что он приватный. Существует три пути к `c`:
 `parent::child::c`, `child::c`, `alias::c`.
 """

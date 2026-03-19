@@ -1,28 +1,14 @@
-## Advanced Functions and Closures
+## Продвинутые функции и замыкания
 
-This section explores some advanced features related to functions and closures,
-including function pointers and returning closures.
+В этом разделе рассматриваются некоторые продвинутые возможности, связанные с функциями и замыканиями, включая указатели на функции и возврат замыканий.
 
-### Function Pointers
+### Указатели на функции
 
-We’ve talked about how to pass closures to functions; you can also pass regular
-functions to functions! This technique is useful when you want to pass a
-function you’ve already defined rather than defining a new closure. Functions
-coerce to the type `fn` (with a lowercase _f_), not to be confused with the `Fn`
-closure trait. The `fn` type is called a _function pointer_. Passing functions
-with function pointers will allow you to use functions as arguments to other
-functions.
+Мы уже говорили о том, как передавать замыкания в функции; вы также можете передавать в функции обычные функции! Этот приём полезен, когда вы хотите передать уже определённую функцию, а не создавать новое замыкание. Функции приводятся к типу `fn` (с маленькой буквы), чтобы не путать с типажом замыкания `Fn`. Тип `fn` называется _указателем на функцию_. Передача функций с помощью указателей на функции позволит вам использовать функции в качестве аргументов для других функций.
 
-The syntax for specifying that a parameter is a function pointer is similar to
-that of closures, as shown in Listing 20-28, where we’ve defined a function
-`add_one` that adds 1 to its parameter. The function `do_twice` takes two
-parameters: a function pointer to any function that takes an `i32` parameter
-and returns an `i32`, and one `i32` value. The `do_twice` function calls the
-function `f` twice, passing it the `arg` value, then adds the two function call
-results together. The `main` function calls `do_twice` with the arguments
-`add_one` and `5`.
+Синтаксис указания того, что параметр является указателем на функцию, похож на синтаксис для замыканий, как показано в Листинге 20-28, где мы определили функцию `add_one`, которая добавляет 1 к своему параметру. Функция `do_twice` принимает два параметра: указатель на функцию любой функции, которая принимает параметр `i32` и возвращает `i32`, а также одно значение `i32`. Функция `do_twice` вызывает функцию `f` дважды, передавая ей значение `arg`, а затем складывает результаты двух вызовов. Функция `main` вызывает `do_twice` с аргументами `add_one` и `5`.
 
-<Listing number="20-28" file-name="src/main.rs" caption="Using the `fn` type to accept a function pointer as an argument">
+<Listing number="20-28" file-name="src/main.rs" caption="Использование типа `fn` для принятия указателя на функцию в качестве аргумента">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-28/src/main.rs}}
@@ -30,31 +16,17 @@ results together. The `main` function calls `do_twice` with the arguments
 
 </Listing>
 
-This code prints `The answer is: 12`. We specify that the parameter `f` in
-`do_twice` is an `fn` that takes one parameter of type `i32` and returns an
-`i32`. We can then call `f` in the body of `do_twice`. In `main`, we can pass
-the function name `add_one` as the first argument to `do_twice`.
+Этот код выводит `The answer is: 12`. Мы указываем, что параметр `f` в `do_twice` имеет тип `fn`, который принимает один параметр типа `i32` и возвращает `i32`. Затем мы можем вызвать `f` в теле `do_twice`. В `main` мы можем передать имя функции `add_one` в качестве первого аргумента в `do_twice`.
 
-Unlike closures, `fn` is a type rather than a trait, so we specify `fn` as the
-parameter type directly rather than declaring a generic type parameter with one
-of the `Fn` traits as a trait bound.
+В отличие от замыканий, `fn` — это тип, а не типаж, поэтому мы указываем `fn` как тип параметра напрямую, а не объявляем обобщённый параметр типа с одним из типажей `Fn`.
 
-Function pointers implement all three of the closure traits (`Fn`, `FnMut`, and
-`FnOnce`), meaning you can always pass a function pointer as an argument for a
-function that expects a closure. It’s best to write functions using a generic
-type and one of the closure traits so your functions can accept either
-functions or closures.
+Указатели на функции реализуют все три типажа замыканий (`Fn`, `FnMut` и `FnOnce`), что означает, что вы всегда можете передать указатель на функцию в качестве аргумента для функции, ожидающей замыкание. Лучше всего писать функции, используя обобщённый тип и один из типажей замыканий, чтобы ваши функции могли принимать как функции, так и замыкания.
 
-That said, one example of where you would want to only accept `fn` and not
-closures is when interfacing with external code that doesn’t have closures: C
-functions can accept functions as arguments, but C doesn’t have closures.
+Тем не менее, примером, где вы хотите принимать только `fn`, а не замыкания, является взаимодействие с внешним кодом, в котором нет замыканий: функции C могут принимать функции в качестве аргументов, но в C нет замыканий.
 
-As an example of where you could use either a closure defined inline or a named
-function, let’s look at a use of the `map` method provided by the `Iterator`
-trait in the standard library. To use the `map` method to turn a vector of
-numbers into a vector of strings, we could use a closure, as in Listing 20-29.
+В качестве примера, где можно использовать либо замыкание, определённое встроенным способом, либо именованную функцию, рассмотрим использование метода `map`, предоставляемого типажом `Iterator` в стандартной библиотеке. Чтобы использовать метод `map` для преобразования вектора чисел в вектор строк, мы могли бы использовать замыкание, как в Листинге 20-29.
 
-<Listing number="20-29" caption="Using a closure with the `map` method to convert numbers to strings">
+<Listing number="20-29" caption="Использование замыкания с методом `map` для преобразования чисел в строки">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-29/src/main.rs:here}}
@@ -62,10 +34,9 @@ numbers into a vector of strings, we could use a closure, as in Listing 20-29.
 
 </Listing>
 
-Or we could name a function as the argument to map instead of the closure.
-Listing 20-30 shows what this would look like.
+Или мы могли бы указать функцию в качестве аргумента для `map` вместо замыкания. Листинг 20-30 показывает, как это выглядело бы.
 
-<Listing number="20-30" caption="Using the `String::to_string` method to convert numbers to strings">
+<Listing number="20-30" caption="Использование метода `String::to_string` для преобразования чисел в строки">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-30/src/main.rs:here}}
@@ -73,21 +44,13 @@ Listing 20-30 shows what this would look like.
 
 </Listing>
 
-Note that we must use the fully qualified syntax that we talked about in
-[“Advanced Traits”][advanced-traits]<!-- ignore --> because there are multiple
-functions available named `to_string`.
+Обратите внимание, что мы должны использовать полностью квалифицированный синтаксис, о котором мы говорили в разделе [«Продвинутые типажи»][advanced-traits]<!-- ignore -->, потому что существует несколько функций с именем `to_string`.
 
-Here, we’re using the `to_string` function defined in the `ToString` trait,
-which the standard library has implemented for any type that implements
-`Display`.
+Здесь мы используем функцию `to_string`, определённую в типаже `ToString`, который стандартная библиотека реализовала для любого типа, реализующего `Display`.
 
-Recall from [“Enum values”][enum-values]<!-- ignore --> in Chapter 6 that the
-name of each enum variant that we define also becomes an initializer function.
-We can use these initializer functions as function pointers that implement the
-closure traits, which means we can specify the initializer functions as
-arguments for methods that take closures, as seen in Listing 20-31.
+Вспомните из раздела [«Значения перечисления»][enum-values] в главе 6, что имя каждого варианта перечисления, которое мы определяем, также становится функцией-инициализатором. Мы можем использовать эти функции-инициализаторы как указатели на функции, реализующие типажи замыканий, что означает, что мы можем указывать функции-инициализаторы в качестве аргументов для методов, принимающих замыкания, как показано в Листинге 20-31.
 
-<Listing number="20-31" caption="Using an enum initializers with the `map` method to create a `Status` instance from numbers">
+<Listing number="20-31" caption="Использование инициализатора перечисления с методом `map` для создания экземпляра `Status` из чисел">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-31/src/main.rs:here}}
@@ -95,26 +58,15 @@ arguments for methods that take closures, as seen in Listing 20-31.
 
 </Listing>
 
-Here we create `Status::Value` instances using each `u32` value in the range
-that `map` is called on by using the initializer function of `Status::Value`.
-Some people prefer this style and some people prefer to use closures. They
-compile to the same code, so use whichever style is clearer to you.
+Здесь мы создаём экземпляры `Status::Value`, используя каждое значение `u32` в диапазоне, на котором вызывается `map`, с помощью функции-инициализатора `Status::Value`. Некоторым нравится этот стиль, а некоторым — использовать замыкания. Они компилируются в один и тот же код, поэтому используйте тот стиль, который понятнее вам.
 
-### Returning Closures
+### Возврат замыканий
 
-Closures are represented by traits, which means you can’t return closures
-directly. In most cases where you might want to return a trait, you can instead
-use the concrete type that implements the trait as the return value of the
-function. However, you can’t usually do that with closures because they don’t
-have a concrete type that is returnable. You’re not allowed to use the function
-pointer `fn` as a return type if the closure captures any values from its scope,
-for example.
+Замыкания представлены типажами, что означает, что вы не можете возвращать замыкания напрямую. В большинстве случаев, когда вы могли бы захотеть вернуть типаж, вы можете вместо этого использовать конкретный тип, реализующий этот типаж, в качестве возвращаемого значения функции. Однако с замыканиями это обычно невозможно сделать, потому что у них нет конкретного возвращаемого типа. Вам не разрешено использовать указатель на функцию `fn` в качестве возвращаемого типа, если замыкание захватывает какие-либо значения из своей области видимости, например.
 
-Instead, you will normally use the `impl Trait` syntax we learned about in
-Chapter 10. You can return any function type, using `Fn`, `FnOnce` and `FnMut`.
-For example, the code in Listing 20-32 will work just fine.
+Вместо этого вы обычно будете использовать синтаксис `impl Trait`, который мы изучили в главе 10. Вы можете вернуть любой тип функции, используя `Fn`, `FnOnce` и `FnMut`. Например, код в Листинге 20-32 будет работать perfectly.
 
-<Listing number="20-32" caption="Returning a closure from a function using the `impl Trait` syntax">
+<Listing number="20-32" caption="Возврат замыкания из функции с использованием синтаксиса `impl Trait`">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-32/src/lib.rs}}
@@ -122,14 +74,9 @@ For example, the code in Listing 20-32 will work just fine.
 
 </Listing>
 
-However, as we noted in [“Closure Type Inference and
-Annotation”][closure-types]<!-- ignore --> in Chapter 13, each closure is also
-its own distinct type. If you need to work with multiple functions that have the
-same signature but different implementations, you will need to use a trait
-object for them. Consider what happens if you write code like that shown in
-Listing 20-33.
+Однако, как мы отметили в разделе [«Вывод типов замыканий и аннотации»][closure-types] в главе 13, каждое замыкание также является собственным отдельным типом. Если вам нужно работать с несколькими функциями, имеющими одинаковую сигнатуру, но разные реализации, вам придётся использовать объект типажа для них. Посмотрите, что произойдёт, если вы напишете код, подобный показанному в Листинге 20-33.
 
-<Listing file-name="src/main.rs" number="20-33" caption="Creating a `Vec<T>` of closures defined by functions that return `impl Fn`">
+<Listing file-name="src/main.rs" number="20-33" caption="Создание `Vec<T>` из замыканий, определённых функциями, которые возвращают `impl Fn`">
 
 ```rust,ignore,does_not_compile
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-33/src/main.rs}}
@@ -137,26 +84,15 @@ Listing 20-33.
 
 </Listing>
 
-Here we have two functions, `returns_closure` and `returns_initialized_closure`,
-which both return `impl Fn(i32) -> i32`. Notice that he closures that they
-return are different, even though they implement the same type. If we try to
-compile this, Rust lets us know that it won’t work:
+Здесь у нас есть две функции, `returns_closure` и `returns_initialized_closure`, которые обе возвращают `impl Fn(i32) -> i32`. Обратите внимание, что замыкания, которые они возвращают, разные, даже если они реализуют один и тот же типаж. Если мы попытаемся скомпилировать это, Rust сообщит нам, что это не сработает:
 
 ```text
 {{#include ../listings/ch20-advanced-features/listing-20-33/output.txt}}
 ```
 
-The error message tells us that whenever we return an `impl Trait` Rust creates
-a unique _opaque type_, a type where we cannot see into the details of what Rust
-constructs for us. So even though these functions both return closures that
-implements the same trait, `Fn(i32) -> i32`, the opaque types Rust generates for
-each are distinct. (This is similar to how Rust produces different concrete
-types for distinct async blocks even when they have the same output type, as we
-saw in [“Working with Any Number of Futures”][any-number-of-futures] in Chapter
-17. We have seen a solution to this problem a few times now: we can use a trait
-object, as in Listing 20-34.
+Сообщение об ошибке говорит нам, что каждый раз, когда мы возвращаем `impl Trait`, Rust создаёт уникальный _непрозрачный тип_ — тип, в детали которого мы не можем заглянуть, который Rust конструирует для нас. Поэтому, даже though эти функции обе возвращают замыкания, реализующие один и тот же типаж, `Fn(i32) -> i32`, непрозрачные типы, которые Rust генерирует для каждого из них, различны. (Это похоже на то, как Rust производит разные конкретные типы для отдельных асинхронных блоков, даже когда у них одинаковый тип возвращаемого значения, как мы видели в разделе [«Работа с любым количеством фьючерсов»][any-number-of-futures] в главе 17. Мы уже видели решение этой проблемы несколько раз: мы можем использовать объект типажа, как в Листинге 20-34.
 
-<Listing number="20-34" caption="Creating a `Vec<T>` of closures defined by functions that return `Box<dyn Fn>` so they have the same type">
+<Listing number="20-34" caption="Создание `Vec<T>` из замыканий, определённых функциями, которые возвращают `Box<dyn Fn>`, чтобы они имели один и тот же тип">
 
 ```rust
 {{#rustdoc_include ../listings/ch20-advanced-features/listing-20-34/src/main.rs:here}}
@@ -164,12 +100,9 @@ object, as in Listing 20-34.
 
 </Listing>
 
-This code will compile just fine. For more about trait objects, refer to the
-section [“Using Trait Objects That Allow for Values of Different
-Types”][using-trait-objects-that-allow-for-values-of-different-types]<!-- ignore
---> in Chapter 18.
+Этот код будет компилироваться без проблем. Для получения дополнительной информации об объектах типажей обратитесь к разделу [«Использование объектов типажей, которые позволяют иметь значения разных типов»][using-trait-objects-that-allow-for-values-of-different-types] в главе 18.
 
-Next, let’s look at macros!
+Далее рассмотрим макросы!
 
 {{#quiz ../quizzes/ch19-05-advanced-functions-and-closures.toml}}
 

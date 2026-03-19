@@ -15,7 +15,7 @@ fn main() {
 answer.doesCompile = false
 answer.lineNumber = 6
 context = """
-`h` cannot be mutated (`h.insert("k2", 1)`) while an immutable reference (`v1`) to it is live.
+`h` нельзя мутировать (`h.insert("k2", 1)`), пока существует живая неизменяемая ссылка (`v1`) на него.
 """
 
 [[questions]]
@@ -38,6 +38,6 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "5"
 context = """
-This program stores a vector of indexes for each occurrence of a given letter into a hashmap. 
-Then it sums all the indexes for the letter 'l', which occurs at indexes 2 and 3 in the string `"hello!"`.
+Эта программа сохраняет вектор индексов для каждого вхождения заданной буквы в хэшмапу. 
+Затем она суммирует все индексы для буквы 'l', которая встречается на индексах 2 и 3 в строке `"hello!"`.
 """

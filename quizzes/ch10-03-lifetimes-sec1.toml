@@ -1,16 +1,14 @@
 [[questions]]
 id = "8b7f93c3-efb0-44e2-a0ca-b45e35620b30"
 type = "MultipleChoice"
-prompt.prompt = "Which kind of programming error is a lifetime supposed to prevent?"
-answer.answer = "Using a reference to an object after its memory has been freed"
+prompt.prompt = "Какой вид ошибки программирования время жизни предназначено для предотвращения?"
+answer.answer = "Использование ссылки на объект после освобождения его памяти"
 prompt.distractors = [
-  "Using the result of a fallible computation before checking for the possibility of error",
-  "Indexing past the bounds of an array (buffer overflow)",
-  "Not allocating enough memory for an object"
+  "Использование результата вычисления, которое может завершиться ошибкой, до проверки возможности ошибки",
+  "Выход за границы массива при индексации (переполнение буфера)",
+  "Выделение недостаточного объема памяти для объекта"
 ]
-context = """
-Lifetimes help identify how long an object is "live", and whether references to that object outlive the object itself. 
-"""
+context = "Время жизни помогает определить, как долго объект \"жив\", и переживают ли ссылки на этот объект сам объект."
 
 [[questions]]
 id = "77cf924a-ece1-4119-a762-f5f03536b4e1"
@@ -30,7 +28,4 @@ fn main() {
 """
 answer.doesCompile = false
 answer.lineNumber = 5
-context = """
-If the type signature says that the function must return a reference with lifetime `'a`, then it would be invalid to return
-a reference with a different lifetime '`b`, i.e. `y` here.
-"""
+context = "Если сигнатура типа говорит, что функция должна возвращать ссылку с временем жизни `'a`, то возвращать ссылку с другим временем жизни `'b` недопустимо, т.е. `y` здесь."

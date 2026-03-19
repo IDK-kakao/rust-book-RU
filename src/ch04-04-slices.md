@@ -1,77 +1,48 @@
-## The Slice Type
+## Тип среза
 
-*Slices* let you reference a contiguous sequence of elements in a [collection](ch08-00-common-collections.md) 
-rather than the whole collection. A slice is a kind of reference, so it is a non-owning pointer.
+*Срезы* позволяют ссылаться на непрерывную последовательность элементов в [коллекции](ch08-00-common-collections.md), а не на всю коллекцию. Срез — это особый вид ссылки, поэтому он является указателем, не владеющим данными.
 
-To motivate why slices are useful, let's work through a small programming problem: 
-write a function that takes a string of
-words separated by spaces and returns the first word it finds in that string.
-If the function doesn’t find a space in the string, the whole string must be
-one word, so the entire string should be returned. Without slices, we might
-write the signature of the function like this:
+Чтобы понять, зачем нужны срезы, решим небольшую задачу: напишем функцию, которая принимает строку слов, разделённых пробелами, и возвращает первое найденное слово. Если в строке нет пробелов, значит, вся строка — одно слово, и её нужно вернуть целиком. Без срезов сигнатура функции могла бы выглядеть так:
 
 ```rust,ignore
 fn first_word(s: &String) -> ?
 ```
 
-The `first_word` function has a `&String` as a parameter. We don’t want
-ownership of the string, so this is fine. But what should we return? We don’t really have a
-way to talk about *part* of a string. However, we could return the index of the
-end of the word, indicated by a space. Let’s try that, as shown in Listing 4-7.
+Функция `first_word` принимает параметр `&String`. Нам не нужно владение строкой, так что это нормально. Но что возвращать? У нас нет способа описать *часть* строки. Однако можно вернуть индекс конца слова, обозначенный пробелом. Попробуем так, как показано в Листинге 4-7.
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 4-7: The `first_word` function that returns a
-byte index value into the `String` parameter</span>
+<span class="caption">Листинг 4-7: Функция `first_word`, возвращающая индекс байта в параметре `String`</span>
 
-Because we need to go through the `String` element by element and check whether
-a value is a space, we’ll convert our `String` to an array of bytes using the
-`as_bytes` method:
+Чтобы пройти по строке элемент за элементом и проверить, является ли значение пробелом, преобразуем `String` в массив байтов с помощью метода `as_bytes`:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:as_bytes}}
 ```
 
-Next, we create an iterator over the array of bytes using the `iter` method:
+Затем создаём итератор по массиву байтов с помощью метода `iter`:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:iter}}
 ```
 
-We’ll discuss iterators in more detail in [Chapter 13][ch13]<!-- ignore -->.
-For now, know that `iter` is a method that returns each element in a collection
-and that `enumerate` wraps the result of `iter` and returns each element as
-part of a tuple instead. The first element of the tuple returned from
-`enumerate` is the index, and the second element is a reference to the element.
-This is a bit more convenient than calculating the index ourselves.
+Мы подробнее обсудим итераторы в [Главе 13][ch13]<!-- ignore -->. Пока знайте, что `iter` — это метод, возвращающий каждый элемент коллекции, а `enumerate` оборачивает результат `iter` и возвращает каждый элемент как часть кортежа. Первый элемент кортежа от `enumerate` — это индекс, а второй — ссылка на элемент. Это удобнее, чем вычислять индекс самостоятельно.
 
-Because the `enumerate` method returns a tuple, we can use patterns to
-destructure that tuple. We’ll be discussing patterns more in [Chapter
-6][ch6]<!-- ignore -->. In the `for` loop, we specify a pattern that has `i`
-for the index in the tuple and `&item` for the single byte in the tuple.
-Because we get a reference to the element from `.iter().enumerate()`, we use
-`&` in the pattern.
+Поскольку метод `enumerate` возвращает кортеж, мы можем использовать образцы для его декомпозиции. Об образцах мы поговорим в [Главе 6][ch6]<!-- ignore -->. В цикле `for` мы указываем образец с `i` для индекса в кортеже и `&item` для отдельного байта в кортеже. Так как мы получаем ссылку на элемент из `.iter().enumerate()`, используем `&` в образце.
 
-Inside the `for` loop, we search for the byte that represents the space by
-using the byte literal syntax. If we find a space, we return the position.
-Otherwise, we return the length of the string by using `s.len()`:
+Внутри цикла `for` мы ищем байт, представляющий пробел, используя синтаксис байтового литерала. Если находим пробел, возвращаем позицию. Иначе возвращаем длину строки с помощью `s.len()`:
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-07/src/main.rs:inside_for}}
 ```
 
-We now have a way to find out the index of the end of the first word in the
-string, but there’s a problem. We’re returning a `usize` on its own, but it’s
-only a meaningful number in the context of the `&String`. In other words,
-because it’s a separate value from the `String`, there’s no guarantee that it
-will still be valid in the future. Consider the program in Listing 4-8 that
-uses the `first_word` function from Listing 4-7.
+Теперь у нас есть способ узнать индекс конца первого слова в строке, но есть проблема. Мы возвращаем `usize` сам по себе, но это число имеет смысл только в контексте `&String`. Другими словами, поскольку это отдельное значение от `String`, нет гарантии, что оно останется действительным в будущем. Рассмотрим программу в Листинге 4-8, которая использует функцию `first_word` из Листинга 4-7.
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```aquascope,interpreter+permissions,boundaries,stepper,horizontal
 fn first_word(s: &String) -> usize {
@@ -93,33 +64,23 @@ fn main() {
 }
 ``` 
 
-<span class="caption">Listing 4-8: Storing the result from calling the
-`first_word` function and then changing the `String` contents</span>
+<span class="caption">Листинг 4-8: Сохранение результата вызова функции `first_word` и последующее изменение содержимого `String`</span>
 
-This program compiles without any errors, as `s` retains write permissions
-after calling `first_word`. Because `word` isn’t connected to the state of `s`
-at all, `word` still contains the value `5`. We could use that value `5` with
-the variable `s` to try to extract the first word out, but this would be a bug
-because the contents of `s` have changed since we saved `5` in `word`.
+Эта программа компилируется без ошибок, так как `s` сохраняет права на запись после вызова `first_word`. Поскольку `word` вообще не связан с состоянием `s`, `word` всё ещё содержит значение `5`. Мы могли бы использовать это значение `5` с переменной `s`, чтобы попытаться извлечь первое слово, но это было бы ошибкой, потому что содержимое `s` изменилось с тех пор, как мы сохранили `5` в `word`.
 
-Having to worry about the index in `word` getting out of sync with the data in
-`s` is tedious and error prone! Managing these indices is even more brittle if
-we write a `second_word` function. Its signature would have to look like this:
+Нужно беспокоиться о том, что индекс в `word` выйдет из синхронизации с данными в `s`, — это утомительно и чревато ошибками! Управление этими индексами становится ещё более хрупким, если мы напишем функцию `second_word`. Её сигнатура должна выглядеть так:
 
 ```rust,ignore
 fn second_word(s: &String) -> (usize, usize) {
 ```
 
-Now we’re tracking a starting *and* an ending index, and we have even more
-values that were calculated from data in a particular state but aren’t tied to
-that state at all. We have three unrelated variables floating around that
-need to be kept in sync.
+Теперь мы отслеживаем начальный *и* конечный индекс, и у нас ещё больше значений, которые были вычислены из данных в определённом состоянии, но не привязаны к этому состоянию. У нас три несвязанные переменные, которые нужно синхронизировать.
 
-Luckily, Rust has a solution to this problem: string slices.
+К счастью, у Rust есть решение этой проблемы: строковые срезы.
 
-### String Slices
+### Строковые срезы
 
-A *string slice* is a reference to part of a `String`, and it looks like this:
+*Строковый срез* — это ссылка на часть `String`, и он выглядит так:
 
 ```aquascope,interpreter
 #fn main() {
@@ -131,15 +92,9 @@ let s2: &String = &s; `[]`
 #}
 ```
 
-Rather than a reference to the entire `String` (like `s2`), `hello` is a reference to a
-portion of the `String`, specified in the extra `[0..5]` bit. We create slices
-using a range within brackets by specifying `[starting_index..ending_index]`,
-where `starting_index` is the first position in the slice and `ending_index` is
-one more than the last position in the slice.
+В отличие от ссылки на весь `String` (как `s2`), `hello` — это ссылка на часть `String`, указанная дополнительным фрагментом `[0..5]`. Мы создаём срезы, используя диапазон в квадратных скобках, указывая `[начальный_индекс..конечный_индекс]`, где `начальный_индекс` — это первая позиция в срезе, а `конечный_индекс` — на единицу больше последней позиции в срезе.
 
-Slices are special kinds of references because they are "fat" pointers, or pointers
-with metadata. Here, the metadata is the length of the slice. We can see this metadata
-by changing our visualization to peek into the internals of Rust's data structures:
+Срезы — особые виды ссылок, потому что они являются "толстыми" указателями, или указателями с метаданными. Здесь метаданные — это длина среза. Мы можем увидеть эти метаданные, изменив визуализацию, чтобы заглянуть внутрь структур данных Rust:
 
 ```aquascope,interpreter,concreteTypes,hideCode
 fn main() {
@@ -152,12 +107,9 @@ fn main() {
 }
 ```
 
-Observe that the variables `hello` and `world` have both a `ptr` and a `len` field, which together define the underlined regions
-of the string on the heap. You can also see here what a `String` actually looks like: a string is a vector of bytes (`Vec<u8>`),
-which contains a length `len` and a buffer `buf` that has a pointer `ptr` and a capacity `cap`.
+Обратите внимание, что переменные `hello` и `world` имеют оба поля `ptr` и `len`, которые вместе определяют подчёркнутые области строки в куче. Вы также можете увидеть здесь, как на самом деле выглядит `String`: строка — это вектор байтов (`Vec<u8>`), который содержит длину `len` и буфер `buf` с указателем `ptr` и ёмкостью `cap`.
 
-Because slices are references, they also change the permissions on referenced data. For example, observe below that when
-`hello` is created as a slice of `s`, then `s` loses write and own permissions:
+Поскольку срезы являются ссылками, они также изменяют права на referenced данные. Например, обратите внимание, что при создании `hello` как среза `s`, `s` теряет права на запись и владение:
 
 ```aquascope,permissions,stepper,boundaries
 fn main() {
@@ -168,10 +120,9 @@ fn main() {
 }
 ```
 
-#### Range syntax
+#### Синтаксис диапазонов
 
-With Rust’s `..` range syntax, if you want to start at index zero, you can drop
-the value before the two periods. In other words, these are equal:
+С синтаксисом диапазонов `..` в Rust, если вы хотите начать с индекса ноль, можно опустить значение перед двумя точками. Другими словами, эти варианты равны:
 
 ```rust
 let s = String::from("hello");
@@ -180,8 +131,7 @@ let slice = &s[0..2];
 let slice = &s[..2];
 ```
 
-By the same token, if your slice includes the last byte of the `String`, you
-can drop the trailing number. That means these are equal:
+По такому же принципу, если ваш срез включает последний байт `String`, можно опустить конечное число. Это значит, что эти варианты равны:
 
 ```rust
 let s = String::from("hello");
@@ -192,8 +142,7 @@ let slice = &s[3..len];
 let slice = &s[3..];
 ```
 
-You can also drop both values to take a slice of the entire string. So these
-are equal:
+Вы также можете опустить оба значения, чтобы взять срез всей строки. Так что эти варианты равны:
 
 ```rust
 let s = String::from("hello");
@@ -204,49 +153,31 @@ let slice = &s[0..len];
 let slice = &s[..];
 ```
 
-> Note: String slice range indices must occur at valid UTF-8 character
-> boundaries. If you attempt to create a string slice in the middle of a
-> multibyte character, your program will exit with an error. For the purposes
-> of introducing string slices, we are assuming ASCII only in this section; a
-> more thorough discussion of UTF-8 handling is in the [“Storing UTF-8 Encoded
-> Text with Strings”][strings]<!-- ignore --> section of Chapter 8.
+> Примечание: Границы индексов диапазона строкового среза должны приходиться на допустимые границы символов UTF-8. Если попытаться создать строковый срез в середине многобайтового символа, программа завершится с ошибкой. Для введения строковых срезов в этом разделе мы предполагаем только ASCII; более подробное обсуждение обработки UTF-8 находится в разделе ["Хранение текста, закодированного в UTF-8, со строками"][strings]<!-- ignore --> Главы 8.
 
-#### Rewriting `first_word` with string slices
+#### Переписывание `first_word` со строковыми срезами
 
-With all this information in mind, let’s rewrite `first_word` to return a
-slice. The type that signifies “string slice” is written as `&str`:
+Учитывая всю эту информацию, перепишем `first_word` для возврата среза. Тип, обозначающий "строковый срез", записывается как `&str`:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/no-listing-18-first-word-slice/src/main.rs:here}}
 ```
 
-We get the index for the end of the word in the same way as we did in Listing
-4-7, by looking for the first occurrence of a space. When we find a space, we
-return a string slice using the start of the string and the index of the space
-as the starting and ending indices.
+Мы получаем индекс конца слова так же, как в Листинге 4-7, ища первое вхождение пробела. Когда находим пробел, возвращаем строковый срез, используя начало строки и индекс пробела в качестве начального и конечного индексов.
 
-Now when we call `first_word`, we get back a single value that is tied to the
-underlying data. The value is made up of a reference to the starting point of
-the slice and the number of elements in the slice.
+Теперь при вызове `first_word` мы получаем одно значение, привязанное к базовым данным. Значение состоит из ссылки на начальную точку среза и количества элементов в срезе.
 
-Returning a slice would also work for a `second_word` function:
+Возврат среза также сработал бы для функции `second_word`:
 
 ```rust,ignore
 fn second_word(s: &String) -> &str {
 ```
 
-We now have a straightforward API that’s much harder to mess up, because the
-compiler will ensure the references into the `String` remain valid. Remember
-the bug in the program in Listing 4-8, when we got the index to the end of the
-first word but then cleared the string so our index was invalid? That code was
-logically incorrect but didn’t show any immediate errors. The problems would
-show up later if we kept trying to use the first word index with an emptied
-string. Slices make this bug impossible and let us know we have a problem with
-our code much sooner. For example:
+Теперь у нас простой API, который гораздо сложнее испортить, потому что компилятор обеспечит действительность ссылок в `String`. Помните об ошибке в программе в Листинге 4-8, когда мы получили индекс конца первого слова, но затем очистили строку, так что наш индекс стал недействительным? Этот код был логически некорректным, но не показывал немедленных ошибок. Проблемы проявились бы позже, если бы мы продолжали использовать индекс первого слова с опустошённой строкой. Срезы делают эту ошибку невозможной и сообщают о проблеме в коде гораздо раньше. Например:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```aquascope,permissions,boundaries,stepper,shouldFail
 #fn first_word(s: &String) -> &str {
@@ -268,81 +199,59 @@ fn main() {
 }
 ```
 
-You can see that calling `first_word` now removes the write permission from `s`,
-which prevents us from calling `s.clear()`. Here’s the compiler error:
+Вы видите, что вызов `first_word` теперь удаляет право на запись из `s`, что предотвращает вызов `s.clear()`. Вот ошибка компилятора:
 
 ```console
 {{#include ../listings/ch04-understanding-ownership/no-listing-19-slice-error/output.txt}}
 ```
 
-Recall from the borrowing rules that if we have an immutable reference to
-something, we cannot also take a mutable reference. Because `clear` needs to
-truncate the `String`, it needs to get a mutable reference. The `println!`
-after the call to `clear` uses the reference in `word`, so the immutable
-reference must still be active at that point. Rust disallows the mutable
-reference in `clear` and the immutable reference in `word` from existing at the
-same time, and compilation fails. Not only has Rust made our API easier to use,
-but it has also eliminated an entire class of errors at compile time!
+Вспомните из правил заимствования, что если у нас есть неизменяемая ссылка на что-то, мы не можем также взять изменяемую ссылку. Поскольку `clear` нужно усечь `String`, ей нужно получить изменяемую ссылку. `println!` после вызова `clear` использует ссылку в `word`, поэтому неизменяемая ссылка должна оставаться активной в этот момент. Rust запрещает одновременное существование изменяемой ссылки в `clear` и неизменяемой ссылки в `word`, и компиляция завершается с ошибкой. Rust не только сделал наш API удобнее, но и устранил целый класс ошибок на этапе компиляции!
 
-#### String Literals Are Slices
+### Строковые литералы — это срезы
 
-Recall that we talked about string literals being stored inside the binary. Now
-that we know about slices, we can properly understand string literals:
+Вспомните, что мы говорили, что строковые литералы хранятся внутри бинарного файла. Теперь, когда мы знаем о срезах, мы можем правильно понять строковые литералы:
 
 ```rust
 let s = "Hello, world!";
 ```
 
-The type of `s` here is `&str`: it’s a slice pointing to that specific point of
-the binary. This is also why string literals are immutable; `&str` is an
-immutable reference.
+Тип `s` здесь — `&str`: это срез, указывающий на эту конкретную точку бинарного файла. Именно поэтому строковые литералы неизменяемы; `&str` — это неизменяемая ссылка.
 
-#### String Slices as Parameters
+### Строковые срезы как параметры
 
-Knowing that you can take slices of literals and `String` values leads us to
-one more improvement on `first_word`, and that’s its signature:
+Зная, что можно брать срезы литералов и значений `String`, мы приходим к ещё одному улучшению `first_word`, а именно к его сигнатуре:
 
 ```rust,ignore
 fn first_word(s: &String) -> &str {
 ```
 
-A more experienced Rustacean would write the signature shown in Listing 4-9
-instead because it allows us to use the same function on both `&String` values
-and `&str` values.
+Более опытный Rustacean написал бы сигнатуру, показанную в Листинге 4-9, потому что она позволяет использовать одну и ту же функцию как для значений `&String`, так и для `&str`.
 
 ```rust,ignore
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-09/src/main.rs:here}}
 ```
 
-<span class="caption">Listing 4-9: Improving the `first_word` function by using
-a string slice for the type of the `s` parameter</span>
+<span class="caption">Листинг 4-9: Улучшение функции `first_word` использованием строкового среза для типа параметра `s`</span>
 
-If we have a string slice, we can pass that directly. If we have a `String`, we
-can pass a slice of the `String` or a reference to the `String`. This
-flexibility takes advantage of *deref coercions*, a feature we will cover in the
-[“Implicit Deref Coercions with Functions and
-Methods”][deref-coercions]<!--ignore--> section of Chapter 15.
+Если у нас есть строковый срез, мы можем передать его напрямую. Если у нас есть `String`, мы можем передать срез `String` или ссылку на `String`. Эта гибкость использует *неявное преобразование разыменования*, особенность, которую мы рассмотрим в разделе ["Неявные преобразования разыменования с функциями и методами"][deref-coercions]<!--ignore--> Главы 15.
 
-Defining a function to take a string slice instead of a reference to a `String`
-makes our API more general and useful without losing any functionality:
+Определение функции, принимающей строковый срез вместо ссылки на `String`, делает наш API более общим и полезным без потери функциональности:
 
-<span class="filename">Filename: src/main.rs</span>
+<span class="filename">Имя файла: src/main.rs</span>
 
 ```rust
 {{#rustdoc_include ../listings/ch04-understanding-ownership/listing-04-09/src/main.rs:usage}}
 ```
 
-### Other Slices
+### Другие срезы
 
-String slices, as you might imagine, are specific to strings. But there’s a
-more general slice type, too. Consider this array:
+Строковые срезы, как вы можете себе представить, специфичны для строк. Но есть и более общий тип среза. Рассмотрим этот массив:
 
 ```rust
 let a = [1, 2, 3, 4, 5];
 ```
 
-Just as we might want to refer to a part of a string, we might want to refer
-to part of an array. We’d do so like this:
+Так же, как мы можем хотеть ссылаться на часть строки, мы можем хотеть ссылаться на часть массива. Мы сделаем это так:
 
 ```rust
 let a = [1, 2, 3, 4, 5];
@@ -352,19 +261,13 @@ let slice = &a[1..3];
 assert_eq!(slice, &[2, 3]);
 ```
 
-This slice has the type `&[i32]`. It works the same way as string slices do, by
-storing a reference to the first element and a length. You’ll use this kind of
-slice for all sorts of other collections. We’ll discuss these collections in
-detail when we talk about vectors in Chapter 8.
+Этот срез имеет тип `&[i32]`. Он работает так же, как и строковые срезы, храня ссылку на первый элемент и длину. Вы будете использовать этот вид среза для всех sorts других коллекций. Мы подробно обсудим эти коллекции, когда будем говорить о векторах в Главе 8.
 
 {{#quiz ../quizzes/ch04-04-slices.toml}}
 
-## Summary
+## Краткое содержание
 
-Slices are a special kind of reference that refer to sub-ranges of a sequence, like a 
-string or a vector. At runtime, a slice is represented as a "fat pointer" which contains
-a pointer to the beginning of the range and a length of the range. One advantage of slices
-over index-based ranges is that the slice cannot be invalidated while it's being used.
+Срезы — это особый вид ссылки, который ссылается на поддиапазоны последовательности, такие как строка или вектор. Во время выполнения срез представляется как "толстый указатель", содержащий указатель на начало диапазона и длину диапазона. Одно из преимуществ срезов над диапазонами на основе индексов заключается в том, что срез не может быть недействительным, пока он используется.
 
 [ch13]: ch13-02-iterators.html
 [ch6]: ch06-02-match.html#patterns-that-bind-to-values

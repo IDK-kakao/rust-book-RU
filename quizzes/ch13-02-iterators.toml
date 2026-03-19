@@ -2,43 +2,42 @@
 id = "d50dd9fb-f84c-4748-9e45-cd3dc8d5fb47"
 type = "MultipleChoice"
 prompt.prompt = """
-Which of the following best describes why iterators are described as "lazy"?
+Что из перечисленного лучше всего описывает, почему итераторы называют «ленивыми»?
 """
-answer.answer = "An iterator has no effect until you call methods that extract elements from the iterator"
+answer.answer = "Итератор не производит эффектов, пока вы не вызовете методы, извлекающие элементы из итератора"
 prompt.distractors = [
-    "An iterator creates a copy of each item it iterates over", 
-    "An iterator takes ownership of the sequence of items it is iterating over", 
-    "An iterator will only iterate over a given number of items"
+    "Итератор создаёт копию каждого элемента, по которому проходит", 
+    "Итератор принимает владение последовательностью элементов, по которым проходит", 
+    "Итератор будет проходить только по заданному количеству элементов"
 ]
 context = """
-Lazy generally means "does not do work until asked", and iterators do not perform any computation until
-`Iterator::next` is called.
+«Ленивый» обычно означает «не выполняет работу, пока его об этом не попросят», и итераторы не выполняют никаких вычислений, пока не будет вызван `Iterator::next`.
 """
 
 [[questions]]
 id = "19eac65e-44ad-4349-9632-47bdbb519d46"
 type = "MultipleChoice"
 prompt.prompt = """
-True/false: these two code snippets are semantically equivalent where `iter` is an iterator.
+Истина/ложь: эти два фрагмента кода семантически эквивалентны, где `iter` — это итератор.
 
-Snippet 1:
+Фрагмент 1:
 ```
 while let Some(x) = iter.next() {
     f(x);
 }
 ```
 
-Snippet 2:
+Фрагмент 2:
 ```
 for x in iter {
     f(x);
 }
 ```
 """
-answer.answer = "True"
-prompt.distractors = ["False"]
+answer.answer = "Истина"
+prompt.distractors = ["Ложь"]
 context = """
-The for-loop is a syntactic sugar for the `while let`, which is itself a sugar for `loop` and `break`.
+Цикл `for` — это синтаксический сахар для `while let`, который сам является сахаром для `loop` и `break`.
 """
 
 [[questions]]
@@ -55,17 +54,17 @@ fn main() {
 answer.doesCompile = true
 answer.stdout = "4 2"
 context = """
-The order of iterators matters &mdash; a filter and a map is not the same as a map and a filter!
+Порядок итераторов имеет значение — filter и map не то же самое, что map и filter!
 
-You might wonder why the first filter uses `*x` and the second filter does not. 
-`v.iter()` produces an `Iterator<Item = &i32>`. The `.filter()` call takes an `Iterator<Item = T>` as input,
-and passes `&T` to its predicate. Therefore `x: &&i32` on line 3. The Rust standard library implements the
-remainder operator `%` for `&i32` on the left-hand side ([see the docs](https://doc.rust-lang.org/std/ops/trait.Rem.html#impl-Rem%3Ci32%3E-for-%26'a+i32)),
-but not for `&&i32`. So we have to dereference `x` once to use it in the expression `*x % 2`.
+Возможно, вы wondered, почему в первом filter используется `*x`, а во втором — нет. 
+`v.iter()` создаёт `Iterator<Item = &i32>`. Вызов `.filter()` принимает `Iterator<Item = T>` на вход
+и передаёт `&T` в свою предикат-функцию. Поэтому `x: &&i32` в строке 3. Стандартная библиотека Rust реализует
+оператор остатка `%` для `&i32` слева ([см. документацию](https://doc.rust-lang.org/std/ops/trait.Rem.html#impl-Rem%3Ci32%3E-for-%26'a+i32)),
+но не для `&&i32`. Поэтому нам нужно один раз разыменовать `x`, чтобы использовать его в выражении `*x % 2`.
 
-By contrast on line 4, when `.map()` takes an `Iterator<Item = T>` as input, it passes `T` to its closure.
-Therefore the closure in `map` takes `&i32` as input. The multiplication operator `*` is implemented for `&i32`,
-so `x` does not need to be dereferenced in `x * 2`. The operation `x * 2` produces a value of type `i32`, so
-the result of the map is an `Iterator<Item = i32>`. The `filter` then takes `x : &i32`, which also does not need
-a dereference to do `x % 2`. Now you know!
+Напротив, в строке 4, когда `.map()` принимает `Iterator<Item = T>` на вход, он передаёт `T` в своё замыкание.
+Поэтому замыкание в `map` принимает `&i32` на вход. Оператор умножения `*` реализован для `&i32`,
+поэтому `x` не нужно разыменовывать в `x * 2`. Операция `x * 2` производит значение типа `i32`, поэтому
+результат map — это `Iterator<Item = i32>`. Затем `filter` принимает `x : &i32`, который также не требует
+разыменования для `x % 2`. Теперь вы знаете!
 """
