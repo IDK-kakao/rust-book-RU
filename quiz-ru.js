@@ -1,43 +1,48 @@
-//  Русификатор для квизов
+// Русификатор для квизов
 (function() {
-  function СупчикUI() {
-
-    const супПайлоад = {
+  function translateQuizUI() {
+    const translations = {
       'Answer Review': 'Проверка ответов',
       'You answered': 'Вы ответили на',
       'questions correctly': 'вопросов правильно',
       'You can either': 'Вы можете',
-      'or': 'или','retry the quiz': 'повторить викторину','view the answers': 'посмотреть ответы','Question': 'Вопрос',
+      'or': 'или',
+      'retry the quiz': 'повторить викторину',
+      'view the answers': 'посмотреть ответы',
+      'Question': 'Вопрос',
       'Submit': 'Отправить',
       'Start': 'Начать',
       'Next': 'Далее',
       'Finish': 'Завершить',
       'Correct!': 'Правильно!',
-      'Incorrect': 'Неправильно',  'Try again': 'Попробуйте снова', 'Show answer': 'Показать ответ'
+      'Incorrect': 'Неправильно',
+      'Try again': 'Попробуйте снова',
+      'Show answer': 'Показать ответ'
     };
 
-    function реплейсСуп(node) {
+    function replaceText(node) {
       if (node.nodeType === Node.TEXT_NODE) {
         let text = node.textContent;
-        for (const [en, ru] of Object.entries(супПайлоад)) {
+        for (const [en, ru] of Object.entries(translations)) {
           text = text.replace(new RegExp(en, 'g'), ru);
         }
         node.textContent = text;
       } else {
         for (const child of node.childNodes) {
-          реплейсСуп(child);
+          replaceText(child);
         }
       }
-    } document.querySelectorAll('.quiz-container, .quiz-answer-review').forEach(реплейсСуп);
-
+    }
+    
+    document.querySelectorAll('.quiz-container, .quiz-answer-review, button').forEach(replaceText);
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', СупчикUI);
+    document.addEventListener('DOMContentLoaded', translateQuizUI);
   } else {
-    СупчикUI(); 
-  } 
-  const observer = new MutationObserver(СупчикUI);
+    translateQuizUI();
+  }
+  
+  const observer = new MutationObserver(translateQuizUI);
   observer.observe(document.body, { childList: true, subtree: true });
-
 })();
