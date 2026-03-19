@@ -3,6 +3,12 @@ on:
   push:
     branches: [main]
 
+env:
+  MDBOOK_VERSION: 0.4.51
+  MDBOOK_QUIZ_VERSION: 0.4.0
+  AQUASCOPE_VERSION: 0.3.8
+  AQUASCOPE_TOOLCHAIN: nightly-2024-12-15
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -13,34 +19,45 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Rust
-        uses: actions-rust-lang/setup-rust-toolchain@v1
-      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
       
       - name: Install pnpm
-        run: npm install -g pnpm
-      
-      - name: Setup mdBook
-        uses: peaceiris/actions-mdbook@v2
+        uses: pnpm/action-setup@v2
         with:
-          mdbook-version: 'latest'
+          version: 6.7.0
       
-      - name: Install mdbook preprocessors
+      - name: Install Rust
         run: |
-          cargo install mdbook-quiz --locked
-          cargo install mdbook-aquascope --locked
-          cargo install --locked --path packages/mdbook-trpl-listing
-          cargo install --locked --path packages/mdbook-trpl-note
+          rustup set profile minimal
+          rustup toolchain install 1.85 -c rust-docs
+          rustup default 1.85
+      
+      - name: Install Aquascope toolchain
+        run: |
+          rustup toolchain install ${AQUASCOPE_TOOLCHAIN} -c rust-src,rustc-dev,llvm-tools-preview,miri
+          cargo +${AQUASCOPE_TOOLCHAIN} miri setup
+          echo "LD_LIBRARY_PATH=$($(rustup which --toolchain ${AQUASCOPE_TOOLCHAIN} rustc) --print target-libdir)" >> ${GITHUB_ENV}
+      
+      - name: Install binaries
+        run: |
+          mkdir bin
+          curl -sSL https://github.com/rust-lang/mdBook/releases/download/v${MDBOOK_VERSION}/mdbook-v${MDBOOK_VERSION}-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=bin
+          curl -sSL https://github.com/cognitive-engineering-lab/mdbook-quiz/releases/download/v${MDBOOK_QUIZ_VERSION}/mdbook-quiz_x86_64-unknown-linux-gnu_full.tar.gz | tar -xz --directory=bin
+          curl -sSL https://github.com/cognitive-engineering-lab/aquascope/releases/download/v${AQUASCOPE_VERSION}/aquascope-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=bin
+          sudo apt-get install -y patchelf
+          patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 bin/mdbook-aquascope bin/cargo-aquascope bin/aquascope-driver
+          echo "$(pwd)/bin" >> ${GITHUB_PATH}
+      
+      - name: Install mdbook-trpl binaries
+        run: cargo install --path packages/mdbook-trpl
       
       - name: Build JS extensions
         run: |
           cd js-extensions
           pnpm init-repo
-          cd ..
       
       - name: Build book
         run: mdbook build
