@@ -30,14 +30,17 @@ cache-answers = true
 more-words = "words.dic"
 
 [preprocessor.aquascope]
+optional = true
 
 # [build]
 # extra-watch-dirs = ["quizzes", "../mdbook-quiz/target/debug", "js-extensions/packages/feedback/dist"]
 
 # Do not sync this preprocessor; it is for the HTML renderer only.
 [preprocessor.trpl-note]
+optional = true
 
 [preprocessor.trpl-listing]
+optional = true
 output-mode = "default"
 
 # [output.linkcheck]

@@ -49,7 +49,15 @@ jobs:
           curl -sSL https://github.com/cognitive-engineering-lab/aquascope/releases/download/v${AQUASCOPE_VERSION}/aquascope-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=bin
           sudo apt-get install -y patchelf
           patchelf --set-interpreter /lib64/ld-linux-x86-64.so.2 bin/mdbook-aquascope bin/cargo-aquascope bin/aquascope-driver
+          chmod +x bin/*
           echo "$(pwd)/bin" >> ${GITHUB_PATH}
+      
+      - name: Verify aquascope installation
+        run: |
+          which cargo-aquascope || echo "cargo-aquascope not in PATH"
+          which mdbook-aquascope || echo "mdbook-aquascope not in PATH"
+          ls -la bin/
+          cargo-aquascope --version || echo "cargo-aquascope failed"
       
       - name: Install mdbook-trpl binaries
         run: cargo install --path packages/mdbook-trpl

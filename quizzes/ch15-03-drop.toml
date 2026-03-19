@@ -1,6 +1,6 @@
 [[questions]]
 id = "8282968d-b1d3-42b4-b128-f97b951db4c6"
-type = "Трассировка"
+type = "Tracing"
 prompt.program = """
 struct Example(i32);
 impl Drop for Example {
@@ -23,7 +23,7 @@ context = """
 
 [[questions]]
 id = "b9121273-1c1e-4e99-9cff-a23f845aaeeb"
-type = "Множественный выбор"
+type = "MultipleChoice"
 prompt.prompt = """
 Рассмотрим этот фрагмент кода, который выделяет строку:
 
