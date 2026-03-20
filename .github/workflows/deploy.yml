@@ -57,7 +57,7 @@ jobs:
           which cargo-aquascope || echo "cargo-aquascope not in PATH"
           which mdbook-aquascope || echo "mdbook-aquascope not in PATH"
           ls -la bin/
-          mdbook-aquascope --version || echo "mdbook-aquascope failed"
+          mdbook-aquascope --version || echo "mdbook-aquascope err"
       
       - name: Install mdbook-trpl binaries
         run: cargo install --path packages/mdbook-trpl
