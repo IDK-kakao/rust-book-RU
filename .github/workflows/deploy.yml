@@ -52,12 +52,12 @@ jobs:
           chmod +x bin/*
           echo "$(pwd)/bin" >> ${GITHUB_PATH}
       
-      - name: Verify aquascope installation
+      - name: aquascope installation
         run: |
           which cargo-aquascope || echo "cargo-aquascope not in PATH"
           which mdbook-aquascope || echo "mdbook-aquascope not in PATH"
           ls -la bin/
-          cargo-aquascope --version || echo "cargo-aquascope failed"
+          mdbook-aquascope --version || echo "mdbook-aquascope failed"
       
       - name: Install mdbook-trpl binaries
         run: cargo install --path packages/mdbook-trpl
