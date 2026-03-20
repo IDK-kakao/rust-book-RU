@@ -24,27 +24,21 @@ additional-js = [
 
 git-repository-url = "https://github.com/IDK-kakao/rust-book-RU"
 
+[preprocessor.trpl-listing]
+
+[preprocessor.trpl-note]
+
+[preprocessor.aquascope]
+optional = true
+
 [preprocessor.quiz]
 fullscreen = true
 validate = true
 cache-answers = true
 more-words = "words.dic"
 
-[preprocessor.aquascope]
-optional = true
-
-# [build]
-# extra-watch-dirs = ["quizzes", "../mdbook-quiz/target/debug", "js-extensions/packages/feedback/dist"]
-
-# Do not sync this preprocessor; it is for the HTML renderer only.
-[preprocessor.trpl-note]
-optional = true
-
-[preprocessor.trpl-listing]
-optional = true
-output-mode = "default"
-
-# [output.linkcheck]
+[build]
+extra-watch-dirs = ["quizzes", "../mdbook-quiz/target/debug", "js-extensions/packages/feedback/dist"]
 
 [rust]
 edition = "2024"
